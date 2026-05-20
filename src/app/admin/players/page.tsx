@@ -624,7 +624,7 @@ export default function PlayersAdminPage() {
 
             <button
               type="button"
-              onClick={resetForm}
+              onClick={() => resetForm()}
               className="rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
             >
               Clear
