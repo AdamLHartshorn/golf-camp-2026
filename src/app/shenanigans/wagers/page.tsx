@@ -14,6 +14,7 @@ const wagerRules = [
   "Odds may be used for handicap differences.",
   "On the back nine, the leader must accept at least 3 offered wagers.",
 ];
+const pointOptions = [1, 2, 3, 5, 10];
 
 type WagerRow = {
   id: string;
@@ -371,6 +372,27 @@ export default function ShenanigansWagersPage() {
                 Points
               </label>
 
+              <div className="mb-3 grid grid-cols-5 gap-2">
+                {pointOptions.map((pointOption) => {
+                  const isSelected = Number(points) === pointOption;
+
+                  return (
+                    <button
+                      key={pointOption}
+                      type="button"
+                      onClick={() => setPoints(String(pointOption))}
+                      className={`rounded-xl border px-2 py-3 text-sm font-bold transition-colors duration-200 ${
+                        isSelected
+                          ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                          : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#b91c1c]"
+                      }`}
+                    >
+                      {pointOption}
+                    </button>
+                  );
+                })}
+              </div>
+
               <input
                 id="wager-points"
                 type="number"
@@ -378,6 +400,7 @@ export default function ShenanigansWagersPage() {
                 step="1"
                 value={points}
                 onChange={(event) => setPoints(event.target.value)}
+                placeholder="Custom point amount"
                 className="w-full rounded-xl border border-[#242424] bg-black px-4 py-4 text-[#f5f5f5] outline-none transition-colors duration-200 focus:border-[#b91c1c]"
               />
             </div>

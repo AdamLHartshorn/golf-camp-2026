@@ -4,24 +4,24 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
-type ShenanigansWager = {
+type ShenanigansEvent = {
   id: string;
+  player_name: string;
+  event_type: string;
   points: number;
-  status: string | null;
-  winner_name: string | null;
-  loser_names: string[] | null;
 };
 
 type FinalTotal = {
   name: string;
   points: number;
-  net: number;
+  netDollars: number;
 };
 
 type PaymentRow = {
   payer: string;
   receiver: string;
-  amount: number;
+  pointDifference: number;
+  dollarAmount: number;
 };
 
 function formatMoney(amount: number) {
@@ -31,20 +31,22 @@ function formatMoney(amount: number) {
 }
 
 export default function ShenanigansSettlementPage() {
-  const [wagers, setWagers] = useState<ShenanigansWager[]>([]);
+  const [events, setEvents] = useState<ShenanigansEvent[]>([]);
+  const [unitOption, setUnitOption] = useState("1");
+  const [customUnitValue, setCustomUnitValue] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
 
-    async function fetchSettledWagers() {
+    async function fetchLedgerEvents() {
       const { data, error: fetchError } = await supabase
-        .from("shenanigans_wagers")
-        .select("id, points, status, winner_name, loser_names")
-        .eq("status", "settled");
+        .from("shenanigans_events")
+        .select("id, player_name, event_type, points")
+        .order("created_at", { ascending: false });
 
-      console.log("shenanigans settlement wagers fetched rows:", {
+      console.log("shenanigans settlement ledger events:", {
         data,
         error: fetchError,
       });
@@ -54,40 +56,45 @@ export default function ShenanigansSettlementPage() {
       }
 
       if (fetchError) {
-        setWagers([]);
+        setEvents([]);
         setError(fetchError.message || "Could not load settlement totals.");
         setIsLoading(false);
         return;
       }
 
-      setWagers((data as ShenanigansWager[]) || []);
+      setEvents((data as ShenanigansEvent[]) || []);
       setIsLoading(false);
     }
 
-    fetchSettledWagers();
+    fetchLedgerEvents();
 
     return () => {
       isCurrent = false;
     };
   }, []);
 
-  const { finalTotals, paymentRows } = useMemo(() => {
-    const totalsByPlayer = wagers.reduce<Record<string, number>>(
-      (accumulator, wager) => {
-        const winnerName = wager.winner_name?.trim();
-        const loserNames = wager.loser_names || [];
-        const points = Number(wager.points || 0);
+  const dollarPerPoint = useMemo(() => {
+    if (unitOption === "custom") {
+      const parsedCustomValue = Number(customUnitValue);
+      return Number.isFinite(parsedCustomValue) && parsedCustomValue > 0
+        ? parsedCustomValue
+        : 0;
+    }
 
-        if (!winnerName || loserNames.length === 0 || points <= 0) {
+    return Number(unitOption);
+  }, [customUnitValue, unitOption]);
+
+  const { finalTotals, paymentRows } = useMemo(() => {
+    const totalsByPlayer = events.reduce<Record<string, number>>(
+      (accumulator, event) => {
+        const playerName = event.player_name?.trim();
+        const points = Number(event.points || 0);
+
+        if (!playerName || !Number.isFinite(points)) {
           return accumulator;
         }
 
-        accumulator[winnerName] =
-          (accumulator[winnerName] || 0) + points * loserNames.length;
-
-        loserNames.forEach((loserName) => {
-          accumulator[loserName] = (accumulator[loserName] || 0) - points;
-        });
+        accumulator[playerName] = (accumulator[playerName] || 0) + points;
 
         return accumulator;
       },
@@ -116,19 +123,21 @@ export default function ShenanigansSettlementPage() {
         settlementRows.push({
           payer: payer.name,
           receiver: receiver.name,
-          amount,
+          pointDifference: amount,
+          dollarAmount: amount * dollarPerPoint,
         });
-        netByPlayer[receiver.name] += amount;
-        netByPlayer[payer.name] -= amount;
+        netByPlayer[receiver.name] += amount * dollarPerPoint;
+        netByPlayer[payer.name] -= amount * dollarPerPoint;
       });
     });
 
     const totalsWithNet: FinalTotal[] = sortedTotals.map((player) => ({
       ...player,
-      net: netByPlayer[player.name] || 0,
+      netDollars: netByPlayer[player.name] || 0,
     }));
 
-    console.log("shenanigans settled wager settlement totals:", {
+    console.log("shenanigans ledger settlement totals:", {
+      dollarPerPoint,
       finalTotals: totalsWithNet,
       paymentRows: settlementRows,
     });
@@ -137,7 +146,7 @@ export default function ShenanigansSettlementPage() {
       finalTotals: totalsWithNet,
       paymentRows: settlementRows,
     };
-  }, [wagers]);
+  }, [dollarPerPoint, events]);
   const hasSettlementData = finalTotals.length > 0;
 
   return (
@@ -162,13 +171,63 @@ export default function ShenanigansSettlementPage() {
                 Source
               </p>
 
-              <h2 className="mt-2 text-xl font-bold">Settled wagers only</h2>
+              <h2 className="mt-2 text-xl font-bold">Ledger events</h2>
+
+              <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                Bank, wagers, side games, custom entries, starting points, and
+                future event types all settle from the ledger.
+              </p>
             </div>
 
             <span className="rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
               Live
             </span>
           </div>
+        </section>
+
+        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+            Dollar Unit
+          </p>
+
+          <h2 className="mt-2 text-xl font-bold">Dollars Per Point</h2>
+
+          <div className="mt-4 grid grid-cols-4 gap-3">
+            {["1", "2", "5", "custom"].map((option) => {
+              const isSelected = unitOption === option;
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setUnitOption(option)}
+                  className={`rounded-xl border px-3 py-3 text-sm font-bold transition-colors duration-200 ${
+                    isSelected
+                      ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                      : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#b91c1c]"
+                  }`}
+                >
+                  {option === "custom" ? "Custom" : `$${option}`}
+                </button>
+              );
+            })}
+          </div>
+
+          {unitOption === "custom" && (
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={customUnitValue}
+              onChange={(event) => setCustomUnitValue(event.target.value)}
+              placeholder="Custom dollars per point"
+              className="mt-4 w-full rounded-xl border border-[#242424] bg-black px-4 py-4 text-[#f5f5f5] outline-none transition-colors duration-200 placeholder:text-[#737373] focus:border-[#b91c1c]"
+            />
+          )}
+
+          <p className="mt-3 text-sm text-[#a3a3a3]">
+            Current rate: ${dollarPerPoint || 0} per point
+          </p>
         </section>
 
         {error && (
@@ -193,7 +252,7 @@ export default function ShenanigansSettlementPage() {
 
             {!isLoading && !hasSettlementData && (
               <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
-                No settled wagers yet.
+                No Shenanigans ledger events yet.
               </div>
             )}
 
@@ -215,7 +274,7 @@ export default function ShenanigansSettlementPage() {
                         </h3>
 
                         <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
-                          Settled wager total
+                          Ledger point total
                         </p>
                       </div>
                     </div>
@@ -241,7 +300,7 @@ export default function ShenanigansSettlementPage() {
 
             <div className="rounded-2xl border border-[#242424] bg-[#111111] px-5">
               {finalTotals.map((player) => {
-                const isPositive = player.net > 0;
+                const isPositive = player.netDollars > 0;
 
                 return (
                   <div
@@ -252,7 +311,7 @@ export default function ShenanigansSettlementPage() {
                       <h3 className="truncate font-semibold">{player.name}</h3>
 
                       <p className="mt-1 text-sm text-[#a3a3a3]">
-                        {player.points} points
+                        {player.points} points at ${dollarPerPoint || 0}/point
                       </p>
                     </div>
 
@@ -261,7 +320,7 @@ export default function ShenanigansSettlementPage() {
                         isPositive ? "text-[#b91c1c]" : "text-[#a3a3a3]"
                       }`}
                     >
-                      {formatMoney(player.net)}
+                      {formatMoney(player.netDollars)}
                     </span>
                   </div>
                 );
@@ -289,7 +348,7 @@ export default function ShenanigansSettlementPage() {
 
               {paymentRows.map((payment) => (
                 <div
-                  key={`${payment.payer}-${payment.receiver}-${payment.amount}`}
+                  key={`${payment.payer}-${payment.receiver}-${payment.pointDifference}`}
                   className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
                 >
                   <div className="flex items-center justify-between gap-4">
@@ -300,11 +359,14 @@ export default function ShenanigansSettlementPage() {
                       pays{" "}
                       <span className="font-semibold text-[#f5f5f5]">
                         {payment.receiver}
+                      </span>{" "}
+                      <span className="text-[#737373]">
+                        ({payment.pointDifference} pts)
                       </span>
                     </p>
 
                     <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
-                      ${payment.amount}
+                      ${payment.dollarAmount}
                     </span>
                   </div>
                 </div>

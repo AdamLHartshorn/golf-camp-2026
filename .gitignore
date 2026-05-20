@@ -19,6 +19,8 @@
 
 # production
 /build
+/backups/
+/.supabase-home/
 
 # misc
 .DS_Store

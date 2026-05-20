@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "supabase": "HOME=$PWD/.supabase-home supabase",
+    "backup:schema": "bash scripts/supabase-backup.sh schema",
+    "backup:data": "bash scripts/supabase-backup.sh data",
+    "backup:all": "bash scripts/supabase-backup.sh all"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.0",
@@ -21,6 +25,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "supabase": "^2.100.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
