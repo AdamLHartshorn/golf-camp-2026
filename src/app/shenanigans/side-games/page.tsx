@@ -1,4 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useActivePlayers } from "@/lib/useActivePlayers";
 
 const featuredGames = [
   {
@@ -15,18 +20,185 @@ const featuredGames = [
   },
 ];
 
-const liveChallenges = [
-  {
-    description: "Nick challenged Jesse to Ultimate Bocce",
-    points: "4 points",
-  },
-  {
-    description: "Alex's Grandma challenged Adam to Basket-Golf",
-    points: "3 points",
-  },
-];
+const sideGameTypes = ["Ultimate Bocce", "Basket-Golf", "Custom"];
+const pointValues = [1, 2, 3, 4, 5, 10];
+
+type SideGameEvent = {
+  id: string;
+  player_name: string;
+  description: string;
+  points: number;
+  created_at: string | null;
+};
+
+function formatTimestamp(createdAt: string | null) {
+  if (!createdAt) {
+    return "just now";
+  }
+
+  const elapsedMs = Date.now() - new Date(createdAt).getTime();
+  const elapsedMinutes = Math.max(0, Math.floor(elapsedMs / 60000));
+
+  if (elapsedMinutes < 1) {
+    return "just now";
+  }
+
+  if (elapsedMinutes < 60) {
+    return `${elapsedMinutes}m ago`;
+  }
+
+  const elapsedHours = Math.floor(elapsedMinutes / 60);
+
+  if (elapsedHours < 24) {
+    return `${elapsedHours}h ago`;
+  }
+
+  return new Date(createdAt).toLocaleDateString();
+}
 
 export default function ShenanigansSideGamesPage() {
+  const {
+    players,
+    isLoading: isLoadingPlayers,
+    error: playersError,
+  } = useActivePlayers();
+  const [chosenPlayer, setChosenPlayer] = useState("");
+  const [selectedType, setSelectedType] = useState(sideGameTypes[0]);
+  const [selectedPoints, setSelectedPoints] = useState<number | null>(3);
+  const [description, setDescription] = useState("");
+  const [events, setEvents] = useState<SideGameEvent[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const selectedPlayer = chosenPlayer || players[0]?.display_name || "";
+
+  async function fetchSideGameEvents() {
+    setIsLoadingEvents(true);
+
+    const { data, error: fetchError } = await supabase
+      .from("shenanigans_events")
+      .select("id, player_name, description, points, created_at")
+      .eq("event_type", "Side Game")
+      .order("created_at", { ascending: false });
+
+    console.log("side game events fetched rows:", {
+      data,
+      error: fetchError,
+    });
+
+    if (fetchError) {
+      setEvents([]);
+      setError(fetchError.message || "Could not load side game events.");
+      setIsLoadingEvents(false);
+      return;
+    }
+
+    setEvents((data as SideGameEvent[]) || []);
+    setIsLoadingEvents(false);
+  }
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function fetchInitialSideGameEvents() {
+      const { data, error: fetchError } = await supabase
+        .from("shenanigans_events")
+        .select("id, player_name, description, points, created_at")
+        .eq("event_type", "Side Game")
+        .order("created_at", { ascending: false });
+
+      console.log("side game events fetched rows:", {
+        data,
+        error: fetchError,
+      });
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (fetchError) {
+        setEvents([]);
+        setError(fetchError.message || "Could not load side game events.");
+        setIsLoadingEvents(false);
+        return;
+      }
+
+      setEvents((data as SideGameEvent[]) || []);
+      setIsLoadingEvents(false);
+    }
+
+    fetchInitialSideGameEvents();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  async function handleSubmit() {
+    const trimmedDescription = description.trim();
+
+    setMessage("");
+    setError("");
+
+    if (!selectedPlayer) {
+      setError("Select a winner.");
+      return;
+    }
+
+    if (selectedPoints === null) {
+      setError("Select a point value.");
+      return;
+    }
+
+    if (!trimmedDescription) {
+      setError("Description is required.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const payload = {
+      player_name: selectedPlayer,
+      event_type: "Side Game",
+      description: `${selectedType}: ${trimmedDescription}`,
+      points: selectedPoints,
+    };
+
+    console.log("Submitting side game event payload:", payload);
+
+    try {
+      const { data, error: insertError } = await supabase
+        .from("shenanigans_events")
+        .insert(payload)
+        .select();
+
+      console.log("side game event insert result:", {
+        data,
+        error: insertError,
+      });
+
+      if (insertError) {
+        setError(insertError.message || "Could not log side game.");
+        return;
+      }
+
+      setMessage("Side game logged.");
+      setSelectedPoints(null);
+      setDescription("");
+      await fetchSideGameEvents();
+    } catch (submitError) {
+      console.error("side game event insert failed:", submitError);
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Could not log side game.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
@@ -35,9 +207,7 @@ export default function ShenanigansSideGamesPage() {
             Shenanigans
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">
-            Side Games
-          </h1>
+          <h1 className="text-4xl font-bold tracking-tight">Side Games</h1>
 
           <p className="text-[#a3a3a3]">
             Bocce, basket-golf, and whatever else gets invented.
@@ -97,51 +267,195 @@ export default function ShenanigansSideGamesPage() {
           </p>
         </section>
 
-        <section className="space-y-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
-              Live Challenge Preview
-            </p>
+        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+            Log Side Game
+          </p>
 
-            <h2 className="mt-2 text-xl font-bold">Pending Chaos</h2>
-          </div>
+          <div className="mt-4 space-y-4">
+            <div className="space-y-3">
+              <p className="text-sm text-[#a3a3a3]">Winner</p>
 
-          <div className="space-y-3">
-            {liveChallenges.map((challenge) => (
-              <div
-                key={challenge.description}
-                className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <h3 className="text-base font-semibold leading-6">
-                      {challenge.description}
-                    </h3>
+              {isLoadingPlayers && (
+                <p className="text-sm text-[#a3a3a3]">Loading players...</p>
+              )}
 
-                    <p className="mt-3 text-lg font-bold text-[#b91c1c]">
-                      {challenge.points}
-                    </p>
-                  </div>
+              {!isLoadingPlayers && playersError && (
+                <p className="text-sm text-[#fca5a5]">{playersError}</p>
+              )}
 
-                  <span className="rounded-full border border-[#b91c1c]/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#f5f5f5]">
-                    Pending
-                  </span>
+              {!isLoadingPlayers && !playersError && players.length === 0 && (
+                <p className="text-sm text-[#a3a3a3]">
+                  No active players found.
+                </p>
+              )}
+
+              {!isLoadingPlayers && !playersError && players.length > 0 && (
+                <div className="grid grid-cols-2 gap-3">
+                  {players.map((player) => {
+                    const isSelected = player.display_name === selectedPlayer;
+
+                    return (
+                      <button
+                        key={player.id}
+                        type="button"
+                        onClick={() => setChosenPlayer(player.display_name)}
+                        className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
+                          isSelected
+                            ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                            : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#b91c1c]"
+                        }`}
+                      >
+                        {player.display_name}
+                      </button>
+                    );
+                  })}
                 </div>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm text-[#a3a3a3]">Game Type</p>
+
+              <div className="grid grid-cols-3 gap-3">
+                {sideGameTypes.map((type) => {
+                  const isSelected = type === selectedType;
+
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setSelectedType(type)}
+                      className={`rounded-2xl border px-3 py-4 text-left text-sm font-semibold transition-colors duration-200 ${
+                        isSelected
+                          ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                          : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#b91c1c]"
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
+            </div>
+
+            <div className="space-y-3">
+              <p className="text-sm text-[#a3a3a3]">Point Value</p>
+
+              <div className="grid grid-cols-3 gap-3">
+                {pointValues.map((points) => {
+                  const isSelected = points === selectedPoints;
+
+                  return (
+                    <button
+                      key={points}
+                      type="button"
+                      onClick={() => setSelectedPoints(points)}
+                      className={`rounded-2xl border py-3 text-sm font-bold transition-colors duration-200 ${
+                        isSelected
+                          ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                          : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#b91c1c]"
+                      }`}
+                    >
+                      +{points}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label
+                htmlFor="side-game-description"
+                className="mb-2 block text-sm text-[#a3a3a3]"
+              >
+                Description
+              </label>
+
+              <input
+                id="side-game-description"
+                type="text"
+                value={description}
+                onChange={(event) => setDescription(event.target.value)}
+                placeholder="What happened?"
+                className="w-full rounded-xl border border-[#242424] bg-black px-4 py-4 text-[#f5f5f5] outline-none transition-colors duration-200 placeholder:text-[#737373] focus:border-[#b91c1c]"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={
+                isSubmitting ||
+                isLoadingPlayers ||
+                Boolean(playersError) ||
+                players.length === 0
+              }
+              className="w-full rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isSubmitting ? "Logging..." : "Log Side Game"}
+            </button>
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#242424] bg-[#0b0b0b] p-5 opacity-60">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
-            Coming Soon
-          </p>
+        {message && (
+          <p className="text-center text-sm text-[#f5f5f5]">{message}</p>
+        )}
 
-          <h2 className="mt-2 text-xl font-bold">Start New Side Game</h2>
+        {error && (
+          <p className="text-center text-sm text-[#fca5a5]">{error}</p>
+        )}
 
-          <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
-            Coming soon — create challenges, accept them, and settle results live.
-          </p>
+        <section className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+              Recent Side Games
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold">Booked Chaos</h2>
+          </div>
+
+          <div className="space-y-3">
+            {isLoadingEvents && (
+              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+                Loading side games...
+              </div>
+            )}
+
+            {!isLoadingEvents && events.length === 0 && (
+              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+                No side games logged yet.
+              </div>
+            )}
+
+            {!isLoadingEvents &&
+              events.map((event) => (
+                <div
+                  key={event.id}
+                  className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-bold">{event.player_name}</h3>
+
+                        <span className="text-xs text-[#737373]">
+                          {formatTimestamp(event.created_at)}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                        {event.description}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
+                      +{event.points}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
         </section>
 
         <Link

@@ -12,12 +12,11 @@ const cards = [
     name: "Log Event",
     href: "/shenanigans/log-event",
     description: "Add Bank points, wagers, side games, or custom chaos.",
-    featured: true,
   },
   {
-    name: "The Bank",
-    href: "/shenanigans/bank",
-    description: "Structured points and standard prop values.",
+    name: "Live Wagers",
+    href: "/shenanigans/wagers",
+    description: "Track player-to-player action.",
   },
   {
     name: "Ledger",
@@ -25,19 +24,19 @@ const cards = [
     description: "Live point totals and round activity.",
   },
   {
+    name: "Side Games",
+    href: "/shenanigans/side-games",
+    description: "Bocce, basket-golf, and whatever else gets invented.",
+  },
+  {
     name: "Settlement",
     href: "/shenanigans/settlement",
     description: "Calculate final point payouts.",
   },
   {
-    name: "Wagers",
-    href: "/shenanigans/wagers",
-    description: "Track player-to-player action.",
-  },
-  {
-    name: "Side Games",
-    href: "/shenanigans/side-games",
-    description: "Bocce, basket-golf, and whatever else gets invented.",
+    name: "The Bank",
+    href: "/shenanigans/bank",
+    description: "Structured points and standard prop values.",
   },
 ];
 

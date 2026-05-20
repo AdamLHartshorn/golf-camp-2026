@@ -117,6 +117,12 @@ export default function NightGolfAdminPage() {
   async function handleDelete(row: ScoreRow) {
     const playerName = row.player_name || "this player";
 
+    if (!row.id) {
+      setMessage("");
+      setError("Could not delete submission: missing Supabase row id.");
+      return;
+    }
+
     if (!window.confirm(`Delete ${playerName}'s ${row.target || "score"} submission?`)) {
       return;
     }
@@ -128,7 +134,7 @@ export default function NightGolfAdminPage() {
       .from("night_golf_scores")
       .delete()
       .eq("id", row.id)
-      .select();
+      .select("id");
 
     console.log("Admin night_golf_scores delete:", {
       row,
@@ -141,9 +147,17 @@ export default function NightGolfAdminPage() {
       return;
     }
 
+    if (!data || data.length === 0) {
+      setError(
+        "Delete did not remove a row. Check Supabase delete policy or row id.",
+      );
+      return;
+    }
+
+    setRows((currentRows) =>
+      currentRows.filter((currentRow) => currentRow.id !== row.id),
+    );
     setMessage("Submission deleted.");
-    setIsLoading(true);
-    await fetchRows();
   }
 
   async function handleResetNight() {

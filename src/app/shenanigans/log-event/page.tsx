@@ -3,19 +3,25 @@
 import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useActivePlayers } from "@/lib/useActivePlayers";
 
-const players = ["Alex's Grandma", "Nick", "Jesse", "Adam"];
 const eventTypes = ["Bank", "Wager", "Side Game", "Custom"];
 const pointValues = [-5, -3, -1, 1, 2, 3, 5, 10];
 
 export default function ShenanigansLogEventPage() {
-  const [selectedPlayer, setSelectedPlayer] = useState(players[0]);
+  const [chosenPlayer, setChosenPlayer] = useState("");
   const [selectedType, setSelectedType] = useState(eventTypes[0]);
   const [selectedPoints, setSelectedPoints] = useState<number | null>(2);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const {
+    players,
+    isLoading: isLoadingPlayers,
+    error: playersError,
+  } = useActivePlayers();
+  const selectedPlayer = chosenPlayer || players[0]?.display_name || "";
 
   const signedPoints =
     selectedPoints === null
@@ -30,6 +36,11 @@ export default function ShenanigansLogEventPage() {
 
     setMessage("");
     setError("");
+
+    if (!selectedPlayer) {
+      setError("Select a player.");
+      return;
+    }
 
     if (selectedPoints === null) {
       setError("Select a point value.");
@@ -105,26 +116,46 @@ export default function ShenanigansLogEventPage() {
             Player
           </p>
 
-          <div className="grid grid-cols-2 gap-3">
-            {players.map((player) => {
-              const isSelected = player === selectedPlayer;
+          {isLoadingPlayers && (
+            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
+              Loading players...
+            </div>
+          )}
 
-              return (
-                <button
-                  key={player}
-                  type="button"
-                  onClick={() => setSelectedPlayer(player)}
-                  className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
-                    isSelected
-                      ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
-                      : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
-                  }`}
-                >
-                  {player}
-                </button>
-              );
-            })}
-          </div>
+          {!isLoadingPlayers && playersError && (
+            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#fca5a5]">
+              {playersError}
+            </div>
+          )}
+
+          {!isLoadingPlayers && !playersError && players.length === 0 && (
+            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
+              No active players found.
+            </div>
+          )}
+
+          {!isLoadingPlayers && !playersError && players.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {players.map((player) => {
+                const isSelected = player.display_name === selectedPlayer;
+
+                return (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={() => setChosenPlayer(player.display_name)}
+                    className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
+                      isSelected
+                        ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                        : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
+                    }`}
+                  >
+                    {player.display_name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         <section className="space-y-3">
@@ -243,8 +274,8 @@ export default function ShenanigansLogEventPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b]"
+          disabled={isSubmitting || isLoadingPlayers || players.length === 0}
+          className="rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Adding..." : "Add to Ledger"}
         </button>

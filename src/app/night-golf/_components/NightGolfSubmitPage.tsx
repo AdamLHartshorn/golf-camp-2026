@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { useActivePlayers } from "@/lib/useActivePlayers";
 
 const targets = [
   "1G",
@@ -27,14 +28,21 @@ export function NightGolfSubmitPage({
   nightLabel,
   backHref,
 }: NightGolfSubmitPageProps) {
-  const [playerName, setPlayerName] = useState("");
+  const [chosenPlayerName, setChosenPlayerName] = useState("");
   const [selectedTarget, setSelectedTarget] = useState("1G");
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const {
+    players,
+    isLoading: isLoadingPlayers,
+    error: playersError,
+  } = useActivePlayers();
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const isSupabaseConnected = Boolean(supabase);
+  const selectedPlayerName =
+    chosenPlayerName || players[0]?.display_name || "";
 
   useEffect(() => {
     async function fetchExistingScores() {
@@ -54,13 +62,13 @@ export function NightGolfSubmitPage({
   async function handleSubmit() {
     console.log("SUBMIT CLICKED");
 
-    const trimmedPlayerName = playerName.trim();
+    const trimmedPlayerName = selectedPlayerName.trim();
 
     setMessage("");
     setError("");
 
     if (!trimmedPlayerName) {
-      setError("Player name is required.");
+      setError("Select a player before submitting.");
       return;
     }
 
@@ -136,16 +144,39 @@ export function NightGolfSubmitPage({
         <div className="space-y-6">
           <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
             <label className="mb-3 block text-sm text-[#a3a3a3]">
-              Player Name
+              Player
             </label>
 
-            <input
-              type="text"
-              value={playerName}
-              onChange={(event) => setPlayerName(event.target.value)}
-              placeholder="Enter Name"
-              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-4 text-lg outline-none focus:border-[#cfff82]"
-            />
+            {isLoadingPlayers && (
+              <p className="text-sm text-[#a3a3a3]">Loading players...</p>
+            )}
+
+            {!isLoadingPlayers && playersError && (
+              <p className="text-sm text-[#ff8a8a]">{playersError}</p>
+            )}
+
+            {!isLoadingPlayers && !playersError && players.length === 0 && (
+              <p className="text-sm text-[#a3a3a3]">No active players found.</p>
+            )}
+
+            {!isLoadingPlayers && !playersError && players.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {players.map((player) => (
+                  <button
+                    key={player.id}
+                    type="button"
+                    onClick={() => setChosenPlayerName(player.display_name)}
+                    className={`rounded-xl border p-4 text-left text-sm font-semibold transition ${
+                      selectedPlayerName === player.display_name
+                        ? "border-[#cfff82] bg-[#cfff82] text-black"
+                        : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#cfff82]"
+                    }`}
+                  >
+                    {player.display_name}
+                  </button>
+                ))}
+              </div>
+            )}
           </section>
 
           <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
@@ -237,7 +268,7 @@ export function NightGolfSubmitPage({
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isLoadingPlayers || players.length === 0}
               className="w-full rounded-2xl bg-[#cfff82] py-5 text-xl font-bold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? "Submitting..." : "Submit Result"}
