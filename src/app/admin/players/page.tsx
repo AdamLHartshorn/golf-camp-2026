@@ -1,23 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 const ranks = ["A", "B", "C", "D"];
 
 type PlayerRow = {
   id: string;
+  player_key: string | null;
   first_name: string;
   last_name: string;
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  internal_rank_order: string | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
   email: string | null;
   photo_url: string | null;
+  deposit_paid: boolean | null;
+  gambling_paid: boolean | null;
   active: boolean | null;
   created_at: string | null;
   updated_at: string | null;
@@ -29,10 +33,13 @@ type PlayerFormState = {
   display_name: string;
   nickname: string;
   rank: string;
+  internal_rank_order: string;
   room: string;
   arrival: string;
   phone: string;
   email: string;
+  deposit_paid: boolean;
+  gambling_paid: boolean;
   active: boolean;
 };
 
@@ -42,12 +49,19 @@ const emptyForm: PlayerFormState = {
   display_name: "",
   nickname: "",
   rank: "A",
+  internal_rank_order: "",
   room: "",
   arrival: "",
   phone: "",
   email: "",
+  deposit_paid: false,
+  gambling_paid: false,
   active: true,
 };
+
+function createPlayerKey(displayName: string) {
+  return displayName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
 
 function playerToForm(player: PlayerRow): PlayerFormState {
   return {
@@ -56,25 +70,35 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     display_name: player.display_name || "",
     nickname: player.nickname || "",
     rank: player.rank || "A",
+    internal_rank_order: player.internal_rank_order || "",
     room: player.room || "",
     arrival: player.arrival || "",
     phone: player.phone || "",
     email: player.email || "",
+    deposit_paid: player.deposit_paid ?? false,
+    gambling_paid: player.gambling_paid ?? false,
     active: player.active ?? true,
   };
 }
 
 function formToPayload(form: PlayerFormState) {
+  const displayName = form.display_name.trim();
+  const internalRankOrder = form.internal_rank_order.trim().toUpperCase();
+
   return {
     first_name: form.first_name.trim(),
     last_name: form.last_name.trim(),
-    display_name: form.display_name.trim(),
+    display_name: displayName,
+    player_key: createPlayerKey(displayName),
     nickname: form.nickname.trim() || null,
     rank: form.rank,
+    internal_rank_order: internalRankOrder || null,
     room: form.room.trim() || null,
     arrival: form.arrival.trim() || null,
     phone: form.phone.trim() || null,
     email: form.email.trim() || null,
+    deposit_paid: form.deposit_paid,
+    gambling_paid: form.gambling_paid,
     active: form.active,
     updated_at: new Date().toISOString(),
   };
@@ -88,6 +112,7 @@ export default function PlayersAdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const formRef = useRef<HTMLElement | null>(null);
 
   const activePlayers = useMemo(
     () =>
@@ -184,11 +209,22 @@ export default function PlayersAdminPage() {
     }));
   }
 
-  function resetForm() {
+  function resetForm(options?: { preserveFeedback?: boolean }) {
     setForm(emptyForm);
     setEditingId(null);
+
+    if (!options?.preserveFeedback) {
+      setMessage("");
+      setError("");
+    }
+  }
+
+  function handleEdit(player: PlayerRow) {
+    setEditingId(player.id);
+    setForm(playerToForm(player));
     setMessage("");
     setError("");
+    formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   async function handleSave() {
@@ -197,8 +233,26 @@ export default function PlayersAdminPage() {
     setMessage("");
     setError("");
 
-    if (!payload.first_name || !payload.last_name || !payload.display_name) {
-      setError("First name, last name, and display name are required.");
+    if (!payload.display_name) {
+      setError("Display name is required.");
+      return;
+    }
+
+    if (!payload.first_name || !payload.last_name) {
+      setError("First name and last name are required.");
+      return;
+    }
+
+    if (!ranks.includes(payload.rank)) {
+      setError("Rank must be A, B, C, or D.");
+      return;
+    }
+
+    if (
+      payload.internal_rank_order &&
+      !/^[ABCD][0-9]+$/.test(payload.internal_rank_order)
+    ) {
+      setError("Internal rank order must look like A1, B2, or C11.");
       return;
     }
 
@@ -209,7 +263,8 @@ export default function PlayersAdminPage() {
         .from("players")
         .update(payload)
         .eq("id", editingId)
-        .select();
+        .select("*")
+        .single();
 
       console.log("Admin players update:", {
         id: editingId,
@@ -225,17 +280,21 @@ export default function PlayersAdminPage() {
         return;
       }
 
+      setPlayers((currentPlayers) =>
+        currentPlayers.map((player) =>
+          player.id === editingId ? (data as PlayerRow) : player,
+        ),
+      );
+      resetForm({ preserveFeedback: true });
       setMessage("Player updated.");
-      resetForm();
-      setIsLoading(true);
-      await fetchPlayers();
       return;
     }
 
     const { data, error: insertError } = await supabase
       .from("players")
       .insert(payload)
-      .select();
+      .select("*")
+      .single();
 
     console.log("Admin players insert:", {
       payload,
@@ -250,10 +309,9 @@ export default function PlayersAdminPage() {
       return;
     }
 
+    setPlayers((currentPlayers) => [...currentPlayers, data as PlayerRow]);
+    resetForm({ preserveFeedback: true });
     setMessage("Player created.");
-    resetForm();
-    setIsLoading(true);
-    await fetchPlayers();
   }
 
   async function handleToggleActive(player: PlayerRow) {
@@ -343,16 +401,25 @@ export default function PlayersAdminPage() {
             <p className="mt-1 text-xs uppercase tracking-[0.2em] text-[#737373]">
               {player.active === false ? "Inactive" : "Active"}
             </p>
+
+            <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.16em]">
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Internal {player.internal_rank_order || "-"}
+              </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Deposit {player.deposit_paid ? "Paid" : "Open"}
+              </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Gambling {player.gambling_paid ? "Paid" : "Open"}
+              </span>
+            </div>
           </div>
 
           <button
             type="button"
-            onClick={() => {
-              setEditingId(player.id);
-              setForm(playerToForm(player));
-              setMessage("");
-              setError("");
-            }}
+            onClick={() => handleEdit(player)}
             className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
           >
             Edit
@@ -397,7 +464,10 @@ export default function PlayersAdminPage() {
           </p>
         </div>
 
-        <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section
+          ref={formRef}
+          className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5"
+        >
           <div>
             <h2 className="text-xl font-bold">
               {editingId ? "Edit Player" : "Create Player"}
@@ -457,19 +527,55 @@ export default function PlayersAdminPage() {
 
             <input
               type="text"
-              value={form.room}
-              onChange={(event) => updateForm("room", event.target.value)}
-              placeholder="Room"
+              value={form.internal_rank_order}
+              onChange={(event) =>
+                updateForm("internal_rank_order", event.target.value)
+              }
+              placeholder="A1"
               className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
             />
 
             <input
               type="text"
-              value={form.arrival}
-              onChange={(event) => updateForm("arrival", event.target.value)}
-              placeholder="Arrival"
+              value={form.room}
+              onChange={(event) => updateForm("room", event.target.value)}
+              placeholder="Room"
               className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
             />
+          </div>
+
+          <input
+            type="text"
+            value={form.arrival}
+            onChange={(event) => updateForm("arrival", event.target.value)}
+            placeholder="Arrival"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="flex items-center gap-3 rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm text-[#a3a3a3]">
+              <input
+                type="checkbox"
+                checked={form.deposit_paid}
+                onChange={(event) =>
+                  updateForm("deposit_paid", event.target.checked)
+                }
+                className="h-4 w-4"
+              />
+              Deposit paid
+            </label>
+
+            <label className="flex items-center gap-3 rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm text-[#a3a3a3]">
+              <input
+                type="checkbox"
+                checked={form.gambling_paid}
+                onChange={(event) =>
+                  updateForm("gambling_paid", event.target.checked)
+                }
+                className="h-4 w-4"
+              />
+              Gambling paid
+            </label>
           </div>
 
           <input
