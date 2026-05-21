@@ -305,32 +305,32 @@ export default function MoneyRoundResultsPage() {
     return (
       <div className="space-y-8">
         <div>
-          <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+          <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
             Course Report
           </p>
-          <h1 className="mt-5 text-6xl font-black tracking-tight lg:text-7xl">
+          <h1 className="mt-5 text-7xl font-black tracking-[-0.07em] lg:text-8xl">
             {label}
           </h1>
         </div>
 
         {!highlight ? (
-          <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
+          <p className="rounded-[2rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
             Hole scoring data is not available yet.
           </p>
         ) : (
-          <div className="rounded-[2rem] border border-[#166534] bg-[#07120c] p-10">
-            <p className="text-lg uppercase tracking-[0.28em] text-[#16a34a]">
+          <div className="rounded-[2.2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.26),transparent_52%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18)]">
+            <p className="text-lg font-semibold uppercase tracking-[0.28em] text-[#86efac]">
               {label}
             </p>
-            <h2 className="mt-6 text-8xl font-black tracking-tight lg:text-9xl">
+            <h2 className="mt-6 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
               Hole {highlight.hole}
             </h2>
             <p className="mt-4 text-3xl text-[#a3a3a3]">
               Par {highlight.par} · Hcp {highlight.handicap}
             </p>
-            <p className="mt-10 text-6xl font-black">
+            <p className="mt-10 text-6xl font-black tracking-[-0.05em]">
               Avg {formatAverage(highlight.averageScore)}{" "}
-              <span className="text-[#16a34a]">
+              <span className="text-[#86efac]">
                 ({formatAverageRelativeToPar(highlight.averageRelativeToPar)})
               </span>
             </p>
@@ -412,11 +412,11 @@ export default function MoneyRoundResultsPage() {
   });
 
   return (
-    <main className="min-h-screen overflow-hidden bg-black text-[#f5f5f5]">
+    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_8%,rgba(22,163,74,0.22),transparent_30%),radial-gradient(circle_at_88%_78%,rgba(20,83,45,0.18),transparent_36%),linear-gradient(135deg,#020604_0%,#050806_48%,#000_100%)] text-[#f5f5f5]">
       <div className="flex min-h-screen flex-col justify-between p-8 lg:p-12">
-        <header className="flex items-start justify-between gap-6">
+        <header className="flex items-start justify-between gap-6 border-b border-[#24452f]/70 pb-5">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#16a34a]">
+            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#86efac]">
               Money Rounds Results
             </p>
             <p className="mt-2 text-sm text-[#a3a3a3]">
@@ -433,7 +433,7 @@ export default function MoneyRoundResultsPage() {
           <button
             type="button"
             onClick={enterTvMode}
-            className="rounded-full border border-[#166534] px-5 py-2 text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
+            className="rounded-full border border-[#22c55e]/70 bg-black/35 px-5 py-2 text-sm font-bold text-[#86efac] transition hover:bg-[#0f1f16]"
           >
             Enter TV Mode
           </button>
@@ -448,7 +448,7 @@ export default function MoneyRoundResultsPage() {
             )}
 
             {!isLoading && error && (
-              <div className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-2xl text-[#ff8a8a]">
+              <div className="rounded-[2rem] border border-[#242424] bg-[#111111] p-8 text-2xl text-[#ff8a8a]">
                 {error}
               </div>
             )}
@@ -456,10 +456,10 @@ export default function MoneyRoundResultsPage() {
             {!isLoading && !error && round && section.id === "intro" && (
               <div className="grid gap-8 lg:grid-cols-[1.4fr_0.8fr] lg:items-end">
                 <div>
-                  <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+                  <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                     Official Results
                   </p>
-                  <h1 className="mt-5 text-7xl font-black tracking-tight lg:text-8xl">
+                  <h1 className="mt-5 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
                     {round.name}
                   </h1>
                   <p className="mt-5 text-3xl text-[#a3a3a3]">
@@ -467,11 +467,11 @@ export default function MoneyRoundResultsPage() {
                   </p>
                 </div>
 
-                <div className="rounded-3xl border border-[#166534] bg-[#07120c] p-8">
-                  <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
+                <div className="rounded-[2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.24),transparent_58%),#07120c] p-8 shadow-[0_0_70px_rgba(22,163,74,0.18)]">
+                  <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
                     Total Pot
                   </p>
-                  <p className="mt-4 text-6xl font-black">
+                  <p className="mt-4 text-7xl font-black tracking-[-0.06em]">
                     {money(totalPot(round))}
                   </p>
                   <p className="mt-4 text-lg text-[#a3a3a3]">
@@ -496,20 +496,20 @@ export default function MoneyRoundResultsPage() {
             {!isLoading && !error && round && section.id === "placements" && (
               <div className="space-y-8">
                 {!hasScores || !currentPlacement ? (
-                  <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
+                  <p className="rounded-[2rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
                     This round does not have placement results yet.
                   </p>
                 ) : (
                   <>
-                    <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+                    <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                       {ordinal(currentPlacement.position)} Place
                       {currentPlacement.position <= 3 ? "" : " · Standings Reveal"}
                     </p>
                     <div
-                      className={`rounded-[2rem] border p-10 ${
+                      className={`rounded-[2.2rem] border p-10 shadow-[0_28px_90px_rgba(0,0,0,0.48)] ${
                         currentPlacement.position <= 3
-                          ? "border-[#16a34a] bg-[#07120c]"
-                          : "border-[#242424] bg-[#111111]"
+                          ? "border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))]"
+                          : "border-[#24452f] bg-[linear-gradient(180deg,rgba(17,17,17,0.95),rgba(0,0,0,0.65))]"
                       }`}
                     >
                       <div className="grid gap-8 lg:grid-cols-[1fr_0.35fr] lg:items-end">
@@ -521,7 +521,7 @@ export default function MoneyRoundResultsPage() {
                           >
                             {teamScoreStatusLabel(currentPlacement.team)}
                           </span>
-                          <h1 className="text-7xl font-black tracking-tight lg:text-8xl">
+                          <h1 className="text-7xl font-black tracking-[-0.08em] lg:text-8xl">
                             {currentPlacement.team.name}
                           </h1>
                           <p className="mt-5 text-3xl text-[#a3a3a3]">
@@ -533,7 +533,7 @@ export default function MoneyRoundResultsPage() {
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Total Score
                           </p>
-                          <p className="text-7xl font-black">
+                          <p className="text-7xl font-black tracking-[-0.06em]">
                             {formatScoreToCompletedPar(
                               currentPlacement.total,
                               currentPlacement.scoresByHole,
@@ -544,7 +544,7 @@ export default function MoneyRoundResultsPage() {
                           </p>
                           {(bankByTeam[currentPlacement.team.name]?.placement || 0) >
                           0 ? (
-                            <p className="text-5xl font-black text-[#16a34a]">
+                            <p className="text-5xl font-black text-[#86efac]">
                               {money(
                                 bankByTeam[currentPlacement.team.name]?.placement ||
                                   0,
@@ -566,48 +566,48 @@ export default function MoneyRoundResultsPage() {
             {!isLoading && !error && round && section.id === "skins" && (
               <div className="space-y-8">
                 {skins.length === 0 || !currentSkin ? (
-                  <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
+                  <p className="rounded-[2rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
                     No skins awarded this round.
                   </p>
                 ) : (
                   <>
-                    <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+                    <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                       Skin {currentIndex + 1} of {skins.length}
                     </p>
-                    <div className="rounded-[2rem] border border-[#16a34a] bg-[#07120c] p-10">
-                      <p className="text-3xl font-black text-[#16a34a]">
+                    <div className="rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18),0_28px_90px_rgba(0,0,0,0.48)]">
+                      <p className="text-3xl font-black text-[#86efac]">
                         Hole {currentSkin.hole}
                       </p>
                       <p className="mt-2 text-lg uppercase tracking-[0.18em] text-[#a3a3a3]">
                         Par {getHolePar(currentSkin.hole)} · Hcp{" "}
                         {getHoleHandicap(currentSkin.hole) || "-"}
                       </p>
-                      <h1 className="mt-5 text-7xl font-black tracking-tight lg:text-8xl">
+                      <h1 className="mt-5 text-7xl font-black tracking-[-0.08em] lg:text-8xl">
                         {currentSkin.team.name}
                       </h1>
                       <p className="mt-5 text-3xl text-[#a3a3a3]">
                         {currentSkin.team.player_names.join(", ") || "No players"}
                       </p>
                       <div className="mt-10 grid gap-4 lg:grid-cols-2">
-                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#22c55e]/40 bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Team Score
                           </p>
                           <p className="mt-3 text-6xl font-black">
                             {currentSkin.score}
                           </p>
-                          <p className="mt-2 text-lg font-bold text-[#16a34a]">
+                          <p className="mt-2 text-lg font-bold text-[#86efac]">
                             {formatRelativeToPar(
                               currentSkin.score,
                               getHolePar(currentSkin.hole),
                             )}
                           </p>
                         </div>
-                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#22c55e]/40 bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Skin Value
                           </p>
-                          <p className="mt-3 text-6xl font-black text-[#16a34a]">
+                          <p className="mt-3 text-6xl font-black text-[#86efac]">
                             {money(currentSkin.value)}
                           </p>
                         </div>
@@ -621,17 +621,17 @@ export default function MoneyRoundResultsPage() {
             {!isLoading && !error && round && section.id === "player_bank" && (
               <div className="space-y-8">
                 {!currentPayout ? (
-                  <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
+                  <p className="rounded-[2rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
                     No positive player payouts this round.
                   </p>
                 ) : (
                   <>
-                    <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+                    <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                       Player Payouts
                     </p>
-                    <div className="rounded-[2rem] border border-[#16a34a] bg-[#07120c] p-10">
+                    <div className="rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18),0_28px_90px_rgba(0,0,0,0.48)]">
                       <div>
-                        <h1 className="text-7xl font-black tracking-tight lg:text-8xl">
+                        <h1 className="text-7xl font-black tracking-[-0.08em] lg:text-8xl">
                           {currentPayout.playerName}
                         </h1>
                         <p className="mt-5 text-3xl text-[#a3a3a3]">
@@ -640,7 +640,7 @@ export default function MoneyRoundResultsPage() {
                       </div>
 
                       <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1.25fr]">
-                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#22c55e]/40 bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Placement
                           </p>
@@ -648,7 +648,7 @@ export default function MoneyRoundResultsPage() {
                             {money(currentPayout.placementWinnings)}
                           </p>
                         </div>
-                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#22c55e]/40 bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Skins
                           </p>
@@ -656,7 +656,7 @@ export default function MoneyRoundResultsPage() {
                             {money(currentPayout.skinsWinnings)}
                           </p>
                         </div>
-                        <div className="rounded-3xl border border-[#242424] bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#24452f] bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Buy-In
                           </p>
@@ -664,11 +664,11 @@ export default function MoneyRoundResultsPage() {
                             {money(currentPayout.buyIn)}
                           </p>
                         </div>
-                        <div className="rounded-3xl border border-[#16a34a] bg-black/30 p-6">
+                        <div className="rounded-[1.5rem] border border-[#22c55e]/70 bg-black/35 p-6">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Total Winnings
                           </p>
-                          <p className="mt-3 text-5xl font-black text-[#16a34a]">
+                          <p className="mt-3 text-5xl font-black text-[#86efac]">
                             {money(currentPayout.totalWinnings)}
                           </p>
                           <p className="mt-3 text-lg font-bold text-[#a3a3a3]">
@@ -685,15 +685,15 @@ export default function MoneyRoundResultsPage() {
             {!isLoading && !error && round && section.id === "complete" && (
               <div className="flex min-h-[65vh] items-center justify-center">
                 <div className="w-full max-w-6xl text-center">
-                  <p className="text-xl uppercase tracking-[0.35em] text-[#16a34a]">
+                  <p className="text-xl font-semibold uppercase tracking-[0.3em] text-[#86efac]">
                     Money Round Final
                   </p>
-                  <h1 className="mt-6 text-7xl font-black tracking-tight lg:text-8xl">
+                  <h1 className="mt-6 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
                     {round.name} Complete
                   </h1>
 
                   <div className="mt-12 grid gap-4 text-left lg:grid-cols-5">
-                    <div className="rounded-3xl border border-[#16a34a] bg-[#07120c] p-6">
+                    <div className="rounded-[1.5rem] border border-[#22c55e]/75 bg-[#07120c] p-6 shadow-[0_0_45px_rgba(22,163,74,0.14)]">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Winning Team
                       </p>
@@ -701,11 +701,11 @@ export default function MoneyRoundResultsPage() {
                         {winningStanding?.team.name || "-"}
                       </p>
                     </div>
-                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                    <div className="rounded-[1.5rem] border border-[#24452f] bg-black/45 p-6">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Winning Score
                       </p>
-                      <p className="mt-3 text-3xl font-black text-[#16a34a]">
+                      <p className="mt-3 text-3xl font-black text-[#86efac]">
                         {winningStanding
                           ? formatScoreToCompletedPar(
                               winningStanding.total,
@@ -714,7 +714,7 @@ export default function MoneyRoundResultsPage() {
                           : "-"}
                       </p>
                     </div>
-                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                    <div className="rounded-[1.5rem] border border-[#24452f] bg-black/45 p-6">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Biggest Winner
                       </p>
@@ -722,12 +722,12 @@ export default function MoneyRoundResultsPage() {
                         {biggestWinner?.playerName || "-"}
                       </p>
                       {biggestWinner && (
-                        <p className="mt-2 text-xl font-bold text-[#16a34a]">
+                        <p className="mt-2 text-xl font-bold text-[#86efac]">
                           {money(biggestWinner.totalWinnings)}
                         </p>
                       )}
                     </div>
-                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                    <div className="rounded-[1.5rem] border border-[#24452f] bg-black/45 p-6">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Hardest Hole
                       </p>
@@ -748,7 +748,7 @@ export default function MoneyRoundResultsPage() {
                         </p>
                       )}
                     </div>
-                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                    <div className="rounded-[1.5rem] border border-[#24452f] bg-black/45 p-6">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Skins Awarded
                       </p>
@@ -758,7 +758,7 @@ export default function MoneyRoundResultsPage() {
                     </div>
                   </div>
 
-                  <p className="mt-12 text-3xl font-bold text-[#16a34a]">
+                  <p className="mt-12 text-4xl font-black tracking-[-0.04em] text-[#86efac]">
                     Draft begins shortly.
                   </p>
                 </div>
@@ -767,12 +767,12 @@ export default function MoneyRoundResultsPage() {
           </div>
         </section>
 
-        <footer className="flex items-center justify-between gap-4">
+        <footer className="flex items-center justify-between gap-4 border-t border-[#24452f]/70 pt-5">
           <button
             type="button"
             onClick={() => advanceLocal(-1)}
             disabled={!hasPrevious}
-            className="rounded-full border border-[#242424] px-6 py-3 font-bold text-[#f5f5f5] transition hover:border-[#16a34a] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full border border-[#24452f] bg-black/30 px-6 py-3 font-bold text-[#f5f5f5] transition hover:border-[#22c55e] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Previous
           </button>
@@ -785,7 +785,7 @@ export default function MoneyRoundResultsPage() {
             type="button"
             onClick={() => advanceLocal(1)}
             disabled={!hasNext}
-            className="rounded-full border border-[#16a34a] px-6 py-3 font-bold text-[#16a34a] transition hover:bg-[#0f1f16] disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-full border border-[#22c55e]/70 bg-black/30 px-6 py-3 font-bold text-[#86efac] transition hover:bg-[#0f1f16] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
           </button>

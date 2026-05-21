@@ -125,14 +125,14 @@ export function NightGolfSubmitPage({
   }
 
   return (
-    <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
-      <div className="mx-auto w-full max-w-md space-y-8 py-10">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto w-full max-w-md space-y-7 py-8">
         <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+          <p className="text-xs uppercase tracking-[0.28em] text-[#a3a3a3]">
             {nightLabel} Night Golf
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
+          <h1 className="text-[2.7rem] font-semibold leading-none tracking-[-0.04em] text-[#f5f5f5]">
             Scorecard
           </h1>
 
@@ -141,9 +141,9 @@ export function NightGolfSubmitPage({
           </p>
         </div>
 
-        <div className="space-y-6">
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <label className="mb-3 block text-sm text-[#a3a3a3]">
+        <div className="space-y-4">
+          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
               Player
             </label>
 
@@ -166,10 +166,10 @@ export function NightGolfSubmitPage({
                     key={player.id}
                     type="button"
                     onClick={() => setChosenPlayerName(player.display_name)}
-                    className={`rounded-xl border p-4 text-left text-sm font-semibold transition ${
+                    className={`rounded-2xl border p-4 text-left text-sm font-semibold transition ${
                       selectedPlayerName === player.display_name
-                        ? "border-[#ec4899] bg-[#db2777] text-black"
-                        : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#ec4899]"
+                        ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
+                        : "border-[#242424] bg-black/70 text-[#f5f5f5] hover:border-[#ec4899]"
                     }`}
                   >
                     {player.display_name}
@@ -179,8 +179,8 @@ export function NightGolfSubmitPage({
             )}
           </section>
 
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <label className="mb-3 block text-sm text-[#a3a3a3]">
+          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
               Target
             </label>
 
@@ -189,10 +189,10 @@ export function NightGolfSubmitPage({
                 <button
                   key={target}
                   onClick={() => setSelectedTarget(target)}
-                  className={`rounded-xl p-4 text-lg font-bold transition ${
+                  className={`rounded-2xl border p-4 text-lg font-semibold transition ${
                     selectedTarget === target
-                      ? "bg-[#db2777] text-black"
-                      : "border border-[#242424] bg-black text-[#f472b6]"
+                      ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
+                      : "border-[#242424] bg-black/70 text-[#f472b6]"
                   }`}
                 >
                   {target}
@@ -201,18 +201,18 @@ export function NightGolfSubmitPage({
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <label className="mb-3 block text-sm text-[#a3a3a3]">
+          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
+            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
               Result
             </label>
 
             <div className="grid grid-cols-3 gap-3">
               <button
                 onClick={() => setSelectedScore(0)}
-                className={`rounded-xl p-5 text-xl font-bold transition ${
+                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
                   selectedScore === 0
-                    ? "bg-[#a3a3a3] text-black"
-                    : "border border-[#242424] bg-black"
+                    ? "border-[#a3a3a3] bg-[#242424] text-[#f5f5f5]"
+                    : "border-[#242424] bg-black/70"
                 }`}
               >
                 0
@@ -220,10 +220,10 @@ export function NightGolfSubmitPage({
 
               <button
                 onClick={() => setSelectedScore(1)}
-                className={`rounded-xl p-5 text-xl font-bold transition ${
+                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
                   selectedScore === 1
-                    ? "bg-[#f5f5f5] text-black"
-                    : "border border-[#242424] bg-black"
+                    ? "border-[#f5f5f5] bg-[#242424] text-[#f5f5f5]"
+                    : "border-[#242424] bg-black/70"
                 }`}
               >
                 1
@@ -231,10 +231,10 @@ export function NightGolfSubmitPage({
 
               <button
                 onClick={() => setSelectedScore(3)}
-                className={`rounded-xl p-5 text-xl font-bold transition ${
+                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
                   selectedScore === 3
-                    ? "bg-[#db2777] text-black"
-                    : "border border-[#242424] bg-black"
+                    ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
+                    : "border-[#242424] bg-black/70"
                 }`}
               >
                 3
@@ -243,12 +243,12 @@ export function NightGolfSubmitPage({
           </section>
 
           <div className="space-y-4">
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center">
-              <p className="text-sm text-[#a3a3a3]">
+            <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-[#17130e]">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                 Current Total
               </p>
 
-              <p className="mt-1 text-4xl font-bold text-[#f472b6]">
+              <p className="mt-1 text-4xl font-semibold tracking-[-0.04em]">
                 {selectedScore ?? 0}
               </p>
             </div>
@@ -269,7 +269,7 @@ export function NightGolfSubmitPage({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || isLoadingPlayers || players.length === 0}
-              className="w-full rounded-2xl bg-[#db2777] py-5 text-xl font-bold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-[1.35rem] bg-[#db2777] py-5 text-lg font-semibold text-white transition hover:bg-[#ec4899] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? "Submitting..." : "Submit Result"}
             </button>

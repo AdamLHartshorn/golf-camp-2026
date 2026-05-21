@@ -93,24 +93,42 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-[#f5f5f5] flex items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="flex justify-center">
+    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="w-full max-w-sm space-y-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f4f1ea]">
+              GOLF CAMP 2026
+            </p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b927f]">
+              Play. Compete. Remember.
+            </p>
+          </div>
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#3a372f] bg-[#161511] text-sm font-semibold text-[#f4f1ea]">
+            GC
+          </div>
+        </div>
+
+        <div className="flex justify-center pt-2">
           <Image
             src="/golf-camp-logo.png"
             alt="Golf Camp 2026"
             width={320}
             height={320}
             priority
-            className="w-full max-w-[280px] h-auto"
+            className="h-auto w-full max-w-[270px] drop-shadow-[0_20px_45px_rgba(0,0,0,0.45)]"
           />
         </div>
 
-        <form onSubmit={handlePlayerLogin} className="space-y-4">
-          <div>
+        <form
+          onSubmit={handlePlayerLogin}
+          className="space-y-4 rounded-2xl border border-[#2b2b27] bg-[#10100e]/92 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.32)]"
+        >
+          <div className="space-y-4">
+            <div>
             <label
               htmlFor="login-name"
-              className="mb-2 block text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]"
+              className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
             >
               Login Name
             </label>
@@ -126,14 +144,14 @@ export default function LoginPage() {
               placeholder="Login Name"
               autoComplete="username"
               enterKeyHint="next"
-              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-4 text-center text-lg outline-none focus:border-[#f5f5f5]"
+              className="login-field w-full rounded-xl border px-4 py-4 text-center text-base outline-none"
             />
-          </div>
+            </div>
 
-          <div>
+            <div>
             <label
               htmlFor="pin-code"
-              className="mb-2 block text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]"
+              className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
             >
               PIN
             </label>
@@ -150,28 +168,25 @@ export default function LoginPage() {
               autoComplete="current-password"
               inputMode="numeric"
               enterKeyHint="go"
-              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-4 text-center text-lg tracking-widest outline-none focus:border-[#f5f5f5]"
+              className="login-field w-full rounded-xl border px-4 py-4 text-center text-base tracking-[0.18em] outline-none"
             />
+            </div>
           </div>
 
-          <p className="text-center text-sm text-[#a3a3a3]">
-            Use your assigned Golf Camp login and PIN.
-          </p>
-
           {loginError && (
-            <p className="text-center text-sm text-[#ff8a8a]">{loginError}</p>
+            <p className="text-sm font-semibold text-[#fca5a5]">{loginError}</p>
           )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl bg-[#f5f5f5] py-4 text-lg font-semibold text-black transition hover:bg-[#d4d4d4] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-[#efe9dc] py-4 text-base font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? "Entering..." : "Enter"}
           </button>
         </form>
 
-        <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-[#737373]">
+        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#756f66]">
           <span className="h-px flex-1 bg-[#242424]" />
           Fallback Access
           <span className="h-px flex-1 bg-[#242424]" />
@@ -179,7 +194,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleEnter}
-          className="space-y-4 rounded-2xl border border-[#242424] bg-[#0b0b0b] p-4 opacity-90"
+          className="space-y-3 rounded-2xl border border-[#242424] bg-black/35 p-4"
         >
           <input
             type="text"
@@ -191,7 +206,7 @@ export default function LoginPage() {
             }}
             placeholder="Enter Password"
             enterKeyHint="go"
-            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-4 text-center text-base tracking-widest outline-none focus:border-[#f5f5f5]"
+            className="login-field w-full rounded-xl border px-4 py-3 text-center text-sm tracking-[0.18em] outline-none"
           />
 
           {fallbackError && (
@@ -202,7 +217,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-xl border border-[#242424] py-3 text-sm font-semibold text-[#a3a3a3] transition hover:border-[#f5f5f5] hover:text-[#f5f5f5]"
+            className="w-full rounded-xl border border-[#34312a] py-3 text-sm font-semibold text-[#c8bfae] transition hover:border-[#8fa66a] hover:text-[#f5f5f5]"
           >
             Enter
           </button>

@@ -127,20 +127,16 @@ export default function ShenanigansLedgerPage() {
   }, [events]);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(185,28,28,0.16),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/shenanigans" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
             Shenanigans
           </p>
-
-          <h1 className="text-4xl font-bold tracking-tight">
-            Ledger
-          </h1>
-
-          <p className="text-[#a3a3a3]">
-            Live point totals and round activity.
-          </p>
+          <span className="text-xl text-[#b91c1c]">◇</span>
         </div>
 
         <ShenanigansGameBar
@@ -156,30 +152,23 @@ export default function ShenanigansLedgerPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="text-xl font-bold">Point Totals</h2>
-
-              <p className="mt-1 text-sm text-[#a3a3a3]">
-                Current standings from ledger activity.
-              </p>
-            </div>
-
-            <span className="rounded-full border border-[#242424] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
-              Live
+        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_55px_rgba(0,0,0,0.42)]">
+          <div className="grid grid-cols-2 border-b border-[#2a2925] bg-[#151411] text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em]">
+            <span className="border-b-2 border-[#b91c1c] py-3 text-[#f5f5f5]">
+              Leaderboard
             </span>
+            <span className="py-3 text-[#a3a3a3]">Activity</span>
           </div>
 
-          <div className="space-y-3">
+          <div>
             {isLoading && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-center text-sm text-[#a3a3a3]">
+              <div className="p-4 text-center text-sm text-[#a3a3a3]">
                 Loading ledger...
               </div>
             )}
 
             {!isLoading && players.length === 0 && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-center text-sm text-[#a3a3a3]">
+              <div className="p-4 text-center text-sm text-[#a3a3a3]">
                 No Shenanigans events yet.
               </div>
             )}
@@ -191,47 +180,24 @@ export default function ShenanigansLedgerPage() {
                 return (
                   <div
                     key={player.name}
-                    className={`rounded-2xl border bg-[#111111] p-4 ${
-                      isLeader
-                        ? "border-[#b91c1c] shadow-[0_0_0_1px_rgba(185,28,28,0.2)]"
-                        : "border-[#242424]"
-                    }`}
+                    className="grid grid-cols-[2.5rem_1fr_4rem] items-center border-b border-[#242420] px-4 py-3 last:border-b-0"
                   >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
-                            isLeader
-                              ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
-                              : "border-[#242424] text-[#a3a3a3]"
-                          }`}
-                        >
-                          {index + 1}
-                        </span>
+                    <span className={`font-mono text-sm font-black ${isLeader ? "text-[#b91c1c]" : "text-[#a3a3a3]"}`}>
+                      {index + 1}
+                    </span>
 
-                        <div className="min-w-0">
-                          <h3 className="truncate text-lg font-semibold">
-                            {player.name}
-                          </h3>
-
-                          <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
-                            Rank {index + 1}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <p
-                          className={`text-2xl font-bold ${
-                            isLeader ? "text-[#b91c1c]" : "text-[#f5f5f5]"
-                          }`}
-                        >
-                          {player.points}
-                        </p>
-
-                        <p className="text-xs text-[#a3a3a3]">pts</p>
-                      </div>
+                    <div className="min-w-0">
+                      <h3 className="truncate font-semibold">
+                        {player.name}
+                      </h3>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#a3a3a3]">
+                        Position {index + 1}
+                      </p>
                     </div>
+
+                    <p className={`text-right font-mono text-xl font-black ${isLeader ? "text-[#b91c1c]" : "text-[#f5f5f5]"}`}>
+                      {player.points}
+                    </p>
                   </div>
                 );
               })}
@@ -244,8 +210,8 @@ export default function ShenanigansLedgerPage() {
         )}
 
         {selectedGameId && (
-        <section className="space-y-3">
-          <div className="space-y-2">
+        <section className="overflow-hidden rounded-2xl border border-[#7f1d1d]/70 bg-[#120d0d] shadow-[0_0_38px_rgba(185,28,28,0.14)]">
+          <div className="border-b border-[#3a1d1d] bg-[#1a0d0d] px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#b91c1c] opacity-40" />
@@ -257,22 +223,17 @@ export default function ShenanigansLedgerPage() {
               </p>
             </div>
 
-            <h2 className="text-xl font-bold">Activity Feed</h2>
-
-            <p className="mt-1 text-sm text-[#a3a3a3]">
-              Recent bank hits, wagers, and side game results.
-            </p>
           </div>
 
-          <div className="space-y-3">
+          <div>
             {isLoading && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-center text-sm text-[#a3a3a3]">
+              <div className="p-4 text-center text-sm text-[#a3a3a3]">
                 Loading activity...
               </div>
             )}
 
             {!isLoading && events.length === 0 && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-center text-sm text-[#a3a3a3]">
+              <div className="p-4 text-center text-sm text-[#a3a3a3]">
                 No activity logged yet.
               </div>
             )}
@@ -284,7 +245,7 @@ export default function ShenanigansLedgerPage() {
                 return (
                   <div
                     key={item.id}
-                    className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
+                    className="border-b border-[#3a1d1d] px-4 py-3 last:border-b-0"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 space-y-2">

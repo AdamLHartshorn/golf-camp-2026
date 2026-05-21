@@ -116,34 +116,34 @@ export default function MyProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-6 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
-            Golf Camp 2026
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/camp-office" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+            My Profile
           </p>
-          <h1 className="text-4xl font-bold tracking-tight">My Profile</h1>
-          <p className="text-[#a3a3a3]">
-            {session
-              ? `Signed in as ${session.display_name}.`
-              : "View your camp details and manage your PIN."}
-          </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#34312a] bg-[#151411] font-mono text-xs font-black">
+            ID
+          </span>
         </div>
 
         {isLoading && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-sm text-[#7a6f60]">
             Loading profile...
           </div>
         )}
 
         {!isLoading && !session && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <p className="text-sm text-[#a3a3a3]">
+          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-[#17130e] shadow-[0_18px_45px_rgba(0,0,0,0.3)]">
+            <p className="text-sm text-[#7a6f60]">
               Log in with a player PIN to manage your profile.
             </p>
             <Link
               href="/"
-              className="mt-4 block rounded-xl bg-[#f5f5f5] px-4 py-3 text-center font-bold text-black"
+              className="mt-4 block rounded-xl bg-[#17130e] px-4 py-3 text-center font-semibold text-[#efe9dc]"
             >
               Go to Login
             </Link>
@@ -152,17 +152,21 @@ export default function MyProfilePage() {
 
         {!isLoading && player && (
           <>
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+            <section className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
+              <div className="border-b border-[#d8d1c4] px-5 py-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
                 Logged-In Player
               </p>
-              <h2 className="text-2xl font-bold">{player.display_name}</h2>
+              <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+                {player.display_name}
+              </h1>
               {player.nickname && (
-                <p className="mt-1 text-sm text-[#a3a3a3]">
+                <p className="mt-1 text-sm text-[#7a6f60]">
                   Nickname: {player.nickname}
                 </p>
               )}
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              </div>
+              <div className="grid grid-cols-2 gap-3 p-5 text-sm">
                 {[
                   ["Rank", player.rank || "-"],
                   ["Room", player.room || "-"],
@@ -172,9 +176,9 @@ export default function MyProfilePage() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-xl border border-[#242424] bg-black p-3"
+                    className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-3"
                   >
-                    <p className="text-xs uppercase tracking-[0.2em] text-[#737373]">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                       {label}
                     </p>
                     <p className="mt-1 font-semibold">{value}</p>
@@ -183,8 +187,8 @@ export default function MyProfilePage() {
               </div>
             </section>
 
-            <section className="space-y-3 rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <h2 className="text-xl font-bold">Change PIN</h2>
+            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
+              <h2 className="text-xl font-semibold tracking-[-0.02em]">Change PIN</h2>
               <p className="text-sm text-[#a3a3a3]">
                 Enter your current PIN, then choose a new one.
               </p>
@@ -255,7 +259,7 @@ export default function MyProfilePage() {
                 type="button"
                 onClick={handleChangePin}
                 disabled={isSaving}
-                className="w-full rounded-xl bg-[#f5f5f5] px-4 py-3 font-bold text-black transition hover:bg-[#d4d4d4] disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f6f0e3] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Update PIN"}
               </button>
@@ -269,7 +273,7 @@ export default function MyProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/home"
-            className="rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#a3a3a3]"
+            className="rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-semibold text-[#a3a3a3]"
           >
             Back
           </Link>
@@ -277,7 +281,7 @@ export default function MyProfilePage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#a3a3a3]"
+              className="rounded-xl border border-[#242424] px-4 py-3 text-sm font-semibold text-[#a3a3a3]"
             >
               Logout
             </button>

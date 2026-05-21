@@ -76,14 +76,14 @@ export function NightGolfLeaderboardPage({
   }, [night, nightLabel]);
 
   return (
-    <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
-      <div className="mx-auto w-full max-w-md space-y-8 py-10">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto w-full max-w-md space-y-7 py-8">
         <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+          <p className="text-xs uppercase tracking-[0.28em] text-[#a3a3a3]">
             {nightLabel} Night Golf
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
+          <h1 className="text-[2.7rem] font-semibold leading-none tracking-[-0.04em] text-[#f5f5f5]">
             Leaderboard
           </h1>
 
@@ -92,15 +92,23 @@ export function NightGolfLeaderboardPage({
           </p>
         </div>
 
-        <div className="space-y-3">
+        <div className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex items-center justify-between border-b border-[#d8d1c4] px-5 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6f60]">
+              Standings
+            </p>
+
+            <span className="h-1.5 w-10 rounded-full bg-[#db2777]" />
+          </div>
+
           {isLoading && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-[#a3a3a3]">
+            <div className="p-6 text-center text-sm text-[#7a6f60]">
               Loading leaderboard…
             </div>
           )}
 
           {!isLoading && leaderboard.length === 0 && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-[#a3a3a3]">
+            <div className="p-6 text-center text-sm text-[#7a6f60]">
               No scores submitted yet.
             </div>
           )}
@@ -109,33 +117,31 @@ export function NightGolfLeaderboardPage({
             leaderboard.map((player, index) => (
               <div
                 key={player.name}
-                className={`flex items-center justify-between rounded-2xl border p-5 ${
-                  index === 0
-                    ? "border-[#ec4899] bg-[#111111]"
-                    : "border-[#242424] bg-[#111111]"
-                }`}
+                className="flex items-center justify-between border-b border-[#d8d1c4]/80 px-5 py-4 last:border-b-0"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex min-w-0 items-center gap-4">
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
                       index === 0
-                        ? "bg-[#db2777] text-black"
-                        : "bg-black text-[#a3a3a3]"
+                        ? "bg-[#db2777] text-white"
+                        : "bg-[#17130e] text-[#efe9dc]"
                     }`}
                   >
                     {index + 1}
                   </div>
 
-                  <div>
-                    <p className="text-xl font-bold">{player.name}</p>
+                  <div className="min-w-0">
+                    <p className="truncate text-lg font-semibold tracking-[-0.02em]">
+                      {player.name}
+                    </p>
 
-                    <p className="text-sm text-[#a3a3a3]">
+                    <p className="text-xs uppercase tracking-[0.18em] text-[#7a6f60]">
                       Total Score
                     </p>
                   </div>
                 </div>
 
-                <p className="text-3xl font-bold text-[#f472b6]">
+                <p className="text-3xl font-semibold tracking-[-0.04em] text-[#17130e]">
                   {player.total}
                 </p>
               </div>

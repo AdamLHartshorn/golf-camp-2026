@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { GolfCampIcon } from "@/components/GolfCampIcons";
 import {
   buildYearlyMoneyBank,
   calculateRoundMoney,
@@ -165,18 +166,18 @@ export default function MoneyRoundsPage() {
   const bankPreviewRows = yearlyBankRows.slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#16a34a]">
-            Golf Camp 2026
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+            Money Rounds
           </p>
-
-          <h1 className="text-4xl font-bold tracking-tight">Money Rounds</h1>
-
-          <p className="text-[#a3a3a3]">
-            Official team rounds, skins, payouts, and bank summaries.
-          </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#166534] bg-[#102116] text-[#16a34a]">
+            <GolfCampIcon name="money" className="h-4 w-4" />
+          </span>
         </div>
 
         <section className="space-y-3">
@@ -205,40 +206,57 @@ export default function MoneyRoundsPage() {
           )}
 
           {!isLoading && !error && activeRound && (
-            <div className="rounded-2xl border border-[#16a34a] bg-[#0f1f16] p-5 shadow-[0_0_0_1px_rgba(22,163,74,0.16)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
-                Active Round
-              </p>
-              <div className="mt-3 flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <h2 className="text-3xl font-bold tracking-tight">
+            <div className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+              <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#cec5b5] bg-[#dfe9d2] px-5 py-4">
+                <div>
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#8ee6a7]">
+                    Active Money Round
+                  </p>
+                  <h1 className="mt-2 text-2xl font-black tracking-tight">
                     {activeRound.name}
-                  </h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">
-                    {activeRound.round_date || "Date TBD"} · {activeRound.status} ·
-                    Buy-in {money(Number(activeRound.buy_in_per_player ?? activeRound.buy_in ?? 0))}
+                  </h1>
+                </div>
+                <div className="text-right">
+                  <p className="rounded-full border border-[#31552d]/30 bg-[#f8f2e6] px-2.5 py-1 font-mono text-[10px] font-black uppercase text-[#31552d]">
+                    {activeRound.status}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full border border-[#16a34a]/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#d8f5df]">
-                  {activeRound.status}
-                </span>
               </div>
 
-              <div className="mt-5 rounded-xl border border-[#166534] bg-black/40 p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
-                  Leader
-                </p>
+              <div className="grid grid-cols-2 border-b border-[#d2c8b8] text-sm">
+                <div className="border-r border-[#d2c8b8] px-5 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                    Date
+                  </p>
+                  <p className="mt-1 font-semibold">
+                    {activeRound.round_date || "TBD"}
+                  </p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                    Buy-In
+                  </p>
+                  <p className="mt-1 font-semibold">
+                    {money(Number(activeRound.buy_in_per_player ?? activeRound.buy_in ?? 0))}
+                  </p>
+                </div>
+              </div>
+
+              <div className="px-5 py-4">
                 {activeLeader ? (
-                  <div className="mt-2 flex items-center justify-between gap-4">
+                  <div className="grid grid-cols-[1fr_auto] gap-4">
                     <div className="min-w-0">
-                      <p className="truncate text-xl font-bold">
+                      <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#5f574b]">
+                        Leader
+                      </p>
+                      <p className="mt-1 truncate text-xl font-black">
                         {activeLeader.team.name}
                       </p>
-                      <p className="mt-1 truncate text-sm text-[#a3a3a3]">
+                      <p className="mt-1 truncate text-sm text-[#5f574b]">
                         {activeLeader.team.player_names.join(", ")}
                       </p>
                     </div>
-                    <p className="shrink-0 text-2xl font-bold text-[#16a34a]">
+                    <p className="self-center font-mono text-3xl font-black text-[#16a34a]">
                       {formatScoreToCompletedPar(
                         activeLeader.total,
                         activeLeader.scoresByHole,
@@ -251,47 +269,57 @@ export default function MoneyRoundsPage() {
                   </p>
                 )}
 
-                {activeCalculation?.standings.slice(0, 3).map((standing) => (
+                <div className="mt-4 overflow-hidden rounded-xl border border-[#d2c8b8] bg-[#f8f2e6]">
+                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem] bg-[#dfe9d2] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#31552d]">
+                    <span>Pos</span>
+                    <span>Team</span>
+                    <span className="text-right">Score</span>
+                  </div>
+                  {activeCalculation?.standings.slice(0, 3).map((standing) => (
                   <div
                     key={standing.team.id}
-                    className="mt-3 flex items-center justify-between gap-3 border-t border-[#1f3a29] pt-3 text-sm"
+                    className="grid grid-cols-[2.5rem_1fr_4.5rem] border-t border-[#d2c8b8] px-3 py-2 text-sm"
                   >
-                    <span className="truncate text-[#a3a3a3]">
-                      {standing.position}. {standing.team.name}
+                    <span className="font-mono text-[#5f574b]">
+                      {standing.position}
                     </span>
-                    <span className="font-semibold text-[#f5f5f5]">
+                    <span className="truncate text-[#17130e]">
+                      {standing.team.name}
+                    </span>
+                    <span className="text-right font-mono font-black text-[#16a34a]">
                       {formatScoreToCompletedPar(
                         standing.total,
                         standing.scoresByHole,
                       )}
                     </span>
                   </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-2 border-t border-[#d2c8b8]">
                 <Link
                   href={`/money-rounds/${activeRound.id}`}
-                  className="rounded-xl border border-[#16a34a] bg-[#16a34a] px-4 py-3 text-center text-sm font-bold text-black transition hover:bg-[#15803d]"
+                  className="border-b border-r border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#15803d] transition hover:bg-[#f6f0e3]"
                 >
                   View Round
                 </Link>
                 <Link
                   href={`/money-rounds/${activeRound.id}/submit`}
-                  className="rounded-xl border border-[#242424] bg-black px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+                  className="border-b border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#17130e] transition hover:bg-[#f6f0e3]"
                 >
                   Enter Scores
                 </Link>
                 <Link
                   href={`/money-rounds/${activeRound.id}/submit`}
-                  className="rounded-xl border border-[#242424] bg-black px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+                  className="border-r border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#17130e] transition hover:bg-[#f6f0e3]"
                 >
                   Submit Team Scores
                 </Link>
                 {canPresentActiveRound && (
                   <Link
                     href={`/money-rounds/${activeRound.id}/results`}
-                    className="rounded-xl border border-[#242424] bg-black px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:border-[#16a34a]"
+                    className="px-4 py-3 text-center text-sm font-black text-[#15803d] transition hover:bg-[#f6f0e3]"
                   >
                     Results Presentation
                   </Link>
@@ -301,18 +329,17 @@ export default function MoneyRoundsPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#16a34a]">
-            Recent Rounds
-          </p>
-          <h2 className="mt-2 text-2xl font-bold">Browse Rounds</h2>
-          <p className="mt-2 text-sm text-[#a3a3a3]">
-            Older rounds live here so the active round stays front and center.
-          </p>
+        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
+            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+              Recent Rounds
+            </p>
+            <h2 className="mt-2 text-xl font-black">Round Archive</h2>
+          </div>
 
-          <div className="mt-4 space-y-3">
+          <div>
             {!isLoading && !error && recentRounds.length === 0 && (
-              <p className="rounded-xl border border-[#242424] bg-black p-4 text-sm text-[#a3a3a3]">
+              <p className="p-5 text-sm text-[#a3a3a3]">
                 No previous rounds yet.
               </p>
             )}
@@ -322,14 +349,14 @@ export default function MoneyRoundsPage() {
               recentRounds.slice(0, 6).map((round) => (
                 <div
                   key={round.id}
-                  className="rounded-xl border border-[#242424] bg-black p-4"
+                  className="border-b border-[#2a2925] px-5 py-4 last:border-b-0"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                     <Link href={`/money-rounds/${round.id}`} className="min-w-0">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#16a34a]">
                         {round.status}
                       </p>
-                      <h3 className="mt-1 truncate text-lg font-bold">
+                      <h3 className="mt-1 truncate text-lg font-black">
                         {round.name}
                       </h3>
                       <p className="mt-1 text-sm text-[#a3a3a3]">
@@ -350,19 +377,17 @@ export default function MoneyRoundsPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#16a34a]">
-            Yearly Bank
-          </p>
-          <h2 className="mt-2 text-2xl font-bold">Money Rounds Bank</h2>
-          <p className="mt-2 text-sm text-[#a3a3a3]">
-            A concise look at cumulative winnings. Open the full bank for every
-            player total.
-          </p>
+        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
+            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+              Yearly Bank
+            </p>
+            <h2 className="mt-2 text-xl font-black">Money Rounds Bank</h2>
+          </div>
 
-          <div className="mt-4 space-y-3 text-sm">
+          <div className="text-sm">
             {!isLoading && bankPreviewRows.length === 0 && (
-              <p className="rounded-xl border border-[#242424] bg-black p-4 text-[#a3a3a3]">
+              <p className="p-5 text-[#a3a3a3]">
                 {hasScoredRounds
                   ? "No Money Rounds bank activity yet."
                   : "No finalized/scored Money Rounds yet."}
@@ -372,12 +397,13 @@ export default function MoneyRoundsPage() {
             {bankPreviewRows.map((row, index) => (
               <div
                 key={row.playerName}
-                className="flex items-center justify-between gap-4 rounded-xl border border-[#242424] bg-black p-4"
+                className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-5 py-4 last:border-b-0"
               >
+                <span className="font-mono text-sm font-bold text-[#a8a29a]">
+                  {index + 1}
+                </span>
                 <div className="min-w-0">
-                  <p className="truncate font-semibold">
-                    {index + 1}. {row.playerName}
-                  </p>
+                  <p className="truncate font-semibold">{row.playerName}</p>
                   <p className="mt-1 text-xs text-[#a3a3a3]">
                     Placement {money(row.placementWinnings)} · Skins{" "}
                     {money(row.skinsWinnings)}
@@ -396,7 +422,7 @@ export default function MoneyRoundsPage() {
 
           <Link
             href="/money-rounds/bank"
-            className="mt-4 block rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#07120c]"
+            className="block border-t border-[#34312a] px-5 py-4 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
           >
             Open Full Money Rounds Bank
           </Link>

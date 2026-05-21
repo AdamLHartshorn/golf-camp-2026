@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 
 type QuestionnaireAnswers = {
   favorite_golf_camp_memory?: string;
@@ -29,10 +30,6 @@ type PlayerRow = {
   questionnaire_answers: QuestionnaireAnswers | null;
   active: boolean | null;
 };
-
-function getInitials(player: PlayerRow) {
-  return `${player.first_name?.[0] || ""}${player.last_name?.[0] || ""}` || "?";
-}
 
 function loreItems(player: PlayerRow) {
   const answers = player.questionnaire_answers || {};
@@ -95,10 +92,10 @@ export default function PlayerProfilePage() {
   }, [params.slug]);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-6 py-8">
         {isLoading && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
+          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
             Loading player...
           </div>
         )}
@@ -110,65 +107,66 @@ export default function PlayerProfilePage() {
         )}
 
         {!isLoading && !error && !player && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
+          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
             Player not found.
           </div>
         )}
 
         {!isLoading && !error && player && (
           <>
-            <div className="space-y-5">
-              <div className="flex justify-center">
+            <div className="overflow-hidden rounded-[1.8rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
+              <div className="flex justify-center border-b border-[#d8d1c4] px-5 pt-6">
                 {player.photo_url ? (
                   <div
                     aria-label={`${player.display_name} profile`}
-                    className="h-32 w-32 rounded-full border border-[#3a3a3a] bg-cover bg-center"
+                    className="h-32 w-32 rounded-full border border-[#cfc4b3] bg-cover bg-center"
                     role="img"
                     style={{ backgroundImage: `url(${player.photo_url})` }}
                   />
                 ) : (
-                  <div className="flex h-28 w-28 items-center justify-center rounded-full border border-[#3a3a3a] bg-[#111111] text-4xl font-bold">
-                    {getInitials(player)}
-                  </div>
+                  <PlayerSilhouette
+                    className="h-28 w-28"
+                    label={`${player.display_name} profile placeholder`}
+                  />
                 )}
               </div>
 
-              <div className="space-y-2 text-center">
-                <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+              <div className="space-y-2 px-5 py-5 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
                   Camp Roster
                 </p>
 
-                <h1 className="text-4xl font-bold tracking-tight">
+                <h1 className="text-4xl font-semibold tracking-[-0.05em]">
                   {player.display_name}
                 </h1>
 
-                <p className="text-[#a3a3a3]">
+                <p className="text-[#7a6f60]">
                   Rank {player.rank || "-"} · Room {player.room || "-"}
                 </p>
               </div>
             </div>
 
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+            <section className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-[#17130e]">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-[#242424] bg-black/30 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
+                <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                     Rank
                   </p>
 
-                  <p className="mt-2 text-3xl font-bold">{player.rank || "-"}</p>
+                  <p className="mt-2 text-3xl font-semibold">{player.rank || "-"}</p>
                 </div>
 
-                <div className="rounded-xl border border-[#242424] bg-black/30 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
+                <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                     Room
                   </p>
 
-                  <p className="mt-2 text-3xl font-bold">{player.room || "-"}</p>
+                  <p className="mt-2 text-3xl font-semibold">{player.room || "-"}</p>
                 </div>
               </div>
 
-              <div className="mt-4 rounded-xl border border-[#242424] bg-black/30 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
+              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                   Arrival
                 </p>
 
@@ -177,8 +175,8 @@ export default function PlayerProfilePage() {
                 </p>
               </div>
 
-              <div className="mt-4 rounded-xl border border-[#242424] bg-black/30 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
+              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                   Status
                 </p>
 
@@ -201,7 +199,7 @@ export default function PlayerProfilePage() {
                 .map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                    className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#a3a3a3]">
                       {label}
@@ -216,7 +214,7 @@ export default function PlayerProfilePage() {
             )}
 
             {loreItems(player).length > 0 && (
-              <section className="space-y-3">
+            <section className="space-y-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#a3a3a3]">
                     Lore
@@ -229,7 +227,7 @@ export default function PlayerProfilePage() {
                 {loreItems(player).map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                    className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#a3a3a3]">
                       {label}
@@ -244,7 +242,7 @@ export default function PlayerProfilePage() {
             )}
 
             {!player.phone && !player.email && loreItems(player).length === 0 && (
-              <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 text-sm text-[#a3a3a3]">
                 No profile lore added yet.
               </section>
             )}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GolfCampIcon } from "@/components/GolfCampIcons";
 
 type NightGolfNightPageProps = {
   date: string;
@@ -12,78 +13,67 @@ export function NightGolfNightPage({
   nightPath,
 }: NightGolfNightPageProps) {
   return (
-    <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
-            {date}
-          </p>
-
-          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.1),transparent_32%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/night-golf" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
             {nightLabel} Night Golf
-          </h1>
-
-          <p className="text-[#a3a3a3]">
-            Submit scores and track the leaderboard.
           </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#831843] bg-[#211019] text-[#f472b6]">
+            <GolfCampIcon name="night" className="h-4 w-4" />
+          </span>
         </div>
 
-        <div className="space-y-4">
+        <div className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.32)]">
           <Link
             href={`/night-golf/${nightPath}/submit`}
-            className="block rounded-2xl bg-[#db2777] p-5 transition hover:opacity-90"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition hover:bg-[#f6f0e3]"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold text-black">
-                  Scorecard
-                </h2>
-
-                <p className="mt-1 text-sm text-black/70">
-                  Enter target-by-target results.
-                </p>
-              </div>
-
-              <span className="text-2xl text-black">→</span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+              <GolfCampIcon name="log" className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-base font-black">Scorecard</h2>
+              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+                Enter target-by-target results.
+              </p>
             </div>
+            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
           </Link>
 
           <Link
             href={`/night-golf/${nightPath}/leaderboard`}
-            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#ec4899]"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition hover:bg-[#f6f0e3]"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Leaderboard
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Current standings and scores.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#f472b6]">→</span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+              <GolfCampIcon name="ledger" className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-base font-black">Leaderboard</h2>
+              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+                Current standings and scores.
+              </p>
             </div>
+            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
           </Link>
 
           <Link
             href="/night-golf/rules"
-            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#ec4899]"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-4 transition hover:bg-[#f6f0e3]"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-bold">
-                  Rules
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Review scoring and target rules.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#f472b6]">→</span>
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+              <GolfCampIcon name="rules" className="h-6 w-6" />
+            </span>
+            <div>
+              <h2 className="text-base font-black">Rules</h2>
+              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+                Review scoring and target rules.
+              </p>
             </div>
+            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
           </Link>
         </div>
 

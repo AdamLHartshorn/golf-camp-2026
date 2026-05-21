@@ -131,8 +131,8 @@ export default function MoneyRoundDetailPage() {
   }, [bankRows.length, error, isLoading, params.id, scores.length, teams.length]);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto w-full max-w-3xl space-y-8 py-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto w-full max-w-3xl space-y-6 py-6">
         {isLoading && (
           <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
             Loading round...
@@ -147,14 +147,19 @@ export default function MoneyRoundDetailPage() {
 
         {!isLoading && !error && round && (
           <>
-            <div className="space-y-2">
-              <p className="text-sm uppercase tracking-[0.35em] text-[#16a34a]">
-                Money Rounds
-              </p>
-              <h1 className="text-4xl font-bold tracking-tight">{round.name}</h1>
-              <p className="text-[#a3a3a3]">
-                {round.round_date || "Date TBD"} · {round.status}
-              </p>
+            <div className="overflow-hidden rounded-2xl border border-[#1f6c38] bg-[#0c0f0b] shadow-[0_0_35px_rgba(22,163,74,0.12)]">
+              <div className="border-b border-[#164c2a] bg-[#102116] px-5 py-5">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8ee6a7]">
+                  Money Rounds
+                </p>
+                <h1 className="mt-2 text-4xl font-black tracking-tight">
+                  {round.name}
+                </h1>
+                <p className="mt-2 text-sm text-[#a3a3a3]">
+                  {round.round_date || "Date TBD"} · {round.status}
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 px-5 py-4">
               <Link
                 href={`/money-rounds/${round.id}/submit`}
                 className="inline-flex rounded-xl border border-[#16a34a] px-4 py-3 text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
@@ -169,9 +174,10 @@ export default function MoneyRoundDetailPage() {
                   Open Results Presentation
                 </Link>
               )}
+              </div>
             </div>
 
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+            <section className="rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
               <h2 className="text-xl font-bold">Standings</h2>
               <p className="mt-2 text-sm text-[#a3a3a3]">
                 Live standings are unofficial until verified. Tie breaker by
@@ -187,7 +193,7 @@ export default function MoneyRoundDetailPage() {
                   standings.map((standing) => (
                     <div
                       key={standing.team.id}
-                      className="flex justify-between rounded-xl border border-[#242424] bg-black p-4"
+                      className="flex justify-between rounded-xl border border-[#242420] bg-black/50 p-4"
                     >
                       <span className="space-y-1">
                         <span className="block">
@@ -224,7 +230,7 @@ export default function MoneyRoundDetailPage() {
                 const scoreStatus = getTeamScoreStatus(team);
 
                 return (
-                <div key={team.id} className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+                <div key={team.id} className="rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.28)]">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="text-lg font-bold">{team.name}</h3>
                     <span

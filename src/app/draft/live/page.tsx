@@ -128,64 +128,78 @@ export default function DraftLivePage() {
   );
 
   return (
-    <main className="h-screen overflow-hidden bg-black p-5 text-[#f5f5f5]">
-      <div className="grid h-full grid-cols-[1.1fr_1.5fr_1.2fr] gap-5">
-        <section className="flex min-h-0 flex-col rounded-2xl border border-[#1e40af]/70 bg-[#111111] p-5">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
-            Golf Camp 2026
-          </p>
-          <h1 className="mt-2 text-5xl font-bold tracking-tight">Live Draft</h1>
-          <div className="mt-3 h-px w-24 bg-[#2563eb]" />
-          <p className="mt-2 text-lg text-[#a3a3a3]">
-            {session?.name || "No active draft"}
-          </p>
-
-          <div className="mt-8 rounded-2xl border border-[#2563eb] bg-black p-5 shadow-[0_0_24px_rgba(37,99,235,0.16)]">
-            <p className="text-sm uppercase tracking-[0.3em] text-[#60a5fa]">
-              On The Clock
+    <main className="h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.34),transparent_28%),radial-gradient(circle_at_86%_78%,rgba(30,64,175,0.22),transparent_34%),linear-gradient(135deg,#02040a_0%,#05070d_45%,#000_100%)] p-5 text-[#f5f5f5]">
+      <div className="grid h-full grid-cols-[1.05fr_1.55fr_1.2fr] gap-5">
+        <section className="flex min-h-0 flex-col overflow-hidden rounded-[1.4rem] border border-[#2563eb]/55 bg-[linear-gradient(180deg,rgba(8,17,35,0.96),rgba(2,4,10,0.98))] shadow-[0_0_70px_rgba(37,99,235,0.18),0_28px_90px_rgba(0,0,0,0.55)]">
+          <div className="border-b border-[#1e40af]/55 px-6 py-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#93c5fd]">
+              Golf Camp 2026
             </p>
-            <h2 className="mt-3 text-6xl font-black leading-none">
-              {isLoading
-                ? "Loading"
-                : error
-                  ? "Error"
-                  : currentTeam?.name || "Complete"}
-            </h2>
-            <p className="mt-4 text-2xl text-[#a3a3a3]">
-              Pick {picks.length + 1}
+            <h1 className="mt-3 text-6xl font-black tracking-[-0.06em]">
+              Live Draft
+            </h1>
+            <p className="mt-3 text-lg text-[#c7d2fe]">
+              {session?.name || "No active draft"}
             </p>
           </div>
 
-          {error && <p className="mt-4 text-lg text-[#ff8a8a]">{error}</p>}
+          <div className="flex flex-1 flex-col justify-center p-6">
+            <div className="rounded-[1.6rem] border border-[#60a5fa]/80 bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.28),transparent_62%),#02040a] p-6 shadow-[0_0_55px_rgba(37,99,235,0.28)]">
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#93c5fd]">
+                  On The Clock
+                </p>
+                <span className="rounded-full border border-[#2563eb]/70 bg-[#071123] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#bfdbfe]">
+                  Pick {picks.length + 1}
+                </span>
+              </div>
+              <h2 className="mt-7 text-7xl font-black leading-[0.85] tracking-[-0.07em]">
+                {isLoading
+                  ? "Loading"
+                  : error
+                    ? "Error"
+                    : currentTeam?.name || "Complete"}
+              </h2>
+            </div>
+
+            {error && <p className="mt-4 text-lg text-[#ff8a8a]">{error}</p>}
+          </div>
         </section>
 
-        <section className="min-h-0 rounded-2xl border border-[#1e40af]/60 bg-[#111111] p-5">
-          <div className="flex items-end justify-between gap-4">
+        <section className="min-h-0 overflow-hidden rounded-[1.4rem] border border-[#1e40af]/45 bg-[linear-gradient(180deg,rgba(8,11,18,0.94),rgba(2,4,10,0.98))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.45)]">
+          <div className="flex items-end justify-between gap-4 border-b border-[#1e40af]/35 pb-4">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-[#a3a3a3]">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#93c5fd]">
                 Available Pool
               </p>
-              <div className="mt-2 h-px w-20 bg-[#1d4ed8]" />
-              <h2 className="mt-2 text-3xl font-bold">
+              <h2 className="mt-2 text-4xl font-black tracking-[-0.05em]">
                 {availablePlayers.length} Players
               </h2>
             </div>
+            <span className="rounded-full border border-[#1e40af]/70 bg-[#071123] px-4 py-2 text-sm font-black text-[#bfdbfe]">
+              A-D
+            </span>
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-4">
             {["A", "B", "C", "D"].map((rank) => (
-              <div key={rank} className="min-h-0 rounded-xl border border-[#1e40af]/45 bg-black p-4">
-                <h3 className="text-2xl font-black">Rank {rank}</h3>
+              <div
+                key={rank}
+                className="min-h-0 rounded-[1rem] border border-[#1e40af]/45 bg-[linear-gradient(180deg,rgba(15,23,42,0.7),rgba(0,0,0,0.42))] p-4"
+              >
+                <h3 className="text-2xl font-black tracking-[-0.04em] text-[#dbeafe]">
+                  Rank {rank}
+                </h3>
                 <div className="mt-3 space-y-2">
                   {(availableByRank[rank] || []).slice(0, 12).map((player) => (
                     <div
                       key={player.id}
-                      className="flex items-center justify-between gap-3 rounded-lg border border-[#242424] px-3 py-2"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-[#1e40af]/25 bg-black/45 px-3 py-2"
                     >
                       <span className="truncate text-xl font-semibold">
                         {player.display_name}
                       </span>
-                      <span className="text-sm font-bold text-[#a3a3a3]">
+                      <span className="text-sm font-bold text-[#93c5fd]">
                         {player.rank}
                       </span>
                     </div>
@@ -196,25 +210,29 @@ export default function DraftLivePage() {
           </div>
         </section>
 
-        <section className="min-h-0 overflow-hidden rounded-2xl border border-[#1e40af]/60 bg-[#111111] p-5">
-          <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-[#a3a3a3]">
+        <section className="min-h-0 overflow-hidden rounded-[1.4rem] border border-[#1e40af]/45 bg-[linear-gradient(180deg,rgba(8,11,18,0.94),rgba(2,4,10,0.98))] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.45)]">
+          <div className="border-b border-[#1e40af]/35 pb-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#93c5fd]">
               Teams
             </p>
-            <div className="mt-2 h-px w-16 bg-[#1d4ed8]" />
+            <h2 className="mt-2 text-4xl font-black tracking-[-0.05em]">
+              Draft Board
+            </h2>
           </div>
-          <div className="mt-4 grid max-h-[calc(100vh-7rem)] grid-cols-2 gap-3 overflow-hidden">
+          <div className="mt-4 grid max-h-[calc(100vh-8.5rem)] grid-cols-2 gap-3 overflow-hidden">
             {orderedTeams.map((team) => (
               <div
                 key={team.id}
-                className={`rounded-xl border p-4 ${
+                className={`rounded-[1rem] border p-4 ${
                   currentTeam?.id === team.id
-                    ? "border-[#2563eb] bg-black shadow-[0_0_18px_rgba(37,99,235,0.12)]"
-                    : "border-[#1e40af]/35 bg-black/50"
+                    ? "border-[#60a5fa] bg-[#071123] shadow-[0_0_35px_rgba(37,99,235,0.24)]"
+                    : "border-[#1e40af]/30 bg-black/45"
                 }`}
               >
-                <h3 className="truncate text-2xl font-black">{team.name}</h3>
-                <p className="mt-1 text-sm text-[#a3a3a3]">
+                <h3 className="truncate text-2xl font-black tracking-[-0.04em]">
+                  {team.name}
+                </h3>
+                <p className="mt-1 text-sm text-[#93c5fd]">
                   Captain ·{" "}
                   {playersById.get(team.captain_player_id || "")?.rank || "-"}
                 </p>

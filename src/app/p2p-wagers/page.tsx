@@ -3,24 +3,37 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
 
 const cards = [
   {
+    icon: "log",
+    initial: "+",
     name: "Log Wager",
     href: "/p2p-wagers/log",
     description: "Create a new freeform side bet.",
   },
   {
+    icon: "wagers",
+    initial: "A",
     name: "Active Wagers",
     href: "/p2p-wagers/active",
     description: "View open wagers and settle winners.",
   },
   {
+    icon: "settlement",
+    initial: "$",
     name: "Settlement",
     href: "/p2p-wagers/settlement",
     description: "Net balances and payment instructions.",
   },
-];
+] satisfies {
+  icon: GolfCampIconName;
+  initial: string;
+  name: string;
+  href: string;
+  description: string;
+}[];
 
 type P2PWager = {
   id: string;
@@ -102,38 +115,37 @@ export default function P2PWagersPage() {
   );
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#d6a84f]">
-            Golf Camp 2026
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(214,168,79,0.15),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+            P2P Wagers
           </p>
-
-          <h1 className="text-4xl font-bold tracking-tight">P2P Wagers</h1>
-
-          <p className="text-[#a3a3a3]">
-            Freeform side action and camp degeneracy.
-          </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#6f4d16] bg-[#21180b] text-[#d6a84f]">
+            <GolfCampIcon name="p2p" className="h-4 w-4" />
+          </span>
         </div>
 
-        <section className="space-y-3">
+        <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
           {cards.map((card) => (
             <Link
               key={card.name}
               href={card.href}
-              className="block rounded-2xl border border-[#3a2a12] bg-[#14110c] p-5 transition-colors duration-200 hover:border-[#d6a84f]"
+              className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition-colors duration-200 hover:bg-[#f6f0e3] last:border-b-0"
             >
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <h2 className="text-xl font-bold">{card.name}</h2>
-
-                  <p className="mt-1 text-sm leading-5 text-[#a3a3a3]">
-                    {card.description}
-                  </p>
-                </div>
-
-                <span className="text-2xl text-[#d6a84f]">→</span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#d6a84f]">
+                <GolfCampIcon name={card.icon} className="h-6 w-6" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base font-black">{card.name}</h2>
+                <p className="mt-0.5 truncate text-xs font-semibold text-[#4f483f]">
+                  {card.description}
+                </p>
               </div>
+              <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
             </Link>
           ))}
         </section>
@@ -142,14 +154,14 @@ export default function P2PWagersPage() {
           <p className="text-center text-sm text-[#f5c56f]">{error}</p>
         )}
 
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-4">
+        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+          <div className="flex items-end justify-between gap-4 border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d6a84f]">
                 Active Wagers
               </p>
 
-              <h2 className="mt-2 text-xl font-bold">Open Tickets</h2>
+              <h2 className="mt-2 text-xl font-black">Open Tickets</h2>
             </div>
 
             <Link
@@ -160,7 +172,7 @@ export default function P2PWagersPage() {
             </Link>
           </div>
 
-          <div className="space-y-3">
+          <div>
             {isLoading && (
               <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
                 Loading active wagers...
@@ -178,7 +190,7 @@ export default function P2PWagersPage() {
                 <Link
                   key={wager.id}
                   href="/p2p-wagers/active"
-                  className="block rounded-2xl border border-[#3a2a12] bg-[#14110c] p-5 transition-colors duration-200 hover:border-[#d6a84f]"
+                className="block border-b border-[#2a2925] px-5 py-4 transition-colors duration-200 hover:bg-[#15150f] last:border-b-0"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -206,14 +218,14 @@ export default function P2PWagersPage() {
           </div>
         </section>
 
-        <section className="space-y-3">
-          <div className="flex items-end justify-between gap-4">
+        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
+          <div className="flex items-end justify-between gap-4 border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d6a84f]">
                 Recent Settlements
               </p>
 
-              <h2 className="mt-2 text-xl font-bold">Booked Results</h2>
+              <h2 className="mt-2 text-xl font-black">Booked Results</h2>
             </div>
 
             <Link
@@ -224,7 +236,7 @@ export default function P2PWagersPage() {
             </Link>
           </div>
 
-          <div className="space-y-3">
+          <div>
             {isLoading && (
               <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
                 Loading settlements...
@@ -242,7 +254,7 @@ export default function P2PWagersPage() {
                 <Link
                   key={wager.id}
                   href="/p2p-wagers/settlement"
-                  className="block rounded-2xl border border-[#242424] bg-[#0b0b0b] p-5 opacity-90 transition-colors duration-200 hover:border-[#3a2a12]"
+                  className="block border-b border-[#2a2925] px-5 py-4 opacity-90 transition-colors duration-200 hover:bg-[#15150f] last:border-b-0"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { DraftSession } from "@/app/draft/_lib/draftUtils";
+import { GolfCampIcon } from "@/components/GolfCampIcons";
 
 export default function DraftPage() {
   const [session, setSession] = useState<DraftSession | null>(null);
@@ -47,18 +48,18 @@ export default function DraftPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
-            Golf Camp 2026
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.14),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+            ‹
+          </Link>
+          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+            Live Draft
           </p>
-
-          <h1 className="text-4xl font-bold tracking-tight">Live Draft</h1>
-
-          <p className="text-[#a3a3a3]">
-            Draft sessions, team boards, and pick tracking.
-          </p>
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1e40af] bg-[#071123] text-[#60a5fa]">
+            <GolfCampIcon name="draft" className="h-4 w-4" />
+          </span>
         </div>
 
         {isLoading && (
@@ -76,33 +77,47 @@ export default function DraftPage() {
         {!isLoading && !error && session && (
           <Link
             href="/draft/live"
-            className="block rounded-2xl border border-[#f5f5f5] bg-[#111111] p-5 transition hover:bg-[#171717]"
+            className="block overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)] transition hover:bg-[#f6f0e3]"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d4d4d4]">
-              Active Draft
-            </p>
+            <div className="border-b border-[#c6d3e8] bg-[#dbe7fb] px-5 py-5">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
+                On The Clock Board
+              </p>
+              <h1 className="mt-4 text-4xl font-black tracking-tight">
+                {session.name}
+              </h1>
+            </div>
 
-            <h2 className="mt-2 text-2xl font-bold">{session.name}</h2>
-
-            <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
-              Open the live board for the TV/projector view.
-            </p>
-
-            <p className="mt-4 text-sm font-bold text-[#f5f5f5]">
-              View Live Board →
-            </p>
+            <div className="grid grid-cols-2 divide-x divide-[#d2c8b8]">
+              <div className="px-5 py-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                  Status
+                </p>
+                <p className="mt-1 font-black text-[#1d4ed8]">Active</p>
+              </div>
+              <div className="px-5 py-4">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                  View
+                </p>
+                <p className="mt-1 font-black">TV Board →</p>
+              </div>
+            </div>
           </Link>
         )}
 
         {!isLoading && !error && !session && (
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#d4d4d4]">
-              No Active Draft
-            </p>
+          <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+            <div className="border-b border-[#c6d3e8] bg-[#dbe7fb] px-5 py-5">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
+                No Active Draft
+              </p>
 
-            <h2 className="mt-2 text-2xl font-bold">Coming Soon</h2>
+              <h1 className="mt-4 text-4xl font-black tracking-tight">
+                Board Empty
+              </h1>
+            </div>
 
-            <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
+            <p className="px-5 py-4 text-sm leading-6 text-[#4f483f]">
               When Nick starts a draft from Admin, the live board will appear
               here.
             </p>

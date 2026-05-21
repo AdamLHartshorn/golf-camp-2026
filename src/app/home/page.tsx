@@ -3,12 +3,85 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
 import {
   clearPlayerSession,
   getPlayerSession,
   PlayerSession,
   subscribeToPlayerSession,
 } from "@/lib/playerSession";
+
+const modules = [
+  {
+    icon: "camp",
+    initial: "C",
+    name: "Camp Office",
+    href: "/camp-office",
+    meta: "Roster • Rooms • Info",
+    description: "Roster, rooms, arrivals",
+    accent: "#f4f1ea",
+    tint: "rgba(244,241,234,0.08)",
+  },
+  {
+    icon: "money",
+    initial: "M",
+    name: "Money Rounds",
+    href: "/money-rounds",
+    meta: "Scores • Skins • Bank",
+    description: "Leaderboards, skins, bank",
+    accent: "#16a34a",
+    tint: "rgba(22,163,74,0.11)",
+  },
+  {
+    icon: "draft",
+    initial: "D",
+    name: "Live Draft",
+    href: "/draft",
+    meta: "Teams • Picks • Board",
+    description: "Picks, teams, the board",
+    accent: "#2563eb",
+    tint: "rgba(37,99,235,0.12)",
+  },
+  {
+    icon: "shenanigans",
+    initial: "S",
+    name: "Shenanigans",
+    href: "/shenanigans",
+    meta: "Points • Games • Events",
+    description: "Points, games, chaos",
+    accent: "#b91c1c",
+    tint: "rgba(185,28,28,0.12)",
+  },
+  {
+    icon: "p2p",
+    initial: "P",
+    name: "P2P Wagers",
+    href: "/p2p-wagers",
+    meta: "Side Action • Cash Bets",
+    description: "Side action, cash bets",
+    accent: "#d6a84f",
+    tint: "rgba(214,168,79,0.12)",
+  },
+  {
+    icon: "night",
+    initial: "N",
+    name: "Night Golf",
+    href: "/night-golf",
+    meta: "Nightly Golf • Scores",
+    description: "Nightly golf and scores",
+    accent: "#f472b6",
+    tint: "rgba(244,114,182,0.12)",
+  },
+] satisfies {
+  icon: GolfCampIconName;
+  initial: string;
+  name: string;
+  href: string;
+  meta: string;
+  description: string;
+  accent: string;
+  tint: string;
+}[];
 
 export default function HomePage() {
   const [session, setSession] = useState<PlayerSession | null>(null);
@@ -29,169 +102,114 @@ export default function HomePage() {
     router.push("/");
   }
 
+  const initials =
+    session?.display_name
+      ?.split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2) || "GC";
+
   return (
-    <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
-            Golf Camp 2026
-          </p>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.12),transparent_32%),#050505] px-4 py-5 text-[#f5f5f5]">
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-mono text-[11px] font-black uppercase tracking-[0.34em] text-[#f4f1ea]">
+              GOLF CAMP 2026
+            </p>
+            <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-[#9b927f]">
+              Play. Compete. Remember.
+            </p>
+          </div>
 
-          <h1 className="text-4xl font-bold tracking-tight">
-            Camp Dashboard
-          </h1>
-
-          <p className="text-[#a3a3a3]">
-            {session
-              ? `Welcome, ${session.display_name}.`
-              : "Select an event or camp utility."}
-          </p>
+          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#3a372f] bg-[#161511] font-mono text-sm font-black text-[#f4f1ea]">
+            {initials}
+          </div>
         </div>
 
-        <div className="space-y-4">
-          <Link
-            href="/camp-office"
-            className="block rounded-2xl border border-[#d4d4d4] bg-[#111111] p-5 transition hover:bg-[#171717]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#f5f5f5]">
-                  Camp Office
-                </h2>
+        <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+          {modules.map((module) => (
+            <Link
+              key={module.href}
+              href={module.href}
+              className="group grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-3.5 transition duration-200 hover:bg-[#f6f0e3] last:border-b-0"
+            >
+              <div
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6]"
+                style={{ color: module.accent }}
+              >
+                <GolfCampIcon name={module.icon} className="h-6 w-6" />
+              </div>
 
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Contacts, room assignments, and camp info.
+              <div className="min-w-0">
+                <h2 className="truncate text-base font-black tracking-tight text-[#17130e]">
+                  {module.name}
+                </h2>
+                <p className="mt-0.5 truncate text-xs font-semibold text-[#4f483f]">
+                  {module.meta}
                 </p>
               </div>
 
-              <span className="text-2xl text-[#f5f5f5]">→</span>
-            </div>
-          </Link>
+              <span className="font-mono text-xl font-black text-[#4f483f] transition group-hover:translate-x-0.5">
+                →
+              </span>
+            </Link>
+          ))}
+        </section>
 
-          <Link
-            href="/money-rounds"
-            className="block rounded-2xl border border-[#15803d] bg-[#111111] p-5 transition hover:bg-[#0f1f16]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#16a34a]">
-                  Money Rounds
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Team formats, round scores, payouts, and settlement prep.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#16a34a]">→</span>
-            </div>
-          </Link>
-
-          <Link
-            href="/draft"
-            className="block rounded-2xl border border-[#1d4ed8] bg-[#111111] p-5 transition hover:bg-[#0f172a]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#2563eb]">
-                  Live Draft
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Draft sessions, team boards, and pick tracking.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#2563eb]">→</span>
-            </div>
-          </Link>
-
-          <Link
-            href="/shenanigans"
-            className="block rounded-2xl border border-[#b91c1c] bg-[#111111] p-5 transition hover:bg-[#171717]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#b91c1c]">
-                  Shenanigans
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  The official point bank, wagers, props, and chaos ledger.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#b91c1c]">→</span>
-            </div>
-          </Link>
-
-          <Link
-            href="/p2p-wagers"
-            className="block rounded-2xl border border-[#a16207] bg-[#111111] p-5 transition hover:bg-[#17130c]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#d6a84f]">
-                  P2P Wagers
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Freeform side bets, props, and cash settlements.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#d6a84f]">→</span>
-            </div>
-          </Link>
-
-          <Link
-            href="/night-golf"
-            className="block rounded-2xl border border-[#ec4899] bg-[#111111] p-5 transition hover:bg-[#1f0b18]"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <h2 className="text-2xl font-bold text-[#f472b6]">
-                  Night Golf
-                </h2>
-
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  Scorecards, leaderboard, rules, and target games.
-                </p>
-              </div>
-
-              <span className="text-2xl text-[#f472b6]">→</span>
-            </div>
-          </Link>
-        </div>
-
-        <div className="space-y-3 border-t border-[#242424] pt-4">
+        <div className="space-y-3">
           {session?.is_admin && (
             <Link
               href="/admin"
-              className="block rounded-2xl border border-[#d4d4d4] bg-[#111111] p-4 transition hover:bg-[#171717]"
+              className="group grid grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f3d2b] bg-[#10140f] px-4 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.3)] transition duration-200 hover:bg-[#151a13]"
             >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-bold text-[#f5f5f5]">Admin</h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">
-                    Mission control, players, rounds, and tools.
-                  </p>
-                </div>
-
-                <span className="text-xl text-[#f5f5f5]">→</span>
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#8fa66a]/35 bg-black/35 font-mono text-sm font-black text-[#8fa66a]">
+                <GolfCampIcon name="admin" className="h-5 w-5" />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base font-black tracking-tight text-[#f5f5f5]">
+                  Admin
+                </h2>
+                <p className="mt-1 truncate text-xs font-bold uppercase tracking-[0.12em] text-[#8fa66a]">
+                  Tools • Data • System
+                </p>
               </div>
+              <span className="font-mono text-xl font-black text-[#f5f5f5] transition group-hover:translate-x-0.5">
+                →
+              </span>
             </Link>
           )}
 
-          {session && (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="w-full rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#a3a3a3] transition hover:border-[#f5f5f5]"
-            >
-              Logout
-            </button>
-          )}
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-[#34312a] bg-[#11110f] px-4 py-3">
+            <div className="min-w-0">
+              <p className="mt-1 truncate text-xs font-semibold text-[#c8bfae]">
+                {session ? (
+                  <>
+                    You&apos;re logged in as{" "}
+                    <span className="text-[#f4f1ea]">{session.display_name}</span>
+                  </>
+                ) : (
+                  "Fallback access active"
+                )}
+              </p>
+            </div>
+            {session ? (
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="shrink-0 text-xs font-black text-[#8fa66a]"
+              >
+                Logout
+              </button>
+            ) : (
+              <Link
+                href="/"
+                className="shrink-0 text-xs font-black text-[#8fa66a]"
+              >
+                Login
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </main>
