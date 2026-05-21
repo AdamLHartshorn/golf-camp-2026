@@ -11,7 +11,8 @@ add column if not exists third_place_payout numeric not null default 0,
 add column if not exists skins_pot numeric not null default 0;
 
 alter table public.money_round_teams
-add column if not exists player_ids uuid[] not null default '{}';
+add column if not exists player_ids uuid[] not null default '{}',
+add column if not exists score_status text not null default 'pending';
 
 alter table public.money_round_scores
 add column if not exists hole_number integer;
@@ -40,5 +41,15 @@ begin
     alter table public.money_rounds
     add constraint money_rounds_status_check
     check (status in ('pending', 'active', 'scored', 'final'));
+  end if;
+
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'money_round_teams_score_status_check'
+  ) then
+    alter table public.money_round_teams
+    add constraint money_round_teams_score_status_check
+    check (score_status in ('pending', 'submitted', 'verified'));
   end if;
 end $$;

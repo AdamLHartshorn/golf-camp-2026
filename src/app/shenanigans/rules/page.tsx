@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShenanigansCurrentGameNotice } from "@/lib/shenanigansGame";
 
 const sections = [
   {
@@ -44,6 +45,8 @@ export default function ShenanigansRulesPage() {
             The official chaos doctrine.
           </p>
         </div>
+
+        <ShenanigansCurrentGameNotice />
 
         <div className="space-y-3">
           {sections.map((section, index) => (

@@ -28,6 +28,10 @@ type PlayerRow = {
   phone: string | null;
   email: string | null;
   photo_url: string | null;
+  login_name: string | null;
+  pin_code: string | null;
+  is_admin: boolean | null;
+  last_login_at: string | null;
   player_notes: string | null;
   questionnaire_answers: QuestionnaireAnswers | null;
   deposit_paid: boolean | null;
@@ -49,6 +53,9 @@ type PlayerFormState = {
   phone: string;
   email: string;
   photo_url: string;
+  login_name: string;
+  pin_code: string;
+  is_admin: boolean;
   player_notes: string;
   favorite_golf_camp_memory: string;
   most_likely_to: string;
@@ -72,6 +79,9 @@ const emptyForm: PlayerFormState = {
   phone: "",
   email: "",
   photo_url: "",
+  login_name: "",
+  pin_code: "",
+  is_admin: false,
   player_notes: "",
   favorite_golf_camp_memory: "",
   most_likely_to: "",
@@ -102,6 +112,9 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     phone: player.phone || "",
     email: player.email || "",
     photo_url: player.photo_url || "",
+    login_name: player.login_name || "",
+    pin_code: player.pin_code || "",
+    is_admin: player.is_admin ?? false,
     player_notes: player.player_notes || "",
     favorite_golf_camp_memory: answers.favorite_golf_camp_memory || "",
     most_likely_to: answers.most_likely_to || "",
@@ -141,6 +154,9 @@ function formToPayload(form: PlayerFormState) {
     phone: form.phone.trim() || null,
     email: form.email.trim() || null,
     photo_url: form.photo_url.trim() || null,
+    login_name: form.login_name.trim().toLowerCase() || null,
+    pin_code: form.pin_code.trim() || null,
+    is_admin: form.is_admin,
     player_notes: form.player_notes.trim() || null,
     questionnaire_answers:
       Object.keys(cleanQuestionnaireAnswers).length > 0
@@ -536,6 +552,16 @@ export default function PlayersAdminPage() {
               <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
                 Gambling {player.gambling_paid ? "Paid" : "Open"}
               </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Login {player.login_name || "-"}
+              </span>
+
+              {player.is_admin && (
+                <span className="rounded-full border border-[#f5f5f5] px-2 py-1 text-[#f5f5f5]">
+                  Admin
+                </span>
+              )}
             </div>
           </div>
 
@@ -715,6 +741,47 @@ export default function PlayersAdminPage() {
             placeholder="Email"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
+
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                Player Login
+              </p>
+              <p className="mt-1 text-xs text-[#737373]">
+                Lightweight PIN access for Golf Camp.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={form.login_name}
+                onChange={(event) =>
+                  updateForm("login_name", event.target.value.toLowerCase())
+                }
+                placeholder="login name"
+                className="rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              />
+
+              <input
+                type="text"
+                value={form.pin_code}
+                onChange={(event) => updateForm("pin_code", event.target.value)}
+                placeholder="PIN"
+                className="rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              />
+            </div>
+
+            <label className="flex items-center gap-3 text-sm text-[#a3a3a3]">
+              <input
+                type="checkbox"
+                checked={form.is_admin}
+                onChange={(event) => updateForm("is_admin", event.target.checked)}
+                className="h-4 w-4"
+              />
+              Admin access
+            </label>
+          </div>
 
           <textarea
             value={form.player_notes}

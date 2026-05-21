@@ -13,9 +13,12 @@ import {
 
 const sections = [
   { id: "intro", label: "Intro" },
+  { id: "easiest_hole", label: "Easiest Hole" },
+  { id: "hardest_hole", label: "Hardest Hole" },
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Player Bank" },
+  { id: "complete", label: "Complete" },
 ];
 
 type PresentationState = {
@@ -47,25 +50,35 @@ export default function MoneyRoundPresentationControllerPage() {
     () => calculateRoundMoney(round, teams, scores),
     [round, scores, teams],
   );
-  const placementSlides = [3, 2, 1]
-    .map((position) =>
-      calculation.standings.find((standing) => standing.position === position),
-    )
-    .filter((standing): standing is (typeof calculation.standings)[number] =>
-      Boolean(standing),
+  const placementSlides = calculation.standings
+    .slice()
+    .sort((a, b) => b.total - a.total || b.position - a.position);
+  const payoutSlides = calculation.bankRows
+    .filter((row) => row.net > 0 || row.totalWinnings > 0)
+    .sort(
+      (a, b) =>
+        a.totalWinnings - b.totalWinnings ||
+        a.net - b.net ||
+        a.playerName.localeCompare(b.playerName),
     );
   const slideCount =
     currentSection.id === "placements"
       ? placementSlides.length
       : currentSection.id === "skins"
         ? calculation.skins.length
+        : currentSection.id === "player_bank"
+          ? payoutSlides.length
         : 1;
   const currentIndex = Math.min(
     presentationState?.current_index || 0,
     Math.max(slideCount - 1, 0),
   );
   const hasPrevious = !(currentSection.id === "intro" && currentIndex === 0);
-  const hasNext = currentSection.id !== "player_bank";
+  const hasNext =
+    currentSection.id !== "complete" &&
+    (currentSection.id !== "player_bank" ||
+      currentIndex < payoutSlides.length - 1 ||
+      currentSectionIndex < sections.length - 1);
 
   useEffect(() => {
     let isCurrent = true;
@@ -190,6 +203,14 @@ export default function MoneyRoundPresentationControllerPage() {
       return;
     }
 
+    if (
+      currentSection.id === "player_bank" &&
+      currentIndex < payoutSlides.length - 1
+    ) {
+      setSection(currentSection.id, currentIndex + 1);
+      return;
+    }
+
     setSection(sections[Math.min(currentSectionIndex + 1, sections.length - 1)].id);
   }
 
@@ -272,10 +293,13 @@ export default function MoneyRoundPresentationControllerPage() {
                 >
                   Jump to {section.label}
                   {section.id === "placements" && placementSlides.length > 0
-                    ? " (3rd Place)"
+                    ? " (Worst to Best)"
                     : ""}
                   {section.id === "skins" && calculation.skins.length > 0
                     ? " (Skin 1)"
+                    : ""}
+                  {section.id === "player_bank" && payoutSlides.length > 0
+                    ? " (Lowest to Highest)"
                     : ""}
                 </button>
               ))}

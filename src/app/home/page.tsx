@@ -1,6 +1,29 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  clearPlayerSession,
+  getPlayerSession,
+  PlayerSession,
+} from "@/lib/playerSession";
 
 export default function HomePage() {
+  const [session, setSession] = useState<PlayerSession | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    window.setTimeout(() => {
+      setSession(getPlayerSession());
+    }, 0);
+  }, []);
+
+  function handleLogout() {
+    clearPlayerSession();
+    router.push("/");
+  }
+
   return (
     <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8">
@@ -14,7 +37,9 @@ export default function HomePage() {
           </h1>
 
           <p className="text-[#a3a3a3]">
-            Select an event or camp utility.
+            {session
+              ? `Welcome, ${session.display_name}.`
+              : "Select an event or camp utility."}
           </p>
         </div>
 
@@ -132,6 +157,56 @@ export default function HomePage() {
               <span className="text-2xl text-[#f472b6]">→</span>
             </div>
           </Link>
+        </div>
+
+        <div className="space-y-3 border-t border-[#242424] pt-4">
+          {session && (
+            <Link
+              href="/my-profile"
+              className="block rounded-2xl border border-[#242424] bg-[#111111] p-4 transition hover:border-[#f5f5f5]"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-[#f5f5f5]">
+                    My Profile
+                  </h2>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    View your camp profile and change your PIN.
+                  </p>
+                </div>
+
+                <span className="text-xl text-[#f5f5f5]">→</span>
+              </div>
+            </Link>
+          )}
+
+          {session?.is_admin && (
+            <Link
+              href="/admin"
+              className="block rounded-2xl border border-[#d4d4d4] bg-[#111111] p-4 transition hover:bg-[#171717]"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-lg font-bold text-[#f5f5f5]">Admin</h2>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    Mission control, players, rounds, and tools.
+                  </p>
+                </div>
+
+                <span className="text-xl text-[#f5f5f5]">→</span>
+              </div>
+            </Link>
+          )}
+
+          {session && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#a3a3a3] transition hover:border-[#f5f5f5]"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </main>

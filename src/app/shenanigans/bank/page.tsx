@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShenanigansCurrentGameNotice } from "@/lib/shenanigansGame";
 
 const bankPoints = [
   { label: "Tee Shot", detail: "FIR / GIR", points: "+1" },
@@ -67,6 +68,8 @@ export default function ShenanigansBankPage() {
             Structured points and standard prop values.
           </p>
         </div>
+
+        <ShenanigansCurrentGameNotice />
 
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <div className="flex items-start justify-between gap-4">

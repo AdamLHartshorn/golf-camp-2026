@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  NoShenanigansGamePrompt,
+  ShenanigansGameBar,
+  useShenanigansGame,
+} from "@/lib/shenanigansGame";
 
 type ShenanigansEvent = {
   id: string;
@@ -11,6 +16,7 @@ type ShenanigansEvent = {
   description: string;
   points: number;
   created_at: string | null;
+  game_id: string | null;
 };
 
 function formatTimestamp(createdAt: string | null) {
@@ -39,6 +45,15 @@ function formatTimestamp(createdAt: string | null) {
 }
 
 export default function ShenanigansLedgerPage() {
+  const {
+    games,
+    selectedGame,
+    selectedGameId,
+    isLoadingGame,
+    gameError,
+    switchGame,
+    endGame,
+  } = useShenanigansGame();
   const [events, setEvents] = useState<ShenanigansEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,12 +62,22 @@ export default function ShenanigansLedgerPage() {
     let isCurrent = true;
 
     async function fetchEvents() {
+      if (!selectedGameId) {
+        setEvents([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+
       const { data, error: fetchError } = await supabase
         .from("shenanigans_events")
-        .select("id, player_name, event_type, description, points, created_at")
+        .select("id, player_name, event_type, description, points, created_at, game_id")
+        .eq("game_id", selectedGameId)
         .order("created_at", { ascending: false });
 
       console.log("shenanigans_events fetched rows:", {
+        selectedGameId,
         data,
         error: fetchError,
       });
@@ -77,7 +102,7 @@ export default function ShenanigansLedgerPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [selectedGameId]);
 
   const players = useMemo(() => {
     const totals = events.reduce<Record<string, number>>((accumulator, event) => {
@@ -118,6 +143,19 @@ export default function ShenanigansLedgerPage() {
           </p>
         </div>
 
+        <ShenanigansGameBar
+          selectedGame={selectedGame}
+          games={games}
+          selectedGameId={selectedGameId}
+          isLoadingGame={isLoadingGame}
+          gameError={gameError}
+          onSwitchGame={switchGame}
+          onEndGame={endGame}
+        />
+
+        {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
+
+        {selectedGameId && (
         <section className="space-y-3">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -199,11 +237,13 @@ export default function ShenanigansLedgerPage() {
               })}
           </div>
         </section>
+        )}
 
         {error && (
           <p className="text-center text-sm text-[#fca5a5]">{error}</p>
         )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -281,6 +321,7 @@ export default function ShenanigansLedgerPage() {
               })}
           </div>
         </section>
+        )}
 
         <Link
           href="/shenanigans"

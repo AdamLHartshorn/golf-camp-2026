@@ -7,13 +7,22 @@ import {
   buildPlayerBank,
   calculateSkins,
   calculateStandings,
+  formatScoreToCompletedPar,
+  formatScoreToPar,
+  frontNinePar,
+  getTeamScoreStatus,
+  getParForHoles,
   holes,
+  isRoundPresentationReady,
+  moneyRoundScorecard,
   MoneyPlayer,
   MoneyRound,
   MoneyScore,
   MoneyTeam,
   money,
   signedMoney,
+  teamScoreStatusLabel,
+  TeamScoreStatus,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
 
 type DraftSession = {
@@ -50,6 +59,10 @@ const defaultRound = {
 type ScoreDrafts = Record<string, Record<number, string>>;
 const frontNine = holes.slice(0, 9);
 const backNine = holes.slice(9);
+const scorecardByHole = new Map<number, (typeof moneyRoundScorecard)[number]>(
+  moneyRoundScorecard.map((item) => [item.hole, item]),
+);
+const backNinePar = getParForHoles(backNine);
 
 function buildScoreDrafts(scores: MoneyScore[]) {
   return scores.reduce<ScoreDrafts>((drafts, score) => {
@@ -129,6 +142,18 @@ function sumDraftScores(scoreDrafts: ScoreDrafts, teamId: string, selectedHoles:
   }, 0);
 }
 
+function scoreStatusClasses(status: TeamScoreStatus) {
+  if (status === "verified") {
+    return "border-[#16a34a] bg-[#0f1f16] text-[#16a34a]";
+  }
+
+  if (status === "submitted") {
+    return "border-[#365f3d] bg-[#111b14] text-[#d8f5df]";
+  }
+
+  return "border-[#242424] bg-black text-[#a3a3a3]";
+}
+
 export default function AdminMoneyRoundsPage() {
   const [players, setPlayers] = useState<MoneyPlayer[]>([]);
   const [rounds, setRounds] = useState<MoneyRound[]>([]);
@@ -166,6 +191,10 @@ export default function AdminMoneyRoundsPage() {
   const bankRows = useMemo(
     () => buildPlayerBank(round, standings, skins),
     [round, skins, standings],
+  );
+  const canPresentRound = useMemo(
+    () => isRoundPresentationReady(round, teams, currentScores),
+    [currentScores, round, teams],
   );
   const savedScoreByTeamHole = useMemo(
     () =>
@@ -771,11 +800,114 @@ export default function AdminMoneyRoundsPage() {
   async function handleSaveScores() {
     setIsSaving(true);
     const didPersist = await persistAllScoreDrafts();
+
+    if (didPersist) {
+      await markPendingTeamsSubmitted();
+    }
+
     setIsSaving(false);
 
     if (didPersist) {
       setMessage("Scores saved.");
     }
+  }
+
+  async function handleSetTeamScoreStatus(
+    team: MoneyTeam,
+    scoreStatus: TeamScoreStatus,
+  ) {
+    setMessage("");
+    setError("");
+    setIsSaving(true);
+
+    const { data, error: updateError } = await supabase
+      .from("money_round_teams")
+      .update({
+        score_status: scoreStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", team.id)
+      .select("*")
+      .single();
+
+    console.log("money_round team score status update:", {
+      team: team.name,
+      scoreStatus,
+      data,
+      error: updateError,
+    });
+
+    setIsSaving(false);
+
+    if (updateError) {
+      setError(updateError.message || "Could not update scorecard status.");
+      return false;
+    }
+
+    const updatedTeam = data as MoneyTeam;
+    setTeams((current) =>
+      current.map((currentTeam) =>
+        currentTeam.id === updatedTeam.id ? updatedTeam : currentTeam,
+      ),
+    );
+    setMessage(
+      scoreStatus === "verified"
+        ? `${team.name} verified.`
+        : scoreStatus === "submitted"
+          ? `${team.name} marked unofficial.`
+          : `${team.name} reset to pending.`,
+    );
+    return true;
+  }
+
+  async function markPendingTeamsSubmitted() {
+    if (!round) {
+      return;
+    }
+
+    const teamsWithScores = new Set(
+      buildCurrentScoreRows(scores, scoreDrafts, round.id).map(
+        (score) => score.money_round_team_id,
+      ),
+    );
+    const pendingTeamIds = teams
+      .filter(
+        (team) =>
+          teamsWithScores.has(team.id) && getTeamScoreStatus(team) === "pending",
+      )
+      .map((team) => team.id);
+
+    if (pendingTeamIds.length === 0) {
+      return;
+    }
+
+    const { data, error: updateError } = await supabase
+      .from("money_round_teams")
+      .update({
+        score_status: "submitted",
+        updated_at: new Date().toISOString(),
+      })
+      .in("id", pendingTeamIds)
+      .select("*");
+
+    console.log("money_round pending teams submitted:", {
+      pendingTeamIds,
+      data,
+      error: updateError,
+    });
+
+    if (updateError) {
+      setError(updateError.message || "Could not mark submitted scorecards.");
+      return;
+    }
+
+    const updatedTeams = (data as MoneyTeam[]) || [];
+    setTeams((current) =>
+      current.map(
+        (team) =>
+          updatedTeams.find((updatedTeam) => updatedTeam.id === team.id) || team,
+      ),
+    );
   }
 
   async function handleMarkFinal() {
@@ -1033,18 +1165,22 @@ export default function AdminMoneyRoundsPage() {
                   Final status is an indicator. Commissioner corrections remain available.
                 </p>
               )}
-              <Link
-                href={`/money-rounds/${round.id}/results`}
-                className="mt-4 block w-full rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
-              >
-                Open TV Results
-              </Link>
-              <Link
-                href={`/admin/money-rounds/${round.id}/present`}
-                className="mt-3 block w-full rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
-              >
-                Control Presentation
-              </Link>
+              {canPresentRound && (
+                <>
+                  <Link
+                    href={`/money-rounds/${round.id}/results`}
+                    className="mt-4 block w-full rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
+                  >
+                    Open TV Results
+                  </Link>
+                  <Link
+                    href={`/admin/money-rounds/${round.id}/present`}
+                    className="mt-3 block w-full rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+                  >
+                    Control Presentation
+                  </Link>
+                </>
+              )}
               <button
                 type="button"
                 onClick={handleDeleteRound}
@@ -1164,10 +1300,11 @@ export default function AdminMoneyRoundsPage() {
             <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-xl font-bold">Score Entry</h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">
-                    Scores autosave on blur. Use Save Scores to persist every
-                    current scorecard value before viewing public pages.
+                        <h2 className="text-xl font-bold">Score Entry</h2>
+                        <p className="mt-1 text-sm text-[#a3a3a3]">
+                    Nick can edit any team scorecard at any time. Scores
+                    autosave on blur; use Save Scores to persist every current
+                    scorecard value.
                   </p>
                 </div>
                 <button
@@ -1183,15 +1320,36 @@ export default function AdminMoneyRoundsPage() {
                 const outTotal = sumDraftScores(scoreDrafts, team.id, frontNine);
                 const inTotal = sumDraftScores(scoreDrafts, team.id, backNine);
                 const total = outTotal + inTotal;
+                const scoreStatus = getTeamScoreStatus(team);
+                const draftedScoresByHole = Object.fromEntries(
+                  Object.entries(scoreDrafts[team.id] || {})
+                    .map(([hole, value]) => [Number(hole), Number(value)])
+                    .filter(([, value]) => Number.isFinite(value)),
+                ) as Record<number, number>;
 
                 return (
                   <div
                     key={team.id}
-                    className="space-y-3 rounded-xl border border-[#242424] bg-black p-4"
+                    className={`space-y-3 rounded-xl border bg-black p-4 ${
+                      scoreStatus === "verified"
+                        ? "border-[#166534]"
+                        : scoreStatus === "submitted"
+                          ? "border-[#365f3d]"
+                          : "border-[#242424]"
+                    }`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <h3 className="font-bold">{team.name}</h3>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="font-bold">{team.name}</h3>
+                          <span
+                            className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${scoreStatusClasses(
+                              scoreStatus,
+                            )}`}
+                          >
+                            {teamScoreStatusLabel(team)}
+                          </span>
+                        </div>
                         <p className="mt-1 text-xs text-[#a3a3a3]">
                           {team.player_names.join(", ") || "No players"}
                         </p>
@@ -1200,8 +1358,46 @@ export default function AdminMoneyRoundsPage() {
                         <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a3a3a3]">
                           Total
                         </p>
-                        <p className="text-lg font-bold text-[#16a34a]">{total}</p>
+                        <p className="text-lg font-bold text-[#16a34a]">
+                          {formatScoreToCompletedPar(total, draftedScoresByHole)}
+                        </p>
                       </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3]">
+                        Edit Scores
+                      </span>
+                      {scoreStatus === "pending" && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetTeamScoreStatus(team, "submitted")}
+                          disabled={isSaving}
+                          className="rounded-lg border border-[#365f3d] px-3 py-2 text-xs font-bold text-[#d8f5df] transition hover:bg-[#111b14] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Mark Submitted
+                        </button>
+                      )}
+                      {scoreStatus !== "verified" && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetTeamScoreStatus(team, "verified")}
+                          disabled={isSaving}
+                          className="rounded-lg border border-[#16a34a] px-3 py-2 text-xs font-bold text-[#16a34a] transition hover:bg-[#0f1f16] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Verify Scores
+                        </button>
+                      )}
+                      {scoreStatus === "verified" && (
+                        <button
+                          type="button"
+                          onClick={() => handleSetTeamScoreStatus(team, "submitted")}
+                          disabled={isSaving}
+                          className="rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#16a34a] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Mark Unverified
+                        </button>
+                      )}
                     </div>
 
                     <div className="space-y-4">
@@ -1211,45 +1407,55 @@ export default function AdminMoneyRoundsPage() {
                             Front 9
                           </p>
                           <p className="text-sm font-bold text-[#16a34a]">
-                            OUT {outTotal}
+                            OUT {formatScoreToPar(outTotal, frontNinePar)}
                           </p>
                         </div>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
-                          {frontNine.map((hole) => (
-                            <label
-                              key={`${team.id}-${hole}`}
-                              className="block text-center"
-                            >
-                              <span className="mb-1 block text-[11px] font-semibold text-[#a3a3a3]">
-                                {hole}
-                              </span>
-                              <input
-                                type="number"
-                                inputMode="numeric"
-                                value={scoreDrafts[team.id]?.[hole] ?? ""}
-                                onChange={(event) =>
-                                  setScoreDrafts((current) => ({
-                                    ...current,
-                                    [team.id]: {
-                                      ...(current[team.id] || {}),
-                                      [hole]: event.target.value,
-                                    },
-                                  }))
-                                }
-                                onBlur={(event) =>
-                                  handleScoreChange(team, hole, event.target.value)
-                                }
-                                className="h-12 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#16a34a] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                aria-label={`${team.name} hole ${hole} score`}
-                              />
-                            </label>
-                          ))}
+                          {frontNine.map((hole) => {
+                            const metadata = scorecardByHole.get(hole);
+
+                            return (
+                              <label
+                                key={`${team.id}-${hole}`}
+                                className="block text-center"
+                              >
+                                <span className="block text-[11px] font-semibold text-[#f5f5f5]">
+                                  {hole}
+                                </span>
+                                <span className="block text-[9px] uppercase text-[#a3a3a3]">
+                                  Par {metadata?.par}
+                                </span>
+                                <span className="mb-1 block text-[9px] uppercase text-[#737373]">
+                                  Hcp {metadata?.handicap}
+                                </span>
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  value={scoreDrafts[team.id]?.[hole] ?? ""}
+                                  onChange={(event) =>
+                                    setScoreDrafts((current) => ({
+                                      ...current,
+                                      [team.id]: {
+                                        ...(current[team.id] || {}),
+                                        [hole]: event.target.value,
+                                      },
+                                    }))
+                                  }
+                                  onBlur={(event) =>
+                                    handleScoreChange(team, hole, event.target.value)
+                                  }
+                                  className="h-12 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#16a34a] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                  aria-label={`${team.name} hole ${hole} score`}
+                                />
+                              </label>
+                            );
+                          })}
                           <div className="text-center">
                             <span className="mb-1 block text-[11px] font-semibold text-[#16a34a]">
                               OUT
                             </span>
                             <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
-                              {outTotal}
+                              {formatScoreToPar(outTotal, frontNinePar)}
                             </div>
                           </div>
                         </div>
@@ -1261,45 +1467,55 @@ export default function AdminMoneyRoundsPage() {
                             Back 9
                           </p>
                           <p className="text-sm font-bold text-[#16a34a]">
-                            IN {inTotal}
+                            IN {formatScoreToPar(inTotal, backNinePar)}
                           </p>
                         </div>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
-                          {backNine.map((hole) => (
-                            <label
-                              key={`${team.id}-${hole}`}
-                              className="block text-center"
-                            >
-                              <span className="mb-1 block text-[11px] font-semibold text-[#a3a3a3]">
-                                {hole}
-                              </span>
-                              <input
-                                type="number"
-                                inputMode="numeric"
-                                value={scoreDrafts[team.id]?.[hole] ?? ""}
-                                onChange={(event) =>
-                                  setScoreDrafts((current) => ({
-                                    ...current,
-                                    [team.id]: {
-                                      ...(current[team.id] || {}),
-                                      [hole]: event.target.value,
-                                    },
-                                  }))
-                                }
-                                onBlur={(event) =>
-                                  handleScoreChange(team, hole, event.target.value)
-                                }
-                                className="h-12 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#16a34a] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                                aria-label={`${team.name} hole ${hole} score`}
-                              />
-                            </label>
-                          ))}
+                          {backNine.map((hole) => {
+                            const metadata = scorecardByHole.get(hole);
+
+                            return (
+                              <label
+                                key={`${team.id}-${hole}`}
+                                className="block text-center"
+                              >
+                                <span className="block text-[11px] font-semibold text-[#f5f5f5]">
+                                  {hole}
+                                </span>
+                                <span className="block text-[9px] uppercase text-[#a3a3a3]">
+                                  Par {metadata?.par}
+                                </span>
+                                <span className="mb-1 block text-[9px] uppercase text-[#737373]">
+                                  Hcp {metadata?.handicap}
+                                </span>
+                                <input
+                                  type="number"
+                                  inputMode="numeric"
+                                  value={scoreDrafts[team.id]?.[hole] ?? ""}
+                                  onChange={(event) =>
+                                    setScoreDrafts((current) => ({
+                                      ...current,
+                                      [team.id]: {
+                                        ...(current[team.id] || {}),
+                                        [hole]: event.target.value,
+                                      },
+                                    }))
+                                  }
+                                  onBlur={(event) =>
+                                    handleScoreChange(team, hole, event.target.value)
+                                  }
+                                  className="h-12 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#16a34a] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                  aria-label={`${team.name} hole ${hole} score`}
+                                />
+                              </label>
+                            );
+                          })}
                           <div className="text-center">
                             <span className="mb-1 block text-[11px] font-semibold text-[#16a34a]">
                               IN
                             </span>
                             <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
-                              {inTotal}
+                              {formatScoreToPar(inTotal, backNinePar)}
                             </div>
                           </div>
                         </div>
@@ -1328,7 +1544,12 @@ export default function AdminMoneyRoundsPage() {
                         {standing.position}. {standing.team.name}
                         {standing.isTied ? " (Tied)" : ""}
                       </span>
-                      <span className="text-[#16a34a]">{standing.total}</span>
+                      <span className="text-[#16a34a]">
+                        {formatScoreToCompletedPar(
+                          standing.total,
+                          standing.scoresByHole,
+                        )}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1343,11 +1564,19 @@ export default function AdminMoneyRoundsPage() {
                 </p>
                 <div className="mt-4 space-y-2 text-sm text-[#a3a3a3]">
                   {skins.length === 0 && <p>No skins won yet.</p>}
-                  {skins.map((skin) => (
-                    <p key={skin.hole}>
-                      Hole {skin.hole}: {skin.team.name} ({skin.score}) · {money(skin.value)}
-                    </p>
-                  ))}
+                  {skins.map((skin) => {
+                    const metadata = scorecardByHole.get(skin.hole);
+
+                    return (
+                      <p key={skin.hole}>
+                        Hole {skin.hole}
+                        {metadata
+                          ? ` · Par ${metadata.par} · Hcp ${metadata.handicap}`
+                          : ""}
+                        : {skin.team.name} ({skin.score}) · {money(skin.value)}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
 

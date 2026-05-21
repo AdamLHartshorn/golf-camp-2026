@@ -1,6 +1,32 @@
 export const holes = Array.from({ length: 18 }, (_, index) => index + 1);
 
+export const moneyRoundScorecard = [
+  { hole: 1, par: 4, handicap: 7 },
+  { hole: 2, par: 4, handicap: 1 },
+  { hole: 3, par: 4, handicap: 15 },
+  { hole: 4, par: 3, handicap: 9 },
+  { hole: 5, par: 5, handicap: 17 },
+  { hole: 6, par: 4, handicap: 11 },
+  { hole: 7, par: 4, handicap: 3 },
+  { hole: 8, par: 3, handicap: 5 },
+  { hole: 9, par: 4, handicap: 13 },
+  { hole: 10, par: 4, handicap: 10 },
+  { hole: 11, par: 5, handicap: 8 },
+  { hole: 12, par: 5, handicap: 14 },
+  { hole: 13, par: 4, handicap: 18 },
+  { hole: 14, par: 4, handicap: 2 },
+  { hole: 15, par: 3, handicap: 6 },
+  { hole: 16, par: 5, handicap: 16 },
+  { hole: 17, par: 3, handicap: 4 },
+  { hole: 18, par: 4, handicap: 12 },
+] as const;
+
+export const frontNinePar = 35;
+export const backNinePar = 37;
+export const totalPar = 72;
+
 export type MoneyRoundStatus = "pending" | "active" | "scored" | "final";
+export type TeamScoreStatus = "pending" | "submitted" | "verified";
 
 export type MoneyRound = {
   id: string;
@@ -25,6 +51,7 @@ export type MoneyTeam = {
   name: string;
   player_names: string[];
   player_ids: string[];
+  score_status?: TeamScoreStatus | string | null;
 };
 
 export type MoneyScore = {
@@ -108,6 +135,70 @@ export function signedMoney(value: number) {
   return `${prefix}${money(Math.abs(value))}`;
 }
 
+export function getTeamScoreStatus(team: MoneyTeam): TeamScoreStatus {
+  if (
+    team.score_status === "submitted" ||
+    team.score_status === "verified" ||
+    team.score_status === "pending"
+  ) {
+    return team.score_status;
+  }
+
+  return "pending";
+}
+
+export function teamScoreStatusLabel(team: MoneyTeam) {
+  const status = getTeamScoreStatus(team);
+
+  if (status === "verified") {
+    return "OFFICIAL";
+  }
+
+  if (status === "submitted") {
+    return "UNOFFICIAL";
+  }
+
+  return "Awaiting Verification";
+}
+
+export function teamHasAnyScores(team: MoneyTeam, scores: MoneyScore[]) {
+  return scores.some((score) => score.money_round_team_id === team.id);
+}
+
+export function teamHasCompleteScores(team: MoneyTeam, scores: MoneyScore[]) {
+  const scoredHoles = new Set(
+    scores
+      .filter((score) => score.money_round_team_id === team.id)
+      .map((score) => Number(score.hole_number))
+      .filter((hole) => hole >= 1 && hole <= 18),
+  );
+
+  return holes.every((hole) => scoredHoles.has(hole));
+}
+
+export function isRoundPresentationReady(
+  round: MoneyRound | null,
+  teams: MoneyTeam[],
+  scores: MoneyScore[],
+) {
+  if (!round) {
+    return false;
+  }
+
+  if (isScoredOrFinalRound(round)) {
+    return true;
+  }
+
+  return (
+    teams.length > 0 &&
+    teams.every(
+      (team) =>
+        getTeamScoreStatus(team) !== "pending" &&
+        teamHasCompleteScores(team, scores),
+    )
+  );
+}
+
 function placementLabel(position: number) {
   if (position === 1) {
     return "1st Place";
@@ -152,6 +243,48 @@ export function sumHoleScores(
     (total, hole) => total + (scoresByHole[hole] ?? 0),
     0,
   );
+}
+
+export function getParForHoles(selectedHoles: number[]) {
+  return selectedHoles.reduce((total, hole) => {
+    const metadata = moneyRoundScorecard.find((item) => item.hole === hole);
+    return total + (metadata?.par || 0);
+  }, 0);
+}
+
+export function getCompletedHoles(scoresByHole: Record<number, number>) {
+  return holes.filter((hole) => typeof scoresByHole[hole] === "number");
+}
+
+export function getCompletedPar(scoresByHole: Record<number, number>) {
+  return getParForHoles(getCompletedHoles(scoresByHole));
+}
+
+export function formatRelativeToPar(score: number, par: number) {
+  const relative = score - par;
+
+  if (relative === 0) {
+    return "E";
+  }
+
+  return relative > 0 ? `+${relative}` : String(relative);
+}
+
+export function formatScoreToPar(score: number, par: number) {
+  return `${score} (${formatRelativeToPar(score, par)})`;
+}
+
+export function formatScoreToCompletedPar(
+  score: number,
+  scoresByHole: Record<number, number>,
+) {
+  const completedPar = getCompletedPar(scoresByHole);
+
+  if (completedPar === 0) {
+    return `${score} (-)`;
+  }
+
+  return formatScoreToPar(score, completedPar);
 }
 
 export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {

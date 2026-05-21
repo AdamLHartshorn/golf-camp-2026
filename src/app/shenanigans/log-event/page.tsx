@@ -3,12 +3,26 @@
 import Link from "next/link";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useActivePlayers } from "@/lib/useActivePlayers";
+import {
+  NoShenanigansGamePrompt,
+  ShenanigansGameBar,
+  useShenanigansGame,
+} from "@/lib/shenanigansGame";
 
 const eventTypes = ["Bank", "Wager", "Side Game", "Custom"];
 const pointValues = [-5, -3, -1, 1, 2, 3, 5, 10];
 
 export default function ShenanigansLogEventPage() {
+  const {
+    games,
+    selectedGame,
+    selectedGameId,
+    selectablePlayers,
+    isLoadingGame,
+    gameError,
+    switchGame,
+    endGame,
+  } = useShenanigansGame();
   const [chosenPlayer, setChosenPlayer] = useState("");
   const [selectedType, setSelectedType] = useState(eventTypes[0]);
   const [selectedPoints, setSelectedPoints] = useState<number | null>(2);
@@ -16,12 +30,11 @@ export default function ShenanigansLogEventPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const {
-    players,
-    isLoading: isLoadingPlayers,
-    error: playersError,
-  } = useActivePlayers();
-  const selectedPlayer = chosenPlayer || players[0]?.display_name || "";
+  const selectedPlayer = selectablePlayers.some(
+    (player) => player.display_name === chosenPlayer,
+  )
+    ? chosenPlayer
+    : selectablePlayers[0]?.display_name || "";
 
   const signedPoints =
     selectedPoints === null
@@ -42,6 +55,11 @@ export default function ShenanigansLogEventPage() {
       return;
     }
 
+    if (!selectedGameId) {
+      setError("Select or start a Shenanigans game first.");
+      return;
+    }
+
     if (selectedPoints === null) {
       setError("Select a point value.");
       return;
@@ -59,6 +77,7 @@ export default function ShenanigansLogEventPage() {
       event_type: selectedType,
       description: trimmedDescription,
       points: selectedPoints,
+      game_id: selectedGameId,
     };
 
     console.log("Submitting shenanigans_events payload:", payload);
@@ -111,32 +130,39 @@ export default function ShenanigansLogEventPage() {
           </p>
         </div>
 
+        <ShenanigansGameBar
+          selectedGame={selectedGame}
+          games={games}
+          selectedGameId={selectedGameId}
+          isLoadingGame={isLoadingGame}
+          gameError={gameError}
+          onSwitchGame={switchGame}
+          onEndGame={endGame}
+        />
+
+        {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
+
+        {selectedGameId && (
         <section className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Player
           </p>
 
-          {isLoadingPlayers && (
+          {isLoadingGame && (
             <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
               Loading players...
             </div>
           )}
 
-          {!isLoadingPlayers && playersError && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#fca5a5]">
-              {playersError}
-            </div>
-          )}
-
-          {!isLoadingPlayers && !playersError && players.length === 0 && (
+          {!isLoadingGame && selectablePlayers.length === 0 && (
             <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
-              No active players found.
+              No players are in this game.
             </div>
           )}
 
-          {!isLoadingPlayers && !playersError && players.length > 0 && (
+          {!isLoadingGame && selectablePlayers.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
-              {players.map((player) => {
+              {selectablePlayers.map((player) => {
                 const isSelected = player.display_name === selectedPlayer;
 
                 return (
@@ -157,7 +183,9 @@ export default function ShenanigansLogEventPage() {
             </div>
           )}
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Event Type
@@ -184,7 +212,9 @@ export default function ShenanigansLogEventPage() {
             })}
           </div>
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Point Value
@@ -212,7 +242,9 @@ export default function ShenanigansLogEventPage() {
             })}
           </div>
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <label
             htmlFor="event-description"
@@ -230,7 +262,9 @@ export default function ShenanigansLogEventPage() {
             className="w-full rounded-2xl border border-[#242424] bg-[#111111] px-4 py-4 text-[#f5f5f5] outline-none transition-colors duration-200 placeholder:text-[#737373] focus:border-[#b91c1c]"
           />
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Preview
@@ -262,6 +296,7 @@ export default function ShenanigansLogEventPage() {
             </span>
           </div>
         </section>
+        )}
 
         {message && (
           <p className="text-center text-sm text-[#f5f5f5]">{message}</p>
@@ -274,7 +309,12 @@ export default function ShenanigansLogEventPage() {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting || isLoadingPlayers || players.length === 0}
+          disabled={
+            isSubmitting ||
+            isLoadingGame ||
+            !selectedGameId ||
+            selectablePlayers.length === 0
+          }
           className="rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? "Adding..." : "Add to Ledger"}

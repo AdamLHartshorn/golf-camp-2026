@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useActivePlayers } from "@/lib/useActivePlayers";
+import {
+  NoShenanigansGamePrompt,
+  ShenanigansGameBar,
+  useShenanigansGame,
+} from "@/lib/shenanigansGame";
 
 const wagerRules = [
   "Verbal agreement locks in a wager.",
@@ -26,6 +30,7 @@ type WagerRow = {
   loser_names: string[] | null;
   created_at: string | null;
   settled_at: string | null;
+  game_id: string | null;
 };
 
 function formatDate(value: string | null) {
@@ -43,10 +48,15 @@ function formatDate(value: string | null) {
 
 export default function ShenanigansWagersPage() {
   const {
-    players,
-    isLoading: isLoadingPlayers,
-    error: playersError,
-  } = useActivePlayers();
+    games,
+    selectedGame,
+    selectedGameId,
+    selectablePlayers,
+    isLoadingGame,
+    gameError,
+    switchGame,
+    endGame,
+  } = useShenanigansGame();
   const [wagers, setWagers] = useState<WagerRow[]>([]);
   const [isLoadingWagers, setIsLoadingWagers] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
@@ -71,16 +81,31 @@ export default function ShenanigansWagersPage() {
     () => wagers.filter((wager) => wager.status === "settled"),
     [wagers],
   );
+  const validSelectedPlayers = useMemo(() => {
+    const allowedNames = new Set(
+      selectablePlayers.map((player) => player.display_name),
+    );
+
+    return selectedPlayers.filter((playerName) => allowedNames.has(playerName));
+  }, [selectablePlayers, selectedPlayers]);
 
   async function fetchWagers() {
+    if (!selectedGameId) {
+      setWagers([]);
+      setIsLoadingWagers(false);
+      return;
+    }
+
     setIsLoadingWagers(true);
 
     const { data, error: fetchError } = await supabase
       .from("shenanigans_wagers")
       .select("*")
+      .eq("game_id", selectedGameId)
       .order("created_at", { ascending: false });
 
     console.log("shenanigans_wagers fetched rows:", {
+      selectedGameId,
       data,
       error: fetchError,
     });
@@ -100,12 +125,22 @@ export default function ShenanigansWagersPage() {
     let isCurrent = true;
 
     async function fetchInitialWagers() {
+      if (!selectedGameId) {
+        setWagers([]);
+        setIsLoadingWagers(false);
+        return;
+      }
+
+      setIsLoadingWagers(true);
+
       const { data, error: fetchError } = await supabase
         .from("shenanigans_wagers")
         .select("*")
+        .eq("game_id", selectedGameId)
         .order("created_at", { ascending: false });
 
       console.log("shenanigans_wagers fetched rows:", {
+        selectedGameId,
         data,
         error: fetchError,
       });
@@ -130,7 +165,7 @@ export default function ShenanigansWagersPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [selectedGameId]);
 
   function togglePlayer(displayName: string) {
     setSelectedPlayers((currentPlayers) =>
@@ -152,12 +187,17 @@ export default function ShenanigansWagersPage() {
       return;
     }
 
+    if (!selectedGameId) {
+      setError("Select or start a Shenanigans game first.");
+      return;
+    }
+
     if (!Number.isInteger(parsedPoints) || parsedPoints <= 0) {
       setError("Enter a positive whole-number point value.");
       return;
     }
 
-    if (selectedPlayers.length < 2) {
+    if (validSelectedPlayers.length < 2) {
       setError("Select at least two players.");
       return;
     }
@@ -168,7 +208,8 @@ export default function ShenanigansWagersPage() {
       description: trimmedDescription,
       points: parsedPoints,
       status: "active",
-      player_names: selectedPlayers,
+      player_names: validSelectedPlayers,
+      game_id: selectedGameId,
     };
 
     console.log("Submitting shenanigans_wagers payload:", payload);
@@ -238,12 +279,14 @@ export default function ShenanigansWagersPage() {
         event_type: "Wager",
         description: `Settled wager: ${wager.description}`,
         points: wager.points * loserNames.length,
+        game_id: wager.game_id,
       },
       ...loserNames.map((loserName) => ({
         player_name: loserName,
         event_type: "Wager",
         description: `Lost wager: ${wager.description}`,
         points: -wager.points,
+        game_id: wager.game_id,
       })),
     ];
 
@@ -322,6 +365,18 @@ export default function ShenanigansWagersPage() {
           <p className="text-[#a3a3a3]">Track player-to-player action.</p>
         </div>
 
+        <ShenanigansGameBar
+          selectedGame={selectedGame}
+          games={games}
+          selectedGameId={selectedGameId}
+          isLoadingGame={isLoadingGame}
+          gameError={gameError}
+          onSwitchGame={switchGame}
+          onEndGame={endGame}
+        />
+
+        {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
+
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Wager Rules
@@ -340,6 +395,7 @@ export default function ShenanigansWagersPage() {
           </div>
         </section>
 
+        {selectedGameId && (
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Log New Wager
@@ -408,24 +464,20 @@ export default function ShenanigansWagersPage() {
             <div className="space-y-3">
               <p className="text-sm text-[#a3a3a3]">Players Involved</p>
 
-              {isLoadingPlayers && (
+              {isLoadingGame && (
                 <p className="text-sm text-[#a3a3a3]">Loading players...</p>
               )}
 
-              {!isLoadingPlayers && playersError && (
-                <p className="text-sm text-[#fca5a5]">{playersError}</p>
-              )}
-
-              {!isLoadingPlayers && !playersError && players.length === 0 && (
+              {!isLoadingGame && selectablePlayers.length === 0 && (
                 <p className="text-sm text-[#a3a3a3]">
-                  No active players found.
+                  No players are in this game.
                 </p>
               )}
 
-              {!isLoadingPlayers && !playersError && players.length > 0 && (
+              {!isLoadingGame && selectablePlayers.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
-                  {players.map((player) => {
-                    const isSelected = selectedPlayers.includes(
+                  {selectablePlayers.map((player) => {
+                    const isSelected = validSelectedPlayers.includes(
                       player.display_name,
                     );
 
@@ -453,9 +505,8 @@ export default function ShenanigansWagersPage() {
               onClick={handleCreateWager}
               disabled={
                 isCreating ||
-                isLoadingPlayers ||
-                Boolean(playersError) ||
-                players.length === 0
+                isLoadingGame ||
+                selectablePlayers.length === 0
               }
               className="w-full rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -463,6 +514,7 @@ export default function ShenanigansWagersPage() {
             </button>
           </div>
         </section>
+        )}
 
         {message && (
           <p className="text-center text-sm text-[#f5f5f5]">{message}</p>
@@ -472,6 +524,7 @@ export default function ShenanigansWagersPage() {
           <p className="text-center text-sm text-[#fca5a5]">{error}</p>
         )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -619,7 +672,9 @@ export default function ShenanigansWagersPage() {
               })}
           </div>
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -691,6 +746,7 @@ export default function ShenanigansWagersPage() {
               ))}
           </div>
         </section>
+        )}
 
         <Link
           href="/shenanigans"

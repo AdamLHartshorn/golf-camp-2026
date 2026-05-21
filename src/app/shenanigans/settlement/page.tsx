@@ -3,12 +3,18 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import {
+  NoShenanigansGamePrompt,
+  ShenanigansGameBar,
+  useShenanigansGame,
+} from "@/lib/shenanigansGame";
 
 type ShenanigansEvent = {
   id: string;
   player_name: string;
   event_type: string;
   points: number;
+  game_id: string | null;
 };
 
 type FinalTotal = {
@@ -24,13 +30,28 @@ type PaymentRow = {
   dollarAmount: number;
 };
 
+type MinimizedPaymentRow = {
+  payer: string;
+  receiver: string;
+  dollarAmount: number;
+};
+
 function formatMoney(amount: number) {
   const prefix = amount > 0 ? "+" : amount < 0 ? "-" : "";
 
-  return `${prefix}$${Math.abs(amount)}`;
+  return `${prefix}$${Math.abs(amount).toFixed(2)}`;
 }
 
 export default function ShenanigansSettlementPage() {
+  const {
+    games,
+    selectedGame,
+    selectedGameId,
+    isLoadingGame,
+    gameError,
+    switchGame,
+    endGame,
+  } = useShenanigansGame();
   const [events, setEvents] = useState<ShenanigansEvent[]>([]);
   const [unitOption, setUnitOption] = useState("1");
   const [customUnitValue, setCustomUnitValue] = useState("");
@@ -41,12 +62,22 @@ export default function ShenanigansSettlementPage() {
     let isCurrent = true;
 
     async function fetchLedgerEvents() {
+      if (!selectedGameId) {
+        setEvents([]);
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+
       const { data, error: fetchError } = await supabase
         .from("shenanigans_events")
-        .select("id, player_name, event_type, points")
+        .select("id, player_name, event_type, points, game_id")
+        .eq("game_id", selectedGameId)
         .order("created_at", { ascending: false });
 
       console.log("shenanigans settlement ledger events:", {
+        selectedGameId,
         data,
         error: fetchError,
       });
@@ -71,7 +102,7 @@ export default function ShenanigansSettlementPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [selectedGameId]);
 
   const dollarPerPoint = useMemo(() => {
     if (unitOption === "custom") {
@@ -84,7 +115,7 @@ export default function ShenanigansSettlementPage() {
     return Number(unitOption);
   }, [customUnitValue, unitOption]);
 
-  const { finalTotals, paymentRows } = useMemo(() => {
+  const { finalTotals, paymentRows, minimizedPaymentRows } = useMemo(() => {
     const totalsByPlayer = events.reduce<Record<string, number>>(
       (accumulator, event) => {
         const playerName = event.player_name?.trim();
@@ -135,16 +166,54 @@ export default function ShenanigansSettlementPage() {
       ...player,
       netDollars: netByPlayer[player.name] || 0,
     }));
+    const receivers = totalsWithNet
+      .filter((player) => player.netDollars > 0.005)
+      .map((player) => ({ name: player.name, remaining: player.netDollars }))
+      .sort((a, b) => b.remaining - a.remaining);
+    const payers = totalsWithNet
+      .filter((player) => player.netDollars < -0.005)
+      .map((player) => ({ name: player.name, remaining: Math.abs(player.netDollars) }))
+      .sort((a, b) => b.remaining - a.remaining);
+    const minimizedRows: MinimizedPaymentRow[] = [];
+    let payerIndex = 0;
+    let receiverIndex = 0;
+
+    while (payerIndex < payers.length && receiverIndex < receivers.length) {
+      const payer = payers[payerIndex];
+      const receiver = receivers[receiverIndex];
+      const amount = Math.min(payer.remaining, receiver.remaining);
+
+      if (amount > 0.005) {
+        minimizedRows.push({
+          payer: payer.name,
+          receiver: receiver.name,
+          dollarAmount: amount,
+        });
+      }
+
+      payer.remaining -= amount;
+      receiver.remaining -= amount;
+
+      if (payer.remaining <= 0.005) {
+        payerIndex += 1;
+      }
+
+      if (receiver.remaining <= 0.005) {
+        receiverIndex += 1;
+      }
+    }
 
     console.log("shenanigans ledger settlement totals:", {
       dollarPerPoint,
       finalTotals: totalsWithNet,
       paymentRows: settlementRows,
+      minimizedPaymentRows: minimizedRows,
     });
 
     return {
       finalTotals: totalsWithNet,
       paymentRows: settlementRows,
+      minimizedPaymentRows: minimizedRows,
     };
   }, [dollarPerPoint, events]);
   const hasSettlementData = finalTotals.length > 0;
@@ -164,6 +233,19 @@ export default function ShenanigansSettlementPage() {
           </p>
         </div>
 
+        <ShenanigansGameBar
+          selectedGame={selectedGame}
+          games={games}
+          selectedGameId={selectedGameId}
+          isLoadingGame={isLoadingGame}
+          gameError={gameError}
+          onSwitchGame={switchGame}
+          onEndGame={endGame}
+        />
+
+        {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
+
+        {selectedGameId && (
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -184,7 +266,9 @@ export default function ShenanigansSettlementPage() {
             </span>
           </div>
         </section>
+        )}
 
+        {selectedGameId && (
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Dollar Unit
@@ -229,11 +313,13 @@ export default function ShenanigansSettlementPage() {
             Current rate: ${dollarPerPoint || 0} per point
           </p>
         </section>
+        )}
 
         {error && (
           <p className="text-center text-sm text-[#fca5a5]">{error}</p>
         )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -287,8 +373,9 @@ export default function ShenanigansSettlementPage() {
               ))}
           </div>
         </section>
+        )}
 
-        {hasSettlementData && (
+        {selectedGameId && hasSettlementData && (
           <section className="space-y-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -329,7 +416,50 @@ export default function ShenanigansSettlementPage() {
           </section>
         )}
 
-        {hasSettlementData && (
+        {selectedGameId && hasSettlementData && (
+          <section className="space-y-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+                Minimized Payments
+              </p>
+
+              <h2 className="mt-2 text-xl font-bold">Fewest Practical Payments</h2>
+            </div>
+
+            <div className="space-y-3">
+              {minimizedPaymentRows.length === 0 && (
+                <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
+                  Everyone is square.
+                </div>
+              )}
+
+              {minimizedPaymentRows.map((payment) => (
+                <div
+                  key={`min-${payment.payer}-${payment.receiver}-${payment.dollarAmount}`}
+                  className="rounded-2xl border border-[#b91c1c]/70 bg-[#111111] p-4"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="min-w-0 text-sm leading-6 text-[#a3a3a3]">
+                      <span className="font-semibold text-[#f5f5f5]">
+                        {payment.payer}
+                      </span>{" "}
+                      pays{" "}
+                      <span className="font-semibold text-[#f5f5f5]">
+                        {payment.receiver}
+                      </span>
+                    </p>
+
+                    <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
+                      ${payment.dollarAmount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {selectedGameId && hasSettlementData && (
           <section className="space-y-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -366,7 +496,7 @@ export default function ShenanigansSettlementPage() {
                     </p>
 
                     <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
-                      ${payment.dollarAmount}
+                      ${payment.dollarAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>

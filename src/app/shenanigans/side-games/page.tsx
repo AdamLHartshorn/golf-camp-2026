@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useActivePlayers } from "@/lib/useActivePlayers";
+import {
+  NoShenanigansGamePrompt,
+  ShenanigansGameBar,
+  useShenanigansGame,
+} from "@/lib/shenanigansGame";
 
 const featuredGames = [
   {
@@ -29,6 +33,7 @@ type SideGameEvent = {
   description: string;
   points: number;
   created_at: string | null;
+  game_id: string | null;
 };
 
 function formatTimestamp(createdAt: string | null) {
@@ -58,10 +63,15 @@ function formatTimestamp(createdAt: string | null) {
 
 export default function ShenanigansSideGamesPage() {
   const {
-    players,
-    isLoading: isLoadingPlayers,
-    error: playersError,
-  } = useActivePlayers();
+    games,
+    selectedGame,
+    selectedGameId,
+    selectablePlayers,
+    isLoadingGame,
+    gameError,
+    switchGame,
+    endGame,
+  } = useShenanigansGame();
   const [chosenPlayer, setChosenPlayer] = useState("");
   const [selectedType, setSelectedType] = useState(sideGameTypes[0]);
   const [selectedPoints, setSelectedPoints] = useState<number | null>(3);
@@ -71,18 +81,30 @@ export default function ShenanigansSideGamesPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const selectedPlayer = chosenPlayer || players[0]?.display_name || "";
+  const selectedPlayer = selectablePlayers.some(
+    (player) => player.display_name === chosenPlayer,
+  )
+    ? chosenPlayer
+    : selectablePlayers[0]?.display_name || "";
 
   async function fetchSideGameEvents() {
+    if (!selectedGameId) {
+      setEvents([]);
+      setIsLoadingEvents(false);
+      return;
+    }
+
     setIsLoadingEvents(true);
 
     const { data, error: fetchError } = await supabase
       .from("shenanigans_events")
-      .select("id, player_name, description, points, created_at")
+      .select("id, player_name, description, points, created_at, game_id")
       .eq("event_type", "Side Game")
+      .eq("game_id", selectedGameId)
       .order("created_at", { ascending: false });
 
     console.log("side game events fetched rows:", {
+      selectedGameId,
       data,
       error: fetchError,
     });
@@ -102,13 +124,23 @@ export default function ShenanigansSideGamesPage() {
     let isCurrent = true;
 
     async function fetchInitialSideGameEvents() {
+      if (!selectedGameId) {
+        setEvents([]);
+        setIsLoadingEvents(false);
+        return;
+      }
+
+      setIsLoadingEvents(true);
+
       const { data, error: fetchError } = await supabase
         .from("shenanigans_events")
-        .select("id, player_name, description, points, created_at")
+        .select("id, player_name, description, points, created_at, game_id")
         .eq("event_type", "Side Game")
+        .eq("game_id", selectedGameId)
         .order("created_at", { ascending: false });
 
       console.log("side game events fetched rows:", {
+        selectedGameId,
         data,
         error: fetchError,
       });
@@ -133,7 +165,7 @@ export default function ShenanigansSideGamesPage() {
     return () => {
       isCurrent = false;
     };
-  }, []);
+  }, [selectedGameId]);
 
   async function handleSubmit() {
     const trimmedDescription = description.trim();
@@ -143,6 +175,11 @@ export default function ShenanigansSideGamesPage() {
 
     if (!selectedPlayer) {
       setError("Select a winner.");
+      return;
+    }
+
+    if (!selectedGameId) {
+      setError("Select or start a Shenanigans game first.");
       return;
     }
 
@@ -163,6 +200,7 @@ export default function ShenanigansSideGamesPage() {
       event_type: "Side Game",
       description: `${selectedType}: ${trimmedDescription}`,
       points: selectedPoints,
+      game_id: selectedGameId,
     };
 
     console.log("Submitting side game event payload:", payload);
@@ -213,6 +251,16 @@ export default function ShenanigansSideGamesPage() {
             Bocce, basket-golf, and whatever else gets invented.
           </p>
         </div>
+
+        <ShenanigansGameBar
+          selectedGame={selectedGame}
+          games={games}
+          selectedGameId={selectedGameId}
+          isLoadingGame={isLoadingGame}
+          gameError={gameError}
+          onSwitchGame={switchGame}
+          onEndGame={endGame}
+        />
 
         <section className="space-y-3">
           <div>
@@ -267,6 +315,9 @@ export default function ShenanigansSideGamesPage() {
           </p>
         </section>
 
+        {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
+
+        {selectedGameId && (
         <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Log Side Game
@@ -276,23 +327,19 @@ export default function ShenanigansSideGamesPage() {
             <div className="space-y-3">
               <p className="text-sm text-[#a3a3a3]">Winner</p>
 
-              {isLoadingPlayers && (
+              {isLoadingGame && (
                 <p className="text-sm text-[#a3a3a3]">Loading players...</p>
               )}
 
-              {!isLoadingPlayers && playersError && (
-                <p className="text-sm text-[#fca5a5]">{playersError}</p>
-              )}
-
-              {!isLoadingPlayers && !playersError && players.length === 0 && (
+              {!isLoadingGame && selectablePlayers.length === 0 && (
                 <p className="text-sm text-[#a3a3a3]">
-                  No active players found.
+                  No players are in this game.
                 </p>
               )}
 
-              {!isLoadingPlayers && !playersError && players.length > 0 && (
+              {!isLoadingGame && selectablePlayers.length > 0 && (
                 <div className="grid grid-cols-2 gap-3">
-                  {players.map((player) => {
+                  {selectablePlayers.map((player) => {
                     const isSelected = player.display_name === selectedPlayer;
 
                     return (
@@ -387,9 +434,8 @@ export default function ShenanigansSideGamesPage() {
               onClick={handleSubmit}
               disabled={
                 isSubmitting ||
-                isLoadingPlayers ||
-                Boolean(playersError) ||
-                players.length === 0
+                isLoadingGame ||
+                selectablePlayers.length === 0
               }
               className="w-full rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
             >
@@ -397,6 +443,7 @@ export default function ShenanigansSideGamesPage() {
             </button>
           </div>
         </section>
+        )}
 
         {message && (
           <p className="text-center text-sm text-[#f5f5f5]">{message}</p>
@@ -406,6 +453,7 @@ export default function ShenanigansSideGamesPage() {
           <p className="text-center text-sm text-[#fca5a5]">{error}</p>
         )}
 
+        {selectedGameId && (
         <section className="space-y-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -457,6 +505,7 @@ export default function ShenanigansSideGamesPage() {
               ))}
           </div>
         </section>
+        )}
 
         <Link
           href="/shenanigans"

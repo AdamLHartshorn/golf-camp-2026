@@ -6,14 +6,42 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
+  formatScoreToCompletedPar,
+  formatScoreToPar,
+  frontNinePar,
+  getTeamScoreStatus,
+  getParForHoles,
   holes,
+  isRoundPresentationReady,
+  moneyRoundScorecard,
   MoneyRound,
   MoneyScore,
   MoneyTeam,
   money,
   signedMoney,
   sumHoleScores,
+  teamScoreStatusLabel,
+  TeamScoreStatus,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
+
+const frontNine = holes.slice(0, 9);
+const backNine = holes.slice(9);
+const backNinePar = getParForHoles(backNine);
+const scorecardByHole = new Map<number, (typeof moneyRoundScorecard)[number]>(
+  moneyRoundScorecard.map((item) => [item.hole, item]),
+);
+
+function scoreStatusClasses(status: TeamScoreStatus) {
+  if (status === "verified") {
+    return "border-[#16a34a] bg-[#0f1f16] text-[#16a34a]";
+  }
+
+  if (status === "submitted") {
+    return "border-[#365f3d] bg-[#111b14] text-[#d8f5df]";
+  }
+
+  return "border-[#242424] bg-black text-[#a3a3a3]";
+}
 
 export default function MoneyRoundDetailPage() {
   const params = useParams<{ id: string }>();
@@ -84,6 +112,10 @@ export default function MoneyRoundDetailPage() {
     [round, scores, teams],
   );
   const { bankRows, hasScores, scoresByTeam, skins, standings } = calculation;
+  const canPresentRound = useMemo(
+    () => isRoundPresentationReady(round, teams, scores),
+    [round, scores, teams],
+  );
 
   useEffect(() => {
     if (isLoading || error) {
@@ -124,23 +156,26 @@ export default function MoneyRoundDetailPage() {
                 {round.round_date || "Date TBD"} · {round.status}
               </p>
               <Link
-                href={`/money-rounds/${round.id}/results`}
+                href={`/money-rounds/${round.id}/submit`}
                 className="inline-flex rounded-xl border border-[#16a34a] px-4 py-3 text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
               >
-                Open Results Presentation
+                Team Score Submission
               </Link>
-              <Link
-                href={`/admin/money-rounds/${round.id}/present`}
-                className="ml-0 mt-3 inline-flex rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a] sm:ml-3"
-              >
-                Control Presentation
-              </Link>
+              {canPresentRound && (
+                <Link
+                  href={`/money-rounds/${round.id}/results`}
+                  className="ml-0 mt-3 inline-flex rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a] sm:ml-3"
+                >
+                  Open Results Presentation
+                </Link>
+              )}
             </div>
 
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <h2 className="text-xl font-bold">Standings</h2>
               <p className="mt-2 text-sm text-[#a3a3a3]">
-                Tie breaker by hole handicap coming soon.
+                Live standings are unofficial until verified. Tie breaker by
+                hole handicap coming soon.
               </p>
               <div className="mt-4 space-y-3">
                 {!hasScores && (
@@ -154,11 +189,25 @@ export default function MoneyRoundDetailPage() {
                       key={standing.team.id}
                       className="flex justify-between rounded-xl border border-[#242424] bg-black p-4"
                     >
-                      <span>
-                        {standing.position}. {standing.team.name}
-                        {standing.isTied ? " (Tied)" : ""}
+                      <span className="space-y-1">
+                        <span className="block">
+                          {standing.position}. {standing.team.name}
+                          {standing.isTied ? " (Tied)" : ""}
+                        </span>
+                        <span
+                          className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${scoreStatusClasses(
+                            getTeamScoreStatus(standing.team),
+                          )}`}
+                        >
+                          {teamScoreStatusLabel(standing.team)}
+                        </span>
                       </span>
-                      <span className="text-[#16a34a]">{standing.total}</span>
+                      <span className="text-[#16a34a]">
+                        {formatScoreToCompletedPar(
+                          standing.total,
+                          standing.scoresByHole,
+                        )}
+                      </span>
                     </div>
                   ))}
               </div>
@@ -171,47 +220,105 @@ export default function MoneyRoundDetailPage() {
                   No teams have been added to this round yet.
                 </div>
               )}
-              {teams.map((team) => (
+              {teams.map((team) => {
+                const scoreStatus = getTeamScoreStatus(team);
+
+                return (
                 <div key={team.id} className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-                  <h3 className="text-lg font-bold">{team.name}</h3>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-bold">{team.name}</h3>
+                    <span
+                      className={`rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${scoreStatusClasses(
+                        scoreStatus,
+                      )}`}
+                    >
+                      {teamScoreStatusLabel(team)}
+                    </span>
+                  </div>
                   <p className="mt-1 text-sm text-[#a3a3a3]">
                     {team.player_names.join(", ")}
                   </p>
+                  {scoreStatus !== "verified" ? (
+                    <Link
+                      href={`/money-rounds/${round.id}/submit?team=${team.id}`}
+                      className="mt-3 inline-flex rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+                    >
+                      {scoreStatus === "submitted"
+                        ? "Edit Submitted Scores"
+                        : "Enter Scores"}
+                    </Link>
+                  ) : (
+                    <p className="mt-3 inline-flex rounded-lg border border-[#166534] px-3 py-2 text-xs font-bold text-[#16a34a]">
+                      Verified by Commissioner
+                    </p>
+                  )}
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#16a34a]">
                     <span className="rounded-full border border-[#166534]/70 px-3 py-1">
-                      OUT {sumHoleScores(scoresByTeam[team.id] || {}, holes.slice(0, 9))}
+                      OUT{" "}
+                      {formatScoreToPar(
+                        sumHoleScores(scoresByTeam[team.id] || {}, frontNine),
+                        frontNinePar,
+                      )}
                     </span>
                     <span className="rounded-full border border-[#166534]/70 px-3 py-1">
-                      IN {sumHoleScores(scoresByTeam[team.id] || {}, holes.slice(9))}
+                      IN{" "}
+                      {formatScoreToPar(
+                        sumHoleScores(scoresByTeam[team.id] || {}, backNine),
+                        backNinePar,
+                      )}
                     </span>
                     <span className="rounded-full border border-[#16a34a] px-3 py-1">
-                      TOTAL {sumHoleScores(scoresByTeam[team.id] || {}, holes)}
+                      TOTAL{" "}
+                      {formatScoreToCompletedPar(
+                        sumHoleScores(scoresByTeam[team.id] || {}, holes),
+                        scoresByTeam[team.id] || {},
+                      )}
                     </span>
                   </div>
                   <div className="mt-4 grid grid-cols-9 gap-2 text-center text-sm">
-                    {holes.map((hole) => (
-                      <div key={hole} className="rounded-lg border border-[#242424] bg-black p-2">
-                        <p className="text-[10px] text-[#737373]">{hole}</p>
-                        <p className="font-bold">
-                          {scoresByTeam[team.id]?.[hole] ?? "-"}
-                        </p>
-                      </div>
-                    ))}
+                    {holes.map((hole) => {
+                      const metadata = scorecardByHole.get(hole);
+
+                      return (
+                        <div key={hole} className="rounded-lg border border-[#242424] bg-black p-2">
+                          <p className="text-[10px] font-bold text-[#f5f5f5]">
+                            {hole}
+                          </p>
+                          <p className="text-[9px] uppercase text-[#a3a3a3]">
+                            Par {metadata?.par}
+                          </p>
+                          <p className="text-[9px] uppercase text-[#737373]">
+                            Hcp {metadata?.handicap}
+                          </p>
+                          <p className="mt-1 font-bold">
+                            {scoresByTeam[team.id]?.[hole] ?? "-"}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </section>
 
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <h2 className="text-xl font-bold">Skins</h2>
               <div className="mt-4 space-y-2 text-sm text-[#a3a3a3]">
                 {skins.length === 0 && <p>No skins won yet.</p>}
-                {skins.map((skin) => (
-                  <p key={skin.hole}>
-                    Hole {skin.hole}: {skin.team.name} ({skin.score}) ·{" "}
-                    {money(skin.value)}
-                  </p>
-                ))}
+                {skins.map((skin) => {
+                  const metadata = scorecardByHole.get(skin.hole);
+
+                  return (
+                    <p key={skin.hole}>
+                      Hole {skin.hole}
+                      {metadata
+                        ? ` · Par ${metadata.par} · Hcp ${metadata.handicap}`
+                        : ""}
+                      : {skin.team.name} ({skin.score}) · {money(skin.value)}
+                    </p>
+                  );
+                })}
               </div>
             </section>
 

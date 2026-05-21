@@ -5,18 +5,27 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
+  formatRelativeToPar,
+  formatScoreToCompletedPar,
+  getTeamScoreStatus,
+  moneyRoundScorecard,
   MoneyRound,
   MoneyScore,
   MoneyTeam,
   money,
   signedMoney,
+  teamScoreStatusLabel,
+  TeamScoreStatus,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
 
 const sections = [
   { id: "intro", label: "Intro" },
+  { id: "easiest_hole", label: "Easiest Hole" },
+  { id: "hardest_hole", label: "Hardest Hole" },
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Round Bank" },
+  { id: "complete", label: "Complete" },
 ];
 
 function totalPot(round: MoneyRound) {
@@ -27,6 +36,61 @@ function totalPot(round: MoneyRound) {
     Number(round.skins_pot || 0)
   );
 }
+
+function getHolePar(hole: number) {
+  return moneyRoundScorecard.find((item) => item.hole === hole)?.par || 0;
+}
+
+function getHoleHandicap(hole: number) {
+  return moneyRoundScorecard.find((item) => item.hole === hole)?.handicap || null;
+}
+
+function formatAverage(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
+function formatAverageRelativeToPar(value: number) {
+  if (Math.abs(value) < 0.05) {
+    return "E";
+  }
+
+  return value > 0 ? `+${value.toFixed(1)}` : value.toFixed(1);
+}
+
+function ordinal(value: number) {
+  const suffix =
+    value % 100 >= 11 && value % 100 <= 13
+      ? "th"
+      : value % 10 === 1
+        ? "st"
+        : value % 10 === 2
+          ? "nd"
+          : value % 10 === 3
+            ? "rd"
+            : "th";
+
+  return `${value}${suffix}`;
+}
+
+function scoreStatusClasses(status: TeamScoreStatus) {
+  if (status === "verified") {
+    return "border-[#16a34a] bg-[#0f1f16] text-[#16a34a]";
+  }
+
+  if (status === "submitted") {
+    return "border-[#365f3d] bg-[#111b14] text-[#d8f5df]";
+  }
+
+  return "border-[#242424] bg-black text-[#a3a3a3]";
+}
+
+type HoleHighlight = {
+  hole: number;
+  par: number;
+  handicap: number;
+  averageScore: number;
+  averageRelativeToPar: number;
+};
 
 export default function MoneyRoundResultsPage() {
   const params = useParams<{ id: string }>();
@@ -135,6 +199,53 @@ export default function MoneyRoundResultsPage() {
     [round, scores, teams],
   );
   const { bankRows, hasScores, skins, standings } = calculation;
+  const courseHighlights = useMemo(() => {
+    const holeRows = moneyRoundScorecard
+      .map((metadata) => {
+        const holeScores = scores
+          .filter((score) => score.hole_number === metadata.hole)
+          .map((score) => Number(score.score))
+          .filter((score) => Number.isFinite(score));
+
+        if (holeScores.length === 0) {
+          return null;
+        }
+
+        const averageScore =
+          holeScores.reduce((total, score) => total + score, 0) /
+          holeScores.length;
+
+        return {
+          ...metadata,
+          averageScore,
+          averageRelativeToPar: averageScore - metadata.par,
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => Boolean(row));
+
+    const hardest = holeRows.slice().sort((a, b) => {
+      const relativeDifference =
+        b.averageRelativeToPar - a.averageRelativeToPar;
+
+      if (Math.abs(relativeDifference) > 0.001) {
+        return relativeDifference;
+      }
+
+      return b.handicap - a.handicap;
+    })[0];
+    const easiest = holeRows.slice().sort((a, b) => {
+      const relativeDifference =
+        a.averageRelativeToPar - b.averageRelativeToPar;
+
+      if (Math.abs(relativeDifference) > 0.001) {
+        return relativeDifference;
+      }
+
+      return b.handicap - a.handicap;
+    })[0];
+
+    return { hardest, easiest };
+  }, [scores]);
   const bankByTeam = useMemo(
     () =>
       bankRows.reduce<
@@ -152,13 +263,24 @@ export default function MoneyRoundResultsPage() {
       }, {}),
     [bankRows],
   );
-  const placementSlides = [3, 2, 1]
-    .map((position) => standings.find((standing) => standing.position === position))
-    .filter((standing): standing is (typeof standings)[number] => Boolean(standing));
+  const placementSlides = standings
+    .slice()
+    .sort((a, b) => b.total - a.total || b.position - a.position);
   const currentPlacement =
     placementSlides[Math.min(currentIndex, Math.max(placementSlides.length - 1, 0))];
   const currentSkin = skins[Math.min(currentIndex, Math.max(skins.length - 1, 0))];
-  const positiveBankRows = bankRows.filter((row) => row.net > 0);
+  const payoutSlides = bankRows
+    .filter((row) => row.net > 0 || row.totalWinnings > 0)
+    .sort(
+      (a, b) =>
+        a.totalWinnings - b.totalWinnings ||
+        a.net - b.net ||
+        a.playerName.localeCompare(b.playerName),
+    );
+  const currentPayout =
+    payoutSlides[Math.min(currentIndex, Math.max(payoutSlides.length - 1, 0))];
+  const winningStanding = standings.find((standing) => standing.position === 1);
+  const biggestWinner = payoutSlides[payoutSlides.length - 1];
   const section = sections.find((item) => item.id === currentSection) || sections[0];
   const sectionPosition = sections.findIndex((item) => item.id === currentSection);
   const slideCount =
@@ -166,9 +288,57 @@ export default function MoneyRoundResultsPage() {
       ? placementSlides.length
       : currentSection === "skins"
         ? skins.length
+        : currentSection === "player_bank"
+          ? payoutSlides.length
         : 1;
   const hasPrevious = !(currentSection === "intro" && currentIndex === 0);
-  const hasNext = currentSection !== "player_bank";
+  const hasNext =
+    currentSection !== "complete" &&
+    (currentSection !== "player_bank" ||
+      currentIndex < payoutSlides.length - 1 ||
+      sectionPosition < sections.length - 1);
+
+  function renderHoleHighlightSlide(
+    label: string,
+    highlight: HoleHighlight | undefined,
+  ) {
+    return (
+      <div className="space-y-8">
+        <div>
+          <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+            Course Report
+          </p>
+          <h1 className="mt-5 text-6xl font-black tracking-tight lg:text-7xl">
+            {label}
+          </h1>
+        </div>
+
+        {!highlight ? (
+          <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
+            Hole scoring data is not available yet.
+          </p>
+        ) : (
+          <div className="rounded-[2rem] border border-[#166534] bg-[#07120c] p-10">
+            <p className="text-lg uppercase tracking-[0.28em] text-[#16a34a]">
+              {label}
+            </p>
+            <h2 className="mt-6 text-8xl font-black tracking-tight lg:text-9xl">
+              Hole {highlight.hole}
+            </h2>
+            <p className="mt-4 text-3xl text-[#a3a3a3]">
+              Par {highlight.par} · Hcp {highlight.handicap}
+            </p>
+            <p className="mt-10 text-6xl font-black">
+              Avg {formatAverage(highlight.averageScore)}{" "}
+              <span className="text-[#16a34a]">
+                ({formatAverageRelativeToPar(highlight.averageRelativeToPar)})
+              </span>
+            </p>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   function advanceLocal(direction: -1 | 1) {
     if (direction > 0) {
@@ -178,6 +348,14 @@ export default function MoneyRoundResultsPage() {
       }
 
       if (currentSection === "skins" && currentIndex < skins.length - 1) {
+        setCurrentIndex((value) => value + 1);
+        return;
+      }
+
+      if (
+        currentSection === "player_bank" &&
+        currentIndex < payoutSlides.length - 1
+      ) {
         setCurrentIndex((value) => value + 1);
         return;
       }
@@ -203,6 +381,11 @@ export default function MoneyRoundResultsPage() {
 
     if (previousSection.id === "skins") {
       setCurrentIndex(Math.max(skins.length - 1, 0));
+      return;
+    }
+
+    if (previousSection.id === "player_bank") {
+      setCurrentIndex(Math.max(payoutSlides.length - 1, 0));
       return;
     }
 
@@ -292,11 +475,23 @@ export default function MoneyRoundResultsPage() {
                     {money(totalPot(round))}
                   </p>
                   <p className="mt-4 text-lg text-[#a3a3a3]">
-                    Placement plus skins payout configuration.
+                    Live standings are unofficial until verified.
                   </p>
                 </div>
               </div>
             )}
+
+            {!isLoading &&
+              !error &&
+              round &&
+              section.id === "easiest_hole" &&
+              renderHoleHighlightSlide("Easiest Hole", courseHighlights.easiest)}
+
+            {!isLoading &&
+              !error &&
+              round &&
+              section.id === "hardest_hole" &&
+              renderHoleHighlightSlide("Hardest Hole", courseHighlights.hardest)}
 
             {!isLoading && !error && round && section.id === "placements" && (
               <div className="space-y-8">
@@ -307,15 +502,25 @@ export default function MoneyRoundResultsPage() {
                 ) : (
                   <>
                     <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
-                      {currentPlacement.position === 1
-                        ? "1st Place"
-                        : currentPlacement.position === 2
-                          ? "2nd Place"
-                          : "3rd Place"}
+                      {ordinal(currentPlacement.position)} Place
+                      {currentPlacement.position <= 3 ? "" : " · Standings Reveal"}
                     </p>
-                    <div className="rounded-[2rem] border border-[#16a34a] bg-[#07120c] p-10">
+                    <div
+                      className={`rounded-[2rem] border p-10 ${
+                        currentPlacement.position <= 3
+                          ? "border-[#16a34a] bg-[#07120c]"
+                          : "border-[#242424] bg-[#111111]"
+                      }`}
+                    >
                       <div className="grid gap-8 lg:grid-cols-[1fr_0.35fr] lg:items-end">
                         <div>
+                          <span
+                            className={`mb-4 inline-flex rounded-full border px-3 py-2 text-xs font-bold uppercase tracking-[0.22em] ${scoreStatusClasses(
+                              getTeamScoreStatus(currentPlacement.team),
+                            )}`}
+                          >
+                            {teamScoreStatusLabel(currentPlacement.team)}
+                          </span>
                           <h1 className="text-7xl font-black tracking-tight lg:text-8xl">
                             {currentPlacement.team.name}
                           </h1>
@@ -329,16 +534,27 @@ export default function MoneyRoundResultsPage() {
                             Total Score
                           </p>
                           <p className="text-7xl font-black">
-                            {currentPlacement.total}
+                            {formatScoreToCompletedPar(
+                              currentPlacement.total,
+                              currentPlacement.scoresByHole,
+                            )}
                           </p>
                           <p className="mt-6 text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Payout
                           </p>
-                          <p className="text-5xl font-black text-[#16a34a]">
-                            {money(
-                              bankByTeam[currentPlacement.team.name]?.placement || 0,
-                            )}
-                          </p>
+                          {(bankByTeam[currentPlacement.team.name]?.placement || 0) >
+                          0 ? (
+                            <p className="text-5xl font-black text-[#16a34a]">
+                              {money(
+                                bankByTeam[currentPlacement.team.name]?.placement ||
+                                  0,
+                              )}
+                            </p>
+                          ) : (
+                            <p className="text-4xl font-black text-[#a3a3a3]">
+                              No payout
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -362,6 +578,10 @@ export default function MoneyRoundResultsPage() {
                       <p className="text-3xl font-black text-[#16a34a]">
                         Hole {currentSkin.hole}
                       </p>
+                      <p className="mt-2 text-lg uppercase tracking-[0.18em] text-[#a3a3a3]">
+                        Par {getHolePar(currentSkin.hole)} · Hcp{" "}
+                        {getHoleHandicap(currentSkin.hole) || "-"}
+                      </p>
                       <h1 className="mt-5 text-7xl font-black tracking-tight lg:text-8xl">
                         {currentSkin.team.name}
                       </h1>
@@ -375,6 +595,12 @@ export default function MoneyRoundResultsPage() {
                           </p>
                           <p className="mt-3 text-6xl font-black">
                             {currentSkin.score}
+                          </p>
+                          <p className="mt-2 text-lg font-bold text-[#16a34a]">
+                            {formatRelativeToPar(
+                              currentSkin.score,
+                              getHolePar(currentSkin.hole),
+                            )}
                           </p>
                         </div>
                         <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
@@ -393,44 +619,148 @@ export default function MoneyRoundResultsPage() {
             )}
 
             {!isLoading && !error && round && section.id === "player_bank" && (
-              <div className="space-y-5">
-                <h1 className="text-6xl font-black tracking-tight">
-                  Player Payouts
-                </h1>
-                {positiveBankRows.length === 0 && (
+              <div className="space-y-8">
+                {!currentPayout ? (
                   <p className="rounded-3xl border border-[#242424] bg-[#111111] p-8 text-3xl text-[#a3a3a3]">
                     No positive player payouts this round.
                   </p>
-                )}
-                <div className="grid gap-3 lg:grid-cols-2">
-                  {positiveBankRows.map((row) => (
-                    <div
-                      key={`${row.teamName}-${row.playerName}`}
-                      className="grid grid-cols-[1fr_0.55fr] gap-4 rounded-2xl border border-[#242424] bg-[#111111] p-5"
-                    >
+                ) : (
+                  <>
+                    <p className="text-xl uppercase tracking-[0.3em] text-[#16a34a]">
+                      Player Payouts
+                    </p>
+                    <div className="rounded-[2rem] border border-[#16a34a] bg-[#07120c] p-10">
                       <div>
-                        <h2 className="text-2xl font-black">{row.playerName}</h2>
-                        <p className="mt-1 text-sm text-[#a3a3a3]">
-                          {row.teamName}
+                        <h1 className="text-7xl font-black tracking-tight lg:text-8xl">
+                          {currentPayout.playerName}
+                        </h1>
+                        <p className="mt-5 text-3xl text-[#a3a3a3]">
+                          {currentPayout.teamName}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <p
-                          className={`text-3xl font-black ${
-                            row.net >= 0 ? "text-[#16a34a]" : "text-[#a3a3a3]"
-                          }`}
-                        >
-                          {signedMoney(row.net)}
-                        </p>
-                        <p className="mt-1 text-xs text-[#a3a3a3]">
-                          Placement Winnings {money(row.placementWinnings)} ·
-                          Skins Winnings {money(row.skinsWinnings)} · Buy-In{" "}
-                          {money(row.buyIn)} · Net This Round{" "}
-                          {signedMoney(row.net)}
-                        </p>
+
+                      <div className="mt-10 grid gap-4 lg:grid-cols-[1fr_1fr_1fr_1.25fr]">
+                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                          <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
+                            Placement
+                          </p>
+                          <p className="mt-3 text-4xl font-black">
+                            {money(currentPayout.placementWinnings)}
+                          </p>
+                        </div>
+                        <div className="rounded-3xl border border-[#166534]/70 bg-black/30 p-6">
+                          <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
+                            Skins
+                          </p>
+                          <p className="mt-3 text-4xl font-black">
+                            {money(currentPayout.skinsWinnings)}
+                          </p>
+                        </div>
+                        <div className="rounded-3xl border border-[#242424] bg-black/30 p-6">
+                          <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
+                            Buy-In
+                          </p>
+                          <p className="mt-3 text-4xl font-black text-[#a3a3a3]">
+                            {money(currentPayout.buyIn)}
+                          </p>
+                        </div>
+                        <div className="rounded-3xl border border-[#16a34a] bg-black/30 p-6">
+                          <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
+                            Total Winnings
+                          </p>
+                          <p className="mt-3 text-5xl font-black text-[#16a34a]">
+                            {money(currentPayout.totalWinnings)}
+                          </p>
+                          <p className="mt-3 text-lg font-bold text-[#a3a3a3]">
+                            Net This Round {signedMoney(currentPayout.net)}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  </>
+                )}
+              </div>
+            )}
+
+            {!isLoading && !error && round && section.id === "complete" && (
+              <div className="flex min-h-[65vh] items-center justify-center">
+                <div className="w-full max-w-6xl text-center">
+                  <p className="text-xl uppercase tracking-[0.35em] text-[#16a34a]">
+                    Money Round Final
+                  </p>
+                  <h1 className="mt-6 text-7xl font-black tracking-tight lg:text-8xl">
+                    {round.name} Complete
+                  </h1>
+
+                  <div className="mt-12 grid gap-4 text-left lg:grid-cols-5">
+                    <div className="rounded-3xl border border-[#16a34a] bg-[#07120c] p-6">
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
+                        Winning Team
+                      </p>
+                      <p className="mt-3 text-3xl font-black">
+                        {winningStanding?.team.name || "-"}
+                      </p>
+                    </div>
+                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
+                        Winning Score
+                      </p>
+                      <p className="mt-3 text-3xl font-black text-[#16a34a]">
+                        {winningStanding
+                          ? formatScoreToCompletedPar(
+                              winningStanding.total,
+                              winningStanding.scoresByHole,
+                            )
+                          : "-"}
+                      </p>
+                    </div>
+                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
+                        Biggest Winner
+                      </p>
+                      <p className="mt-3 text-3xl font-black">
+                        {biggestWinner?.playerName || "-"}
+                      </p>
+                      {biggestWinner && (
+                        <p className="mt-2 text-xl font-bold text-[#16a34a]">
+                          {money(biggestWinner.totalWinnings)}
+                        </p>
+                      )}
+                    </div>
+                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
+                        Hardest Hole
+                      </p>
+                      <p className="mt-3 text-3xl font-black">
+                        {courseHighlights.hardest
+                          ? `Hole ${courseHighlights.hardest.hole}`
+                          : "-"}
+                      </p>
+                      {courseHighlights.hardest && (
+                        <p className="mt-2 text-lg text-[#a3a3a3]">
+                          Avg{" "}
+                          {formatAverage(courseHighlights.hardest.averageScore)}{" "}
+                          (
+                          {formatAverageRelativeToPar(
+                            courseHighlights.hardest.averageRelativeToPar,
+                          )}
+                          )
+                        </p>
+                      )}
+                    </div>
+                    <div className="rounded-3xl border border-[#166534]/70 bg-[#111111] p-6">
+                      <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
+                        Skins Awarded
+                      </p>
+                      <p className="mt-3 text-3xl font-black">
+                        {skins.length}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-12 text-3xl font-bold text-[#16a34a]">
+                    Draft begins shortly.
+                  </p>
                 </div>
               </div>
             )}

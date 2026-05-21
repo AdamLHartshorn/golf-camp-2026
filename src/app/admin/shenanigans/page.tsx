@@ -11,6 +11,7 @@ type ShenanigansEvent = {
   description: string;
   points: number;
   created_at: string | null;
+  game_id?: string | null;
 };
 
 type ShenanigansWager = {
@@ -23,6 +24,15 @@ type ShenanigansWager = {
   loser_names: string[] | null;
   created_at: string | null;
   settled_at: string | null;
+  game_id?: string | null;
+};
+
+type ShenanigansGame = {
+  id: string;
+  name: string;
+  status: string | null;
+  created_at: string | null;
+  ended_at: string | null;
 };
 
 function formatDate(value: string | null) {
@@ -30,10 +40,13 @@ function formatDate(value: string | null) {
 }
 
 export default function ShenanigansAdminPage() {
+  const [games, setGames] = useState<ShenanigansGame[]>([]);
   const [events, setEvents] = useState<ShenanigansEvent[]>([]);
   const [wagers, setWagers] = useState<ShenanigansWager[]>([]);
+  const [isLoadingGames, setIsLoadingGames] = useState(true);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [isLoadingWagers, setIsLoadingWagers] = useState(true);
+  const [gameError, setGameError] = useState("");
   const [eventError, setEventError] = useState("");
   const [wagerError, setWagerError] = useState("");
   const [message, setMessage] = useState("");
@@ -46,6 +59,28 @@ export default function ShenanigansAdminPage() {
     () => wagers.filter((wager) => wager.status === "settled"),
     [wagers],
   );
+
+  async function fetchGames() {
+    setIsLoadingGames(true);
+
+    const { data, error } = await supabase
+      .from("shenanigans_games")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    console.log("Admin shenanigans_games fetch:", { data, error });
+
+    if (error) {
+      setGames([]);
+      setGameError(error.message || "Could not load Shenanigans games.");
+      setIsLoadingGames(false);
+      return;
+    }
+
+    setGames((data as ShenanigansGame[]) || []);
+    setGameError("");
+    setIsLoadingGames(false);
+  }
 
   async function fetchEvents() {
     setIsLoadingEvents(true);
@@ -146,13 +181,95 @@ export default function ShenanigansAdminPage() {
       setIsLoadingWagers(false);
     }
 
+    async function loadGames() {
+      const { data, error } = await supabase
+        .from("shenanigans_games")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      console.log("Admin shenanigans_games fetch:", { data, error });
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (error) {
+        setGames([]);
+        setGameError(error.message || "Could not load Shenanigans games.");
+        setIsLoadingGames(false);
+        return;
+      }
+
+      setGames((data as ShenanigansGame[]) || []);
+      setGameError("");
+      setIsLoadingGames(false);
+    }
+
     loadEvents();
     loadWagers();
+    loadGames();
 
     return () => {
       isCurrent = false;
     };
   }, []);
+
+  async function handleUpdateGameStatus(game: ShenanigansGame, status: "active" | "ended") {
+    setMessage("");
+
+    const payload =
+      status === "ended"
+        ? { status, ended_at: new Date().toISOString() }
+        : { status, ended_at: null };
+    const { data, error } = await supabase
+      .from("shenanigans_games")
+      .update(payload)
+      .eq("id", game.id)
+      .select();
+
+    console.log("Admin shenanigans_games status update:", {
+      game,
+      payload,
+      data,
+      error,
+    });
+
+    if (error) {
+      setGameError(error.message || "Could not update game.");
+      return;
+    }
+
+    setMessage(status === "ended" ? "Game ended." : "Game reactivated.");
+    await fetchGames();
+  }
+
+  async function handleDeleteGame(game: ShenanigansGame) {
+    if (
+      !window.confirm(
+        `Delete ${game.name}? Game players and game-linked events/wagers will be removed.`,
+      )
+    ) {
+      return;
+    }
+
+    setMessage("");
+
+    const { data, error } = await supabase
+      .from("shenanigans_games")
+      .delete()
+      .eq("id", game.id)
+      .select();
+
+    console.log("Admin shenanigans_games delete:", { game, data, error });
+
+    if (error) {
+      setGameError(error.message || "Could not delete game.");
+      return;
+    }
+
+    setMessage("Game deleted.");
+    await Promise.all([fetchGames(), fetchEvents(), fetchWagers()]);
+  }
 
   async function handleDeleteEvent(event: ShenanigansEvent) {
     if (!window.confirm(`Delete ${event.player_name}'s ledger event?`)) {
@@ -250,6 +367,87 @@ export default function ShenanigansAdminPage() {
         {message && (
           <p className="text-center text-sm text-[#f5f5f5]">{message}</p>
         )}
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-xl font-bold">Game Sessions</h2>
+            <p className="mt-1 text-sm text-[#a3a3a3]">
+              End, reactivate, or delete Shenanigans games.
+            </p>
+          </div>
+
+          {gameError && (
+            <p className="text-center text-sm text-[#ff8a8a]">{gameError}</p>
+          )}
+
+          <div className="space-y-3">
+            {isLoadingGames && (
+              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+                Loading games...
+              </div>
+            )}
+
+            {!isLoadingGames && games.length === 0 && !gameError && (
+              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+                No Shenanigans games found.
+              </div>
+            )}
+
+            {!isLoadingGames &&
+              games.map((game) => (
+                <div
+                  key={game.id}
+                  className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <h3 className="truncate text-lg font-bold">{game.name}</h3>
+                      <p className="mt-1 text-sm text-[#a3a3a3]">
+                        {game.status || "active"} · {formatDate(game.created_at)}
+                      </p>
+                      {game.ended_at && (
+                        <p className="mt-1 text-xs text-[#737373]">
+                          Ended {formatDate(game.ended_at)}
+                        </p>
+                      )}
+                    </div>
+
+                    <span className="rounded-full border border-[#242424] px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-[#a3a3a3]">
+                      {game.status || "active"}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#242424] pt-4">
+                    {game.status === "ended" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateGameStatus(game, "active")}
+                        className="rounded-xl border border-[#242424] px-3 py-3 text-xs font-bold transition hover:border-[#f5f5f5]"
+                      >
+                        Reactivate
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateGameStatus(game, "ended")}
+                        className="rounded-xl border border-[#242424] px-3 py-3 text-xs font-bold transition hover:border-[#f5f5f5]"
+                      >
+                        End Game
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGame(game)}
+                      className="rounded-xl border border-[#7f1d1d] px-3 py-3 text-xs font-bold text-[#fca5a5] transition hover:border-[#fca5a5]"
+                    >
+                      Delete Game
+                    </button>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
 
         <section className="space-y-3">
           <div className="flex items-end justify-between gap-4">

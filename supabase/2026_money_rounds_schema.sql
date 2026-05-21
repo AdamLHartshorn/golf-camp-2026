@@ -17,6 +17,8 @@ create table if not exists public.money_round_teams (
   money_round_id uuid not null references public.money_rounds(id) on delete cascade,
   name text not null,
   player_names text[] not null default '{}',
+  score_status text not null default 'pending'
+    check (score_status in ('pending', 'submitted', 'verified')),
   created_at timestamptz default now(),
   updated_at timestamptz default now(),
   unique (id, money_round_id),
