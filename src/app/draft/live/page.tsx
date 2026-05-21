@@ -15,6 +15,8 @@ import {
   groupPlayersByRank,
 } from "@/app/draft/_lib/draftUtils";
 
+const completedDraftStatuses = ["complete", "completed", "final", "finalized"];
+
 export default function DraftLivePage() {
   const [session, setSession] = useState<DraftSession | null>(null);
   const [players, setPlayers] = useState<DraftPlayer[]>([]);
@@ -24,7 +26,7 @@ export default function DraftLivePage() {
   const [error, setError] = useState("");
 
   async function fetchLiveDraft() {
-    const { data: sessionData, error: sessionError } = await supabase
+    const { data: activeSessionData, error: activeSessionError } = await supabase
       .from("draft_sessions")
       .select("*")
       .eq("status", "active")
@@ -32,18 +34,39 @@ export default function DraftLivePage() {
       .limit(1)
       .maybeSingle();
 
-    if (sessionError) {
-      setError(sessionError.message || "Could not load draft.");
+    if (activeSessionError) {
+      setError(activeSessionError.message || "Could not load draft.");
       setIsLoading(false);
       return;
     }
 
+    let sessionData = activeSessionData;
+
     if (!sessionData) {
-      setSession(null);
-      setTeams([]);
-      setPicks([]);
-      setIsLoading(false);
-      return;
+      const { data: completedSessionData, error: completedSessionError } =
+        await supabase
+          .from("draft_sessions")
+          .select("*")
+          .in("status", completedDraftStatuses)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+      if (completedSessionError) {
+        setError(completedSessionError.message || "Could not load draft.");
+        setIsLoading(false);
+        return;
+      }
+
+      sessionData = completedSessionData;
+
+      if (!sessionData) {
+        setSession(null);
+        setTeams([]);
+        setPicks([]);
+        setIsLoading(false);
+        return;
+      }
     }
 
     const draftSession = sessionData as DraftSession;
@@ -67,13 +90,6 @@ export default function DraftLivePage() {
         .eq("draft_session_id", draftSession.id)
         .order("pick_number", { ascending: true }),
     ]);
-
-    console.log("draft live state:", {
-      draftSession,
-      playerError,
-      teamError,
-      pickError,
-    });
 
     if (playerError || teamError || pickError) {
       setError(
@@ -126,6 +142,8 @@ export default function DraftLivePage() {
     () => new Map(players.map((player) => [player.id, player])),
     [players],
   );
+  const isCompleteDraft =
+    session && completedDraftStatuses.includes(String(session.status));
 
   return (
     <main className="h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_10%,rgba(37,99,235,0.34),transparent_28%),radial-gradient(circle_at_86%_78%,rgba(30,64,175,0.22),transparent_34%),linear-gradient(135deg,#02040a_0%,#05070d_45%,#000_100%)] p-5 text-[#f5f5f5]">
@@ -140,6 +158,7 @@ export default function DraftLivePage() {
             </h1>
             <p className="mt-3 text-lg text-[#c7d2fe]">
               {session?.name || "No active draft"}
+              {isCompleteDraft ? " · Complete" : ""}
             </p>
           </div>
 
@@ -158,7 +177,9 @@ export default function DraftLivePage() {
                   ? "Loading"
                   : error
                     ? "Error"
-                    : currentTeam?.name || "Complete"}
+                    : isCompleteDraft
+                      ? "Draft Complete"
+                      : currentTeam?.name || "Complete"}
               </h2>
             </div>
 

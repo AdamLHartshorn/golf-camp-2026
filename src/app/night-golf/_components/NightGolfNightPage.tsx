@@ -8,7 +8,6 @@ type NightGolfNightPageProps = {
 };
 
 export function NightGolfNightPage({
-  date,
   nightLabel,
   nightPath,
 }: NightGolfNightPageProps) {

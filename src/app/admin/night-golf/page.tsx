@@ -59,12 +59,6 @@ export default function NightGolfAdminPage() {
       .eq("night", night)
       .order("created_at", { ascending: false });
 
-    console.log("Admin night_golf_scores fetch:", {
-      night,
-      data,
-      error: fetchError,
-    });
-
     if (fetchError) {
       setRows([]);
       setError(fetchError.message || "Could not load submissions.");
@@ -85,12 +79,6 @@ export default function NightGolfAdminPage() {
         .select("id, player_name, target, score, created_at")
         .eq("night", selectedNight)
         .order("created_at", { ascending: false });
-
-      console.log("Admin night_golf_scores fetch:", {
-        night: selectedNight,
-        data,
-        error: fetchError,
-      });
 
       if (!isCurrent) {
         return;
@@ -136,12 +124,6 @@ export default function NightGolfAdminPage() {
       .eq("id", row.id)
       .select("id");
 
-    console.log("Admin night_golf_scores delete:", {
-      row,
-      data,
-      error: deleteError,
-    });
-
     if (deleteError) {
       setError(deleteError.message || "Could not delete submission.");
       return;
@@ -172,17 +154,11 @@ export default function NightGolfAdminPage() {
     setMessage("");
     setError("");
 
-    const { data, error: resetError } = await supabase
+    const { error: resetError } = await supabase
       .from("night_golf_scores")
       .delete()
       .eq("night", selectedNight)
       .select();
-
-    console.log("Admin night_golf_scores reset night:", {
-      night: selectedNight,
-      data,
-      error: resetError,
-    });
 
     if (resetError) {
       setError(resetError.message || "Could not reset night.");

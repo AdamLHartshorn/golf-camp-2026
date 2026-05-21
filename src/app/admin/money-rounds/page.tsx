@@ -919,13 +919,6 @@ export default function AdminMoneyRoundsPage() {
     setError("");
     setIsSaving(true);
 
-    const didPersist = await persistAllScoreDrafts();
-
-    if (!didPersist) {
-      setIsSaving(false);
-      return;
-    }
-
     const { data, error: updateError } = await supabase
       .from("money_rounds")
       .update({ status: "final", updated_at: new Date().toISOString() })
@@ -947,7 +940,7 @@ export default function AdminMoneyRoundsPage() {
     }
 
     await fetchRounds();
-    await persistAllScoreDrafts();
+    await fetchRoundState(round.id);
     setMessage("Round marked final.");
     setIsSaving(false);
   }

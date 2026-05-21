@@ -35,11 +35,6 @@ export function NightGolfLeaderboardPage({
         .select("player_name, score")
         .eq("night", night);
 
-      console.log(`${nightLabel} leaderboard fetched rows:`, {
-        data,
-        error,
-      });
-
       if (error) {
         setLeaderboard([]);
         setIsLoading(false);
@@ -65,8 +60,6 @@ export function NightGolfLeaderboardPage({
       const aggregatedTotals = Object.entries(totals)
         .map(([name, total]) => ({ name, total }))
         .sort((a, b) => b.total - a.total);
-
-      console.log(`${nightLabel} leaderboard aggregated totals:`, aggregatedTotals);
 
       setLeaderboard(aggregatedTotals);
       setIsLoading(false);

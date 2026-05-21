@@ -34,6 +34,12 @@ export default function LoginPage() {
     }
 
     if (normalizedPassword === "MEGABALLS") {
+      setPlayerSession({
+        id: "fallback-admin",
+        display_name: "Fallback Admin",
+        login_name: "megaballs",
+        is_admin: true,
+      });
       router.push("/admin");
       return;
     }

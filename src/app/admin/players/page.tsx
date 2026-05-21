@@ -177,6 +177,9 @@ export default function PlayersAdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [rankFilter, setRankFilter] = useState("all");
   const formRef = useRef<HTMLElement | null>(null);
 
   const activePlayers = useMemo(
@@ -210,6 +213,60 @@ export default function PlayersAdminPage() {
         }),
     [players],
   );
+
+  const filteredPlayers = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return players
+      .filter((player) => {
+        if (statusFilter === "active" && player.active === false) {
+          return false;
+        }
+
+        if (statusFilter === "inactive" && player.active !== false) {
+          return false;
+        }
+
+        if (rankFilter !== "all" && player.rank !== rankFilter) {
+          return false;
+        }
+
+        if (!normalizedSearch) {
+          return true;
+        }
+
+        return [
+          player.display_name,
+          player.first_name,
+          player.last_name,
+          player.nickname,
+          player.room,
+          player.arrival,
+          player.login_name,
+          player.email,
+          player.phone,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedSearch);
+      })
+      .sort((a, b) => {
+        const activeCompare = Number(a.active === false) - Number(b.active === false);
+
+        if (activeCompare !== 0) {
+          return activeCompare;
+        }
+
+        const lastNameCompare = a.last_name.localeCompare(b.last_name);
+
+        if (lastNameCompare !== 0) {
+          return lastNameCompare;
+        }
+
+        return a.first_name.localeCompare(b.first_name);
+      });
+  }, [players, rankFilter, searchTerm, statusFilter]);
 
   async function fetchPlayers() {
     const { data, error: fetchError } = await supabase
@@ -394,6 +451,29 @@ export default function PlayersAdminPage() {
       return;
     }
 
+    if (payload.login_name) {
+      const duplicateLogin = players.find(
+        (player) =>
+          player.id !== editingId &&
+          player.login_name?.trim().toLowerCase() === payload.login_name,
+      );
+
+      if (duplicateLogin) {
+        setError(`Login name is already used by ${duplicateLogin.display_name}.`);
+        return;
+      }
+
+      if (!payload.pin_code) {
+        const shouldContinue = window.confirm(
+          "This player has a login name but no PIN. Save anyway?",
+        );
+
+        if (!shouldContinue) {
+          return;
+        }
+      }
+    }
+
     setIsSaving(true);
 
     if (editingId) {
@@ -484,36 +564,6 @@ export default function PlayersAdminPage() {
     await fetchPlayers();
   }
 
-  async function handleDelete(player: PlayerRow) {
-    if (!window.confirm(`Delete ${player.display_name}?`)) {
-      return;
-    }
-
-    setMessage("");
-    setError("");
-
-    const { data, error: deleteError } = await supabase
-      .from("players")
-      .delete()
-      .eq("id", player.id)
-      .select();
-
-    console.log("Admin players delete:", {
-      player,
-      data,
-      error: deleteError,
-    });
-
-    if (deleteError) {
-      setError(deleteError.message || "Could not delete player.");
-      return;
-    }
-
-    setMessage("Player deleted.");
-    setIsLoading(true);
-    await fetchPlayers();
-  }
-
   function renderPlayerCard(player: PlayerRow) {
     return (
       <div
@@ -574,21 +624,13 @@ export default function PlayersAdminPage() {
           </button>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-3 border-t border-[#242424] pt-4">
+        <div className="mt-4 border-t border-[#242424] pt-4">
           <button
             type="button"
             onClick={() => handleToggleActive(player)}
-            className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
+            className="w-full rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
           >
-            {player.active === false ? "Activate" : "Deactivate"}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleDelete(player)}
-            className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#ff8a8a] transition hover:border-[#ff8a8a]"
-          >
-            Delete
+            {player.active === false ? "Reactivate Player" : "Deactivate Player"}
           </button>
         </div>
       </div>
@@ -622,7 +664,13 @@ export default function PlayersAdminPage() {
             </h2>
 
             <p className="mt-1 text-sm text-[#a3a3a3]">
-              Player profile fields for Camp Office.
+              Controlled player record used across roster, draft, scoring, and login.
+            </p>
+          </div>
+
+          <div className="border-t border-[#242424] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+              Identity
             </p>
           </div>
 
@@ -660,7 +708,13 @@ export default function PlayersAdminPage() {
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="border-t border-[#242424] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+              Golf / Draft
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <select
               value={form.rank}
               onChange={(event) => updateForm("rank", event.target.value)}
@@ -682,14 +736,12 @@ export default function PlayersAdminPage() {
               placeholder="A1"
               className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
             />
+          </div>
 
-            <input
-              type="text"
-              value={form.room}
-              onChange={(event) => updateForm("room", event.target.value)}
-              placeholder="Room"
-              className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
-            />
+          <div className="border-t border-[#242424] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+              Camp Logistics
+            </p>
           </div>
 
           <input
@@ -697,6 +749,14 @@ export default function PlayersAdminPage() {
             value={form.arrival}
             onChange={(event) => updateForm("arrival", event.target.value)}
             placeholder="Arrival"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          />
+
+          <input
+            type="text"
+            value={form.room}
+            onChange={(event) => updateForm("room", event.target.value)}
+            placeholder="Room"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
 
@@ -742,6 +802,12 @@ export default function PlayersAdminPage() {
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
 
+          <div className="border-t border-[#242424] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+              Login / Permissions
+            </p>
+          </div>
+
           <div className="space-y-3 rounded-xl border border-[#242424] bg-black p-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
@@ -781,6 +847,12 @@ export default function PlayersAdminPage() {
               />
               Admin access
             </label>
+          </div>
+
+          <div className="border-t border-[#242424] pt-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+              Profile / Lore
+            </p>
           </div>
 
           <textarea
@@ -911,18 +983,70 @@ export default function PlayersAdminPage() {
               onClick={() => resetForm()}
               className="rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
             >
-              Clear
+              {editingId ? "Cancel" : "Clear"}
             </button>
           </div>
         </section>
 
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div>
-            <h2 className="text-xl font-bold">Active Players</h2>
+            <h2 className="text-xl font-bold">Player Records</h2>
 
             <p className="mt-1 text-sm text-[#a3a3a3]">
-              Sorted by last name.
+              Search, filter, edit, deactivate, and reactivate records.
             </p>
+          </div>
+
+          <div className="space-y-3 rounded-2xl border border-[#242424] bg-[#111111] p-4">
+            <input
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search players, rooms, login names..."
+              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <select
+                value={statusFilter}
+                onChange={(event) =>
+                  setStatusFilter(event.target.value as "all" | "active" | "inactive")
+                }
+                className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              >
+                <option value="all">All statuses</option>
+                <option value="active">Active only</option>
+                <option value="inactive">Inactive only</option>
+              </select>
+
+              <select
+                value={rankFilter}
+                onChange={(event) => setRankFilter(event.target.value)}
+                className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              >
+                <option value="all">All ranks</option>
+                {ranks.map((rank) => (
+                  <option key={rank} value={rank}>
+                    Rank {rank}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-center text-xs text-[#a3a3a3]">
+              <div className="rounded-xl border border-[#242424] bg-black px-3 py-2">
+                <p className="font-bold text-[#f5f5f5]">{players.length}</p>
+                <p>Total</p>
+              </div>
+              <div className="rounded-xl border border-[#242424] bg-black px-3 py-2">
+                <p className="font-bold text-[#f5f5f5]">{activePlayers.length}</p>
+                <p>Active</p>
+              </div>
+              <div className="rounded-xl border border-[#242424] bg-black px-3 py-2">
+                <p className="font-bold text-[#f5f5f5]">{inactivePlayers.length}</p>
+                <p>Inactive</p>
+              </div>
+            </div>
           </div>
 
           {isLoading && (
@@ -931,31 +1055,13 @@ export default function PlayersAdminPage() {
             </div>
           )}
 
-          {!isLoading && activePlayers.length === 0 && (
+          {!isLoading && filteredPlayers.length === 0 && (
             <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
-              No active players yet.
+              No players match the current filters.
             </div>
           )}
 
-          {!isLoading && activePlayers.map(renderPlayerCard)}
-        </section>
-
-        <section className="space-y-3">
-          <div>
-            <h2 className="text-xl font-bold">Inactive Players</h2>
-
-            <p className="mt-1 text-sm text-[#a3a3a3]">
-              Hidden from active roster flows.
-            </p>
-          </div>
-
-          {!isLoading && inactivePlayers.length === 0 && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
-              No inactive players.
-            </div>
-          )}
-
-          {!isLoading && inactivePlayers.map(renderPlayerCard)}
+          {!isLoading && filteredPlayers.map(renderPlayerCard)}
         </section>
 
         <Link

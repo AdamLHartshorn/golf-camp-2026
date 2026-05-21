@@ -35,6 +35,8 @@ export default function AdminDraftPage() {
   const [picks, setPicks] = useState<DraftPick[]>([]);
   const [sessionName, setSessionName] = useState("Wednesday Morning Draft");
   const [captainRank, setCaptainRank] = useState<"A" | "B" | "C" | "D">("A");
+  const [manualCaptainPlayerId, setManualCaptainPlayerId] = useState("");
+  const [teamNameEdits, setTeamNameEdits] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -165,6 +167,16 @@ export default function AdminDraftPage() {
     () => new Map(players.map((player) => [player.id, player])),
     [players],
   );
+  const isPendingDraft = selectedSession?.status === "pending";
+  const captainPlayerIds = useMemo(
+    () =>
+      new Set(
+        teams
+          .map((team) => team.captain_player_id)
+          .filter((playerId): playerId is string => Boolean(playerId)),
+      ),
+    [teams],
+  );
 
   async function handleCreateSession() {
     const trimmedName = sessionName.trim();
@@ -281,6 +293,167 @@ export default function AdminDraftPage() {
     await fetchDraftState(selectedSession.id);
   }
 
+  async function handleAddCaptainTeam() {
+    if (!selectedSession || !manualCaptainPlayerId || !isPendingDraft) {
+      return;
+    }
+
+    const captain = playersById.get(manualCaptainPlayerId);
+
+    if (!captain) {
+      setError("Select an active player to add as captain.");
+      return;
+    }
+
+    if (captainPlayerIds.has(captain.id)) {
+      const shouldContinue = window.confirm(
+        `${captain.display_name} is already assigned as a captain. Add anyway?`,
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
+    setMessage("");
+    setError("");
+
+    const nextPosition = orderedTeams.length + 1;
+    const { data, error: insertError } = await supabase
+      .from("draft_teams")
+      .insert({
+        draft_session_id: selectedSession.id,
+        name: getCaptainTeamName(captain),
+        captain_player_id: captain.id,
+        draft_position: nextPosition,
+      })
+      .select("*")
+      .single();
+
+    if (insertError || !data) {
+      setError(insertError?.message || "Could not add captain team.");
+      return;
+    }
+
+    const newTeam = data as DraftTeam;
+    const nextTeams = [...orderedTeams, newTeam];
+    await persistDraftOrder(nextTeams);
+    setManualCaptainPlayerId("");
+    setMessage(`${captain.display_name} added as captain.`);
+  }
+
+  async function handleRemoveCaptainTeam(team: DraftTeam) {
+    if (!selectedSession || !isPendingDraft) {
+      return;
+    }
+
+    const shouldRemove = window.confirm(`Remove ${team.name} from this draft?`);
+
+    if (!shouldRemove) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    const { error: deleteError } = await supabase
+      .from("draft_teams")
+      .delete()
+      .eq("id", team.id);
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not remove captain team.");
+      return;
+    }
+
+    const nextTeams = orderedTeams.filter((item) => item.id !== team.id);
+    await persistDraftOrder(nextTeams);
+    setMessage(`${team.name} removed.`);
+  }
+
+  async function handleChangeCaptain(team: DraftTeam, nextCaptainId: string) {
+    if (!selectedSession || !isPendingDraft || !nextCaptainId) {
+      return;
+    }
+
+    const nextCaptain = playersById.get(nextCaptainId);
+    const currentCaptain = team.captain_player_id
+      ? playersById.get(team.captain_player_id)
+      : null;
+
+    if (!nextCaptain) {
+      setError("Selected captain could not be found.");
+      return;
+    }
+
+    const isDuplicateCaptain = teams.some(
+      (item) => item.id !== team.id && item.captain_player_id === nextCaptain.id,
+    );
+
+    if (isDuplicateCaptain) {
+      const shouldContinue = window.confirm(
+        `${nextCaptain.display_name} is already a captain on another team. Continue?`,
+      );
+
+      if (!shouldContinue) {
+        return;
+      }
+    }
+
+    const currentDefaultName = currentCaptain
+      ? getCaptainTeamName(currentCaptain)
+      : "";
+    const nextDefaultName = getCaptainTeamName(nextCaptain);
+    const shouldUseDefaultName =
+      !team.name.trim() || team.name.trim() === currentDefaultName;
+
+    const { error: updateError } = await supabase
+      .from("draft_teams")
+      .update({
+        captain_player_id: nextCaptain.id,
+        name: shouldUseDefaultName ? nextDefaultName : team.name,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", team.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not change captain.");
+      return;
+    }
+
+    setMessage(`${team.name} captain updated.`);
+    await fetchDraftState(selectedSession.id);
+  }
+
+  async function handleRenameTeam(team: DraftTeam) {
+    if (!selectedSession || !isPendingDraft) {
+      return;
+    }
+
+    const nextName = (teamNameEdits[team.id] || "").trim();
+
+    if (!nextName) {
+      setError("Team name cannot be blank.");
+      return;
+    }
+
+    const { error: updateError } = await supabase
+      .from("draft_teams")
+      .update({
+        name: nextName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", team.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not rename team.");
+      return;
+    }
+
+    setMessage("Team name updated.");
+    await fetchDraftState(selectedSession.id);
+  }
+
   async function handleStartDraft() {
     if (!selectedSession || orderedTeams.length === 0) {
       return;
@@ -312,6 +485,11 @@ export default function AdminDraftPage() {
 
   async function handleDraftPlayer(player: DraftPlayer) {
     if (!selectedSession || !currentTeam) {
+      return;
+    }
+
+    if (picks.some((pick) => pick.player_id === player.id)) {
+      setError(`${player.display_name} has already been drafted.`);
       return;
     }
 
@@ -479,21 +657,32 @@ export default function AdminDraftPage() {
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
 
-          <div className="grid grid-cols-4 gap-2">
-            {ranks.map((rank) => (
-              <button
-                key={rank}
-                type="button"
-                onClick={() => setCaptainRank(rank)}
-                className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
-                  captainRank === rank
-                    ? "border-[#f5f5f5] bg-[#f5f5f5] text-black"
-                    : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#f5f5f5]"
-                }`}
-              >
-                {rank}
-              </button>
-            ))}
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black/40 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                Auto Captains
+              </p>
+              <p className="mt-1 text-xs text-[#737373]">
+                Choose a rank to generate the first captain teams. You can adjust everything afterward.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {ranks.map((rank) => (
+                <button
+                  key={rank}
+                  type="button"
+                  onClick={() => setCaptainRank(rank)}
+                  className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
+                    captainRank === rank
+                      ? "border-[#f5f5f5] bg-[#f5f5f5] text-black"
+                      : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#f5f5f5]"
+                  }`}
+                >
+                  {rank}
+                </button>
+              ))}
+            </div>
           </div>
 
           <button
@@ -502,7 +691,7 @@ export default function AdminDraftPage() {
             disabled={isSaving || isLoading}
             className="w-full rounded-xl bg-[#f5f5f5] px-4 py-3 font-bold text-black transition hover:bg-[#d4d4d4] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSaving ? "Creating..." : "Create Captain Teams"}
+            {isSaving ? "Creating..." : "Create Draft + Auto Captains"}
           </button>
         </section>
 
@@ -531,6 +720,12 @@ export default function AdminDraftPage() {
                 >
                   TV
                 </Link>
+                <Link
+                  href="/draft/mobile"
+                  className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
+                >
+                  Mobile
+                </Link>
               </div>
 
               <button
@@ -543,12 +738,55 @@ export default function AdminDraftPage() {
               </button>
             </section>
 
+            {isPendingDraft && (
+              <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                    Manual Adjustments
+                  </p>
+                  <h2 className="mt-2 text-xl font-bold">
+                    Add Captain Team
+                  </h2>
+                  <p className="mt-1 text-xs leading-5 text-[#737373]">
+                    Use this for exceptions. Captain rank is guidance, not a lock.
+                  </p>
+                </div>
+
+                <select
+                  value={manualCaptainPlayerId}
+                  onChange={(event) => setManualCaptainPlayerId(event.target.value)}
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                >
+                  <option value="">Select player to add</option>
+                  {players.map((player) => (
+                    <option key={player.id} value={player.id}>
+                      {player.display_name} ({player.rank || "Unranked"})
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  type="button"
+                  onClick={handleAddCaptainTeam}
+                  disabled={!manualCaptainPlayerId}
+                  className="w-full rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Add Captain / Team
+                </button>
+              </section>
+            )}
+
             <section className="space-y-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
                   Draft Order
                 </p>
                 <h2 className="mt-2 text-xl font-bold">Captain Teams</h2>
+                {isPendingDraft && (
+                  <p className="mt-1 text-xs leading-5 text-[#737373]">
+                    Reorder, rename, remove, or change captains before the draft starts.
+                  </p>
+                )}
               </div>
 
               {orderedTeams.map((team, index) => (
@@ -556,14 +794,19 @@ export default function AdminDraftPage() {
                   key={team.id}
                   className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
                 >
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-xs uppercase tracking-[0.2em] text-[#737373]">
                         Pick slot {index + 1}
                       </p>
                       <h3 className="truncate text-lg font-bold">{team.name}</h3>
+                      <p className="mt-1 text-sm text-[#a3a3a3]">
+                        Captain:{" "}
+                        {playersById.get(team.captain_player_id || "")?.display_name ||
+                          "Unassigned"}
+                      </p>
                     </div>
-                    {selectedSession.status === "pending" && (
+                    {isPendingDraft && (
                       <div className="flex gap-2">
                         <button
                           type="button"
@@ -582,6 +825,66 @@ export default function AdminDraftPage() {
                       </div>
                     )}
                   </div>
+
+                  {isPendingDraft && (
+                    <div className="mt-4 space-y-3 border-t border-[#242424] pt-4">
+                      <div className="grid gap-3">
+                        <label className="space-y-2">
+                          <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-[#a3a3a3]">
+                            Team Name
+                          </span>
+                          <div className="grid grid-cols-[1fr_auto] gap-2">
+                            <input
+                              type="text"
+                              value={teamNameEdits[team.id] ?? team.name}
+                              onChange={(event) =>
+                                setTeamNameEdits((current) => ({
+                                  ...current,
+                                  [team.id]: event.target.value,
+                                }))
+                              }
+                              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleRenameTeam(team)}
+                              className="rounded-xl border border-[#242424] px-3 py-2 text-sm font-bold hover:border-[#f5f5f5]"
+                            >
+                              Save
+                            </button>
+                          </div>
+                        </label>
+
+                        <label className="space-y-2">
+                          <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-[#a3a3a3]">
+                            Captain
+                          </span>
+                          <select
+                            value={team.captain_player_id || ""}
+                            onChange={(event) =>
+                              handleChangeCaptain(team, event.target.value)
+                            }
+                            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                          >
+                            <option value="">Unassigned</option>
+                            {players.map((player) => (
+                              <option key={player.id} value={player.id}>
+                                {player.display_name} ({player.rank || "Unranked"})
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCaptainTeam(team)}
+                        className="w-full rounded-xl border border-[#3a1f1f] px-4 py-3 text-sm font-bold text-[#ff8a8a] transition hover:border-[#ff8a8a]"
+                      >
+                        Remove Captain Team
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
 

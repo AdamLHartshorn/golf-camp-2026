@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useActivePlayers } from "@/lib/useActivePlayers";
 
@@ -39,29 +39,10 @@ export function NightGolfSubmitPage({
     isLoading: isLoadingPlayers,
     error: playersError,
   } = useActivePlayers();
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const isSupabaseConnected = Boolean(supabase);
   const selectedPlayerName =
     chosenPlayerName || players[0]?.display_name || "";
 
-  useEffect(() => {
-    async function fetchExistingScores() {
-      const { data, error: fetchError } = await supabase
-        .from("night_golf_scores")
-        .select("*");
-
-      console.log("night_golf_scores page-load rows:", {
-        data,
-        error: fetchError,
-      });
-    }
-
-    fetchExistingScores();
-  }, []);
-
   async function handleSubmit() {
-    console.log("SUBMIT CLICKED");
-
     const trimmedPlayerName = selectedPlayerName.trim();
 
     setMessage("");
@@ -86,17 +67,10 @@ export function NightGolfSubmitPage({
       score: selectedScore,
     };
 
-    console.log("Submitting night_golf_scores payload:", payload);
-
     try {
-      const { data, error: insertError } = await supabase
+      const { error: insertError } = await supabase
         .from("night_golf_scores")
         .insert(payload);
-
-      console.log("night_golf_scores insert result:", {
-        data,
-        error: insertError,
-      });
 
       if (insertError) {
         setError(insertError.message || "Could not submit result.");
@@ -113,7 +87,6 @@ export function NightGolfSubmitPage({
         setSelectedTarget(nextTarget);
       }
     } catch (submitError) {
-      console.error("night_golf_scores insert failed:", submitError);
       setError(
         submitError instanceof Error
           ? submitError.message
@@ -283,15 +256,6 @@ export function NightGolfSubmitPage({
           ← Back to {nightLabel} Night Golf
         </Link>
 
-        <div className="space-y-1 text-center text-xs text-[#737373]">
-          <p>
-            {isSupabaseConnected
-              ? "Supabase Connected"
-              : "Supabase Not Connected"}
-          </p>
-
-          <p>{supabaseUrl || "Missing NEXT_PUBLIC_SUPABASE_URL"}</p>
-        </div>
       </div>
     </main>
   );
