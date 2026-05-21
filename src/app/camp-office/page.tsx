@@ -53,6 +53,25 @@ export default function CampOfficePage() {
           ))}
         </div>
 
+        <div className="border-t border-[#242424] pt-4">
+          <Link
+            href="/my-profile"
+            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#f5f5f5]"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold">My Profile</h2>
+
+                <p className="mt-1 text-sm text-[#a3a3a3]">
+                  View your camp profile and change your PIN.
+                </p>
+              </div>
+
+              <span className="text-2xl text-[#f5f5f5]">→</span>
+            </div>
+          </Link>
+        </div>
+
         <Link
           href="/home"
           className="text-center text-sm text-[#a3a3a3]"

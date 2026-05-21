@@ -6,6 +6,7 @@ export type PlayerSession = {
 };
 
 const sessionKey = "golfCampPlayerSession";
+const sessionEventName = "golfCampPlayerSessionChange";
 
 export function getPlayerSession() {
   if (typeof window === "undefined") {
@@ -28,8 +29,24 @@ export function getPlayerSession() {
 
 export function setPlayerSession(session: PlayerSession) {
   window.localStorage.setItem(sessionKey, JSON.stringify(session));
+  window.dispatchEvent(new Event(sessionEventName));
 }
 
 export function clearPlayerSession() {
   window.localStorage.removeItem(sessionKey);
+  window.dispatchEvent(new Event(sessionEventName));
+}
+
+export function subscribeToPlayerSession(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  window.addEventListener(sessionEventName, callback);
+  window.addEventListener("storage", callback);
+
+  return () => {
+    window.removeEventListener(sessionEventName, callback);
+    window.removeEventListener("storage", callback);
+  };
 }

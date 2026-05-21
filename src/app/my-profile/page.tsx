@@ -123,6 +123,11 @@ export default function MyProfilePage() {
             Golf Camp 2026
           </p>
           <h1 className="text-4xl font-bold tracking-tight">My Profile</h1>
+          <p className="text-[#a3a3a3]">
+            {session
+              ? `Signed in as ${session.display_name}.`
+              : "View your camp details and manage your PIN."}
+          </p>
         </div>
 
         {isLoading && (
@@ -148,6 +153,9 @@ export default function MyProfilePage() {
         {!isLoading && player && (
           <>
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                Logged-In Player
+              </p>
               <h2 className="text-2xl font-bold">{player.display_name}</h2>
               {player.nickname && (
                 <p className="mt-1 text-sm text-[#a3a3a3]">
@@ -177,30 +185,72 @@ export default function MyProfilePage() {
 
             <section className="space-y-3 rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <h2 className="text-xl font-bold">Change PIN</h2>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={currentPin}
-                onChange={(event) => setCurrentPin(event.target.value)}
-                placeholder="Current PIN"
-                className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
-              />
-              <input
-                type="text"
-                inputMode="numeric"
-                value={newPin}
-                onChange={(event) => setNewPin(event.target.value)}
-                placeholder="New PIN"
-                className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
-              />
-              <input
-                type="text"
-                inputMode="numeric"
-                value={confirmPin}
-                onChange={(event) => setConfirmPin(event.target.value)}
-                placeholder="Confirm New PIN"
-                className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
-              />
+              <p className="text-sm text-[#a3a3a3]">
+                Enter your current PIN, then choose a new one.
+              </p>
+              <div>
+                <label
+                  htmlFor="current-pin"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  Current PIN
+                </label>
+                <input
+                  id="current-pin"
+                  type="text"
+                  inputMode="numeric"
+                  value={currentPin}
+                  onChange={(event) => {
+                    setCurrentPin(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="Current PIN"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="new-pin"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  New PIN
+                </label>
+                <input
+                  id="new-pin"
+                  type="text"
+                  inputMode="numeric"
+                  value={newPin}
+                  onChange={(event) => {
+                    setNewPin(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="New PIN"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="confirm-new-pin"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  Confirm New PIN
+                </label>
+                <input
+                  id="confirm-new-pin"
+                  type="text"
+                  inputMode="numeric"
+                  value={confirmPin}
+                  onChange={(event) => {
+                    setConfirmPin(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="Confirm New PIN"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
               <button
                 type="button"
                 onClick={handleChangePin}

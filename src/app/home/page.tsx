@@ -7,6 +7,7 @@ import {
   clearPlayerSession,
   getPlayerSession,
   PlayerSession,
+  subscribeToPlayerSession,
 } from "@/lib/playerSession";
 
 export default function HomePage() {
@@ -14,9 +15,13 @@ export default function HomePage() {
   const router = useRouter();
 
   useEffect(() => {
-    window.setTimeout(() => {
+    function syncSession() {
       setSession(getPlayerSession());
-    }, 0);
+    }
+
+    syncSession();
+
+    return subscribeToPlayerSession(syncSession);
   }, []);
 
   function handleLogout() {
@@ -160,26 +165,6 @@ export default function HomePage() {
         </div>
 
         <div className="space-y-3 border-t border-[#242424] pt-4">
-          {session && (
-            <Link
-              href="/my-profile"
-              className="block rounded-2xl border border-[#242424] bg-[#111111] p-4 transition hover:border-[#f5f5f5]"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <h2 className="text-lg font-bold text-[#f5f5f5]">
-                    My Profile
-                  </h2>
-                  <p className="mt-1 text-sm text-[#a3a3a3]">
-                    View your camp profile and change your PIN.
-                  </p>
-                </div>
-
-                <span className="text-xl text-[#f5f5f5]">→</span>
-              </div>
-            </Link>
-          )}
-
           {session?.is_admin && (
             <Link
               href="/admin"
