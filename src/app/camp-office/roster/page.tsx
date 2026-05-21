@@ -12,6 +12,7 @@ type PlayerRow = {
   rank: "A" | "B" | "C" | "D" | null;
   room: string | null;
   arrival: string | null;
+  photo_url: string | null;
 };
 
 const rankStyles: Record<string, string> = {
@@ -36,7 +37,7 @@ export default function CampRosterPage() {
     async function fetchPlayers() {
       const { data, error: fetchError } = await supabase
         .from("players")
-        .select("id, first_name, last_name, display_name, rank, room, arrival")
+        .select("id, first_name, last_name, display_name, rank, room, arrival, photo_url")
         .eq("active", true)
         .order("last_name", { ascending: true })
         .order("first_name", { ascending: true });
@@ -112,9 +113,18 @@ export default function CampRosterPage() {
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#3a3a3a] bg-black text-base font-bold text-[#f5f5f5]">
-                    {getInitials(player)}
-                  </div>
+                  {player.photo_url ? (
+                    <div
+                      aria-label={`${player.display_name} profile`}
+                      className="h-14 w-14 shrink-0 rounded-full border border-[#3a3a3a] bg-cover bg-center"
+                      role="img"
+                      style={{ backgroundImage: `url(${player.photo_url})` }}
+                    />
+                  ) : (
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#3a3a3a] bg-black text-base font-bold text-[#f5f5f5]">
+                      {getInitials(player)}
+                    </div>
+                  )}
 
                   <div className="min-w-0">
                     <h2 className="truncate text-xl font-bold">

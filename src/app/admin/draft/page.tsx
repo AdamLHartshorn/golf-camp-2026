@@ -18,6 +18,12 @@ import {
 
 const ranks = ["A", "B", "C", "D"] as const;
 
+function getCaptainTeamName(captain: DraftPlayer) {
+  const lastName = captain.last_name?.trim();
+
+  return lastName ? `Team ${lastName}` : captain.display_name;
+}
+
 export default function AdminDraftPage() {
   const [players, setPlayers] = useState<DraftPlayer[]>([]);
   const [sessions, setSessions] = useState<DraftSession[]>([]);
@@ -200,7 +206,7 @@ export default function AdminDraftPage() {
     const session = sessionData as DraftSession;
     const teamPayload = captains.map((captain, index) => ({
       draft_session_id: session.id,
-      name: captain.display_name,
+      name: getCaptainTeamName(captain),
       captain_player_id: captain.id,
       draft_position: index + 1,
     }));
@@ -378,6 +384,50 @@ export default function AdminDraftPage() {
     await fetchDraftState(selectedSession.id);
   }
 
+  async function handleDeleteSession() {
+    if (!selectedSession) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      `Delete ${selectedSession.name}? This removes the draft session and related teams/picks.`,
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setIsSaving(true);
+
+    const { data, error: deleteError } = await supabase
+      .from("draft_sessions")
+      .delete()
+      .eq("id", selectedSession.id)
+      .select("*");
+
+    console.log("draft session delete:", {
+      sessionId: selectedSession.id,
+      data,
+      error: deleteError,
+    });
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not delete draft session.");
+      setIsSaving(false);
+      return;
+    }
+
+    setSelectedSessionId("");
+    setSelectedSession(null);
+    setTeams([]);
+    setPicks([]);
+    setMessage("Draft session deleted.");
+    await fetchSessions();
+    setIsSaving(false);
+  }
+
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
       <div className="mx-auto w-full max-w-md space-y-8 py-8">
@@ -482,6 +532,15 @@ export default function AdminDraftPage() {
                   TV
                 </Link>
               </div>
+
+              <button
+                type="button"
+                onClick={handleDeleteSession}
+                disabled={isSaving}
+                className="w-full rounded-xl border border-[#3a1f1f] px-4 py-3 text-sm font-bold text-[#ff8a8a] transition hover:border-[#ff8a8a] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Delete Draft Session
+              </button>
             </section>
 
             <section className="space-y-3">

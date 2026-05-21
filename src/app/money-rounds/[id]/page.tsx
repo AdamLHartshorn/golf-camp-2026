@@ -123,6 +123,18 @@ export default function MoneyRoundDetailPage() {
               <p className="text-[#a3a3a3]">
                 {round.round_date || "Date TBD"} · {round.status}
               </p>
+              <Link
+                href={`/money-rounds/${round.id}/results`}
+                className="inline-flex rounded-xl border border-[#16a34a] px-4 py-3 text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
+              >
+                Open Results Presentation
+              </Link>
+              <Link
+                href={`/admin/money-rounds/${round.id}/present`}
+                className="ml-0 mt-3 inline-flex rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a] sm:ml-3"
+              >
+                Control Presentation
+              </Link>
             </div>
 
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">

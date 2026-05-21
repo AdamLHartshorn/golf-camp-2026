@@ -5,43 +5,50 @@ const sections = [
     label: "Players",
     title: "Player Database",
     href: "/admin/players",
-    description: "Add, edit, activate, deactivate, and manage roster data.",
-  },
-  {
-    label: "Night Golf",
-    title: "Night Golf Admin",
-    href: "/admin/night-golf",
-    description: "Review scores, delete bad entries, and reset nights.",
+    description: "Maintain roster records, photos, ranks, payments, and player lore.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {
     label: "Draft",
-    title: "Live Draft Admin",
+    title: "Draft Control",
     href: "/admin/draft",
-    description: "Create sessions, set captain order, and run the draft.",
+    description: "Create draft sessions, set captain order, run picks, and clean up tests.",
+    accent: "border-[#1d4ed8] text-[#60a5fa] hover:border-[#2563eb]",
   },
   {
     label: "Money Rounds",
     title: "Money Rounds Admin",
     href: "/admin/money-rounds",
-    description: "Manage team scores, skins, payouts, and round bank previews.",
+    description: "Import teams, enter scorecards, preview skins, and finalize payouts.",
+    accent: "border-[#15803d] text-[#16a34a] hover:border-[#16a34a]",
+  },
+  {
+    label: "Night Golf",
+    title: "Night Golf Admin",
+    href: "/admin/night-golf",
+    description: "Review nightly scores, remove bad entries, and reset test nights.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {
     label: "Shenanigans",
     title: "Shenanigans Admin",
     href: "/admin/shenanigans",
-    description: "Manage ledger events, wagers, and resets.",
+    description: "Audit ledger events, manage wagers, and reset chaos data when needed.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {
     label: "P2P Wagers",
     title: "P2P Admin",
     href: "/admin/p2p-wagers",
-    description: "Manage freeform wagers and settlements.",
+    description: "Review open bets, remove bad entries, and manage settled cash action.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {
     label: "System",
     title: "System Tools",
     href: "/admin/system",
-    description: "Exports, resets, archives, and future year setup.",
+    description: "Prepare exports, archives, resets, and future camp-year utilities.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
 ];
 
@@ -68,7 +75,7 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#f5f5f5] hover:bg-[#171717]"
+              className={`block rounded-2xl border bg-[#111111] p-5 transition hover:bg-[#171717] ${section.accent}`}
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
@@ -85,7 +92,7 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                <span className="text-2xl text-[#f5f5f5]">→</span>
+                <span className="text-2xl">→</span>
               </div>
             </Link>
           ))}

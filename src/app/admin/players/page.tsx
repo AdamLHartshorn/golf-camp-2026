@@ -6,6 +6,14 @@ import { supabase } from "@/lib/supabase";
 
 const ranks = ["A", "B", "C", "D"];
 
+type QuestionnaireAnswers = {
+  favorite_golf_camp_memory?: string;
+  most_likely_to?: string;
+  walk_up_song?: string;
+  personal_scouting_report?: string;
+  other_funny_notes?: string;
+};
+
 type PlayerRow = {
   id: string;
   player_key: string | null;
@@ -20,6 +28,8 @@ type PlayerRow = {
   phone: string | null;
   email: string | null;
   photo_url: string | null;
+  player_notes: string | null;
+  questionnaire_answers: QuestionnaireAnswers | null;
   deposit_paid: boolean | null;
   gambling_paid: boolean | null;
   active: boolean | null;
@@ -38,6 +48,13 @@ type PlayerFormState = {
   arrival: string;
   phone: string;
   email: string;
+  photo_url: string;
+  player_notes: string;
+  favorite_golf_camp_memory: string;
+  most_likely_to: string;
+  walk_up_song: string;
+  personal_scouting_report: string;
+  other_funny_notes: string;
   deposit_paid: boolean;
   gambling_paid: boolean;
   active: boolean;
@@ -54,6 +71,13 @@ const emptyForm: PlayerFormState = {
   arrival: "",
   phone: "",
   email: "",
+  photo_url: "",
+  player_notes: "",
+  favorite_golf_camp_memory: "",
+  most_likely_to: "",
+  walk_up_song: "",
+  personal_scouting_report: "",
+  other_funny_notes: "",
   deposit_paid: false,
   gambling_paid: false,
   active: true,
@@ -64,6 +88,8 @@ function createPlayerKey(displayName: string) {
 }
 
 function playerToForm(player: PlayerRow): PlayerFormState {
+  const answers = player.questionnaire_answers || {};
+
   return {
     first_name: player.first_name || "",
     last_name: player.last_name || "",
@@ -75,6 +101,13 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     arrival: player.arrival || "",
     phone: player.phone || "",
     email: player.email || "",
+    photo_url: player.photo_url || "",
+    player_notes: player.player_notes || "",
+    favorite_golf_camp_memory: answers.favorite_golf_camp_memory || "",
+    most_likely_to: answers.most_likely_to || "",
+    walk_up_song: answers.walk_up_song || "",
+    personal_scouting_report: answers.personal_scouting_report || "",
+    other_funny_notes: answers.other_funny_notes || "",
     deposit_paid: player.deposit_paid ?? false,
     gambling_paid: player.gambling_paid ?? false,
     active: player.active ?? true,
@@ -84,6 +117,16 @@ function playerToForm(player: PlayerRow): PlayerFormState {
 function formToPayload(form: PlayerFormState) {
   const displayName = form.display_name.trim();
   const internalRankOrder = form.internal_rank_order.trim().toUpperCase();
+  const questionnaireAnswers: QuestionnaireAnswers = {
+    favorite_golf_camp_memory: form.favorite_golf_camp_memory.trim(),
+    most_likely_to: form.most_likely_to.trim(),
+    walk_up_song: form.walk_up_song.trim(),
+    personal_scouting_report: form.personal_scouting_report.trim(),
+    other_funny_notes: form.other_funny_notes.trim(),
+  };
+  const cleanQuestionnaireAnswers = Object.fromEntries(
+    Object.entries(questionnaireAnswers).filter(([, value]) => value),
+  );
 
   return {
     first_name: form.first_name.trim(),
@@ -97,6 +140,12 @@ function formToPayload(form: PlayerFormState) {
     arrival: form.arrival.trim() || null,
     phone: form.phone.trim() || null,
     email: form.email.trim() || null,
+    photo_url: form.photo_url.trim() || null,
+    player_notes: form.player_notes.trim() || null,
+    questionnaire_answers:
+      Object.keys(cleanQuestionnaireAnswers).length > 0
+        ? cleanQuestionnaireAnswers
+        : null,
     deposit_paid: form.deposit_paid,
     gambling_paid: form.gambling_paid,
     active: form.active,
@@ -225,6 +274,79 @@ export default function PlayersAdminPage() {
     setMessage("");
     setError("");
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function handlePhotoUpload(file: File | null) {
+    if (!editingId) {
+      setError("Save the player before uploading a photo.");
+      return;
+    }
+
+    if (!file) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setIsSaving(true);
+
+    const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    const safeName = `${editingId}/${Date.now()}.${extension}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("player-photos")
+      .upload(safeName, file, {
+        cacheControl: "3600",
+        upsert: true,
+      });
+
+    console.log("Admin player photo upload:", {
+      editingId,
+      path: safeName,
+      data: uploadData,
+      error: uploadError,
+    });
+
+    if (uploadError) {
+      setError(uploadError.message || "Could not upload photo.");
+      setIsSaving(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("player-photos")
+      .getPublicUrl(uploadData.path);
+    const photoUrl = publicUrlData.publicUrl;
+    const { data, error: updateError } = await supabase
+      .from("players")
+      .update({
+        photo_url: photoUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", editingId)
+      .select("*")
+      .single();
+
+    console.log("Admin player photo url update:", {
+      editingId,
+      photoUrl,
+      data,
+      error: updateError,
+    });
+
+    setIsSaving(false);
+
+    if (updateError) {
+      setError(updateError.message || "Could not save photo URL.");
+      return;
+    }
+
+    setForm((currentForm) => ({ ...currentForm, photo_url: photoUrl }));
+    setPlayers((currentPlayers) =>
+      currentPlayers.map((player) =>
+        player.id === editingId ? (data as PlayerRow) : player,
+      ),
+    );
+    setMessage("Player photo uploaded.");
   }
 
   async function handleSave() {
@@ -593,6 +715,101 @@ export default function PlayersAdminPage() {
             placeholder="Email"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
+
+          <textarea
+            value={form.player_notes}
+            onChange={(event) => updateForm("player_notes", event.target.value)}
+            placeholder="Player Notes"
+            rows={4}
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          />
+
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                Questionnaire Answers
+              </p>
+              <p className="mt-1 text-xs text-[#737373]">
+                Lightweight lore for public player profiles.
+              </p>
+            </div>
+
+            {[
+              [
+                "favorite_golf_camp_memory",
+                "Favorite Golf Camp memory",
+              ],
+              ["most_likely_to", "Most likely to..."],
+              ["walk_up_song", "Walk-up song"],
+              ["personal_scouting_report", "Personal scouting report"],
+              ["other_funny_notes", "Other/funny notes"],
+            ].map(([field, placeholder]) => (
+              <textarea
+                key={field}
+                value={form[field as keyof PlayerFormState] as string}
+                onChange={(event) =>
+                  updateForm(
+                    field as keyof PlayerFormState,
+                    event.target.value,
+                  )
+                }
+                placeholder={placeholder}
+                rows={3}
+                className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              />
+            ))}
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black p-4">
+            <div className="flex items-center gap-4">
+              {form.photo_url ? (
+                <div
+                  aria-label={`${form.display_name || "Player"} profile`}
+                  className="h-16 w-16 shrink-0 rounded-full border border-[#3a3a3a] bg-cover bg-center"
+                  role="img"
+                  style={{ backgroundImage: `url(${form.photo_url})` }}
+                />
+              ) : (
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#3a3a3a] bg-[#111111] text-sm font-bold text-[#f5f5f5]">
+                  Photo
+                </div>
+              )}
+
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                  Profile Photo
+                </p>
+                <p className="mt-1 text-xs text-[#737373]">
+                  Upload to Supabase Storage or paste a public photo URL.
+                </p>
+              </div>
+            </div>
+
+            <input
+              type="url"
+              value={form.photo_url}
+              onChange={(event) => updateForm("photo_url", event.target.value)}
+              placeholder="Photo URL"
+              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+
+            <label className="block rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]">
+              Upload Photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handlePhotoUpload(event.target.files?.[0] || null)}
+                className="sr-only"
+                disabled={!editingId || isSaving}
+              />
+            </label>
+
+            {!editingId && (
+              <p className="text-xs text-[#737373]">
+                Create the player first, then upload a profile photo.
+              </p>
+            )}
+          </div>
 
           <label className="flex items-center gap-3 text-sm text-[#a3a3a3]">
             <input

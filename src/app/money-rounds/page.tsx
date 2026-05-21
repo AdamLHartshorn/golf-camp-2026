@@ -150,20 +150,30 @@ export default function MoneyRoundsPage() {
           {!isLoading &&
             !error &&
             rounds.map((round) => (
-              <Link
+              <div
                 key={round.id}
-                href={`/money-rounds/${round.id}`}
-                className="block rounded-2xl border border-[#15803d] bg-[#111111] p-5 transition hover:bg-[#0f1f16]"
+                className="rounded-2xl border border-[#15803d] bg-[#111111] p-5 transition hover:bg-[#0f1f16]"
               >
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#16a34a]">
-                  {round.status}
-                </p>
-                <h2 className="mt-2 text-2xl font-bold">{round.name}</h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">
-                  {round.round_date || "Date TBD"} · Buy-in{" "}
-                  {money(Number(round.buy_in_per_player ?? round.buy_in ?? 0))}
-                </p>
-              </Link>
+                <Link href={`/money-rounds/${round.id}`} className="block">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#16a34a]">
+                    {round.status}
+                  </p>
+                  <h2 className="mt-2 text-2xl font-bold">{round.name}</h2>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    {round.round_date || "Date TBD"} · Buy-in{" "}
+                    {money(Number(round.buy_in_per_player ?? round.buy_in ?? 0))}
+                  </p>
+                </Link>
+
+                {isScoredOrFinalRound(round) && (
+                  <Link
+                    href={`/money-rounds/${round.id}/results`}
+                    className="mt-4 block rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#07120c]"
+                  >
+                    Results Presentation
+                  </Link>
+                )}
+              </div>
             ))}
         </section>
 

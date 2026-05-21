@@ -1033,6 +1033,18 @@ export default function AdminMoneyRoundsPage() {
                   Final status is an indicator. Commissioner corrections remain available.
                 </p>
               )}
+              <Link
+                href={`/money-rounds/${round.id}/results`}
+                className="mt-4 block w-full rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
+              >
+                Open TV Results
+              </Link>
+              <Link
+                href={`/admin/money-rounds/${round.id}/present`}
+                className="mt-3 block w-full rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+              >
+                Control Presentation
+              </Link>
               <button
                 type="button"
                 onClick={handleDeleteRound}
