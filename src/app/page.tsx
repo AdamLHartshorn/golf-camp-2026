@@ -95,20 +95,6 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="w-full max-w-sm space-y-7">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[#f4f1ea]">
-              GOLF CAMP 2026
-            </p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#9b927f]">
-              Play. Compete. Remember.
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#3a372f] bg-[#161511] text-sm font-semibold text-[#f4f1ea]">
-            GC
-          </div>
-        </div>
-
         <div className="flex justify-center pt-2">
           <Image
             src="/golf-camp-logo.png"
