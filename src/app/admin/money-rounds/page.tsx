@@ -8,10 +8,8 @@ import {
   calculateSkins,
   calculateStandings,
   formatScoreToCompletedPar,
-  formatScoreToPar,
-  frontNinePar,
+  formatScoreToCompletedParForHoles,
   getTeamScoreStatus,
-  getParForHoles,
   holes,
   isRoundPresentationReady,
   moneyRoundScorecard,
@@ -62,7 +60,6 @@ const backNine = holes.slice(9);
 const scorecardByHole = new Map<number, (typeof moneyRoundScorecard)[number]>(
   moneyRoundScorecard.map((item) => [item.hole, item]),
 );
-const backNinePar = getParForHoles(backNine);
 
 function buildScoreDrafts(scores: MoneyScore[]) {
   return scores.reduce<ScoreDrafts>((drafts, score) => {
@@ -1316,6 +1313,7 @@ export default function AdminMoneyRoundsPage() {
                 const scoreStatus = getTeamScoreStatus(team);
                 const draftedScoresByHole = Object.fromEntries(
                   Object.entries(scoreDrafts[team.id] || {})
+                    .filter(([, value]) => value.trim() !== "")
                     .map(([hole, value]) => [Number(hole), Number(value)])
                     .filter(([, value]) => Number.isFinite(value)),
                 ) as Record<number, number>;
@@ -1400,7 +1398,12 @@ export default function AdminMoneyRoundsPage() {
                             Front 9
                           </p>
                           <p className="text-sm font-bold text-[#16a34a]">
-                            OUT {formatScoreToPar(outTotal, frontNinePar)}
+                            OUT{" "}
+                            {formatScoreToCompletedParForHoles(
+                              outTotal,
+                              draftedScoresByHole,
+                              frontNine,
+                            )}
                           </p>
                         </div>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
@@ -1448,7 +1451,11 @@ export default function AdminMoneyRoundsPage() {
                               OUT
                             </span>
                             <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
-                              {formatScoreToPar(outTotal, frontNinePar)}
+                              {formatScoreToCompletedParForHoles(
+                                outTotal,
+                                draftedScoresByHole,
+                                frontNine,
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1460,7 +1467,12 @@ export default function AdminMoneyRoundsPage() {
                             Back 9
                           </p>
                           <p className="text-sm font-bold text-[#16a34a]">
-                            IN {formatScoreToPar(inTotal, backNinePar)}
+                            IN{" "}
+                            {formatScoreToCompletedParForHoles(
+                              inTotal,
+                              draftedScoresByHole,
+                              backNine,
+                            )}
                           </p>
                         </div>
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
@@ -1508,7 +1520,11 @@ export default function AdminMoneyRoundsPage() {
                               IN
                             </span>
                             <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
-                              {formatScoreToPar(inTotal, backNinePar)}
+                              {formatScoreToCompletedParForHoles(
+                                inTotal,
+                                draftedScoresByHole,
+                                backNine,
+                              )}
                             </div>
                           </div>
                         </div>

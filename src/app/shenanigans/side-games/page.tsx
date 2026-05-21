@@ -299,7 +299,7 @@ export default function ShenanigansSideGamesPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#b91c1c] bg-[#111111] p-5 shadow-[0_0_0_1px_rgba(185,28,28,0.18)]">
+        <section className="rounded-2xl border border-[#b91c1c] bg-[#111111] p-5 shadow-[0_0_0_1px_rgba(106,49,60,0.12)]">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Custom Games
           </p>

@@ -144,7 +144,7 @@ export default function DraftMobilePage() {
     session && completedDraftStatuses.includes(String(session.status));
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.16),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(50,77,112,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto w-full max-w-md space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
           <Link href="/draft" className="text-2xl text-[#a3a3a3]">
@@ -188,7 +188,7 @@ export default function DraftMobilePage() {
 
         {!isLoading && !error && session && (
           <>
-            <section className="overflow-hidden rounded-2xl border border-[#2563eb]/60 bg-[#071123] shadow-[0_0_42px_rgba(37,99,235,0.16)]">
+            <section className="overflow-hidden rounded-2xl border border-[#2563eb]/60 bg-[#071123] shadow-[0_0_36px_rgba(50,77,112,0.11)]">
               <div className="border-b border-[#1e40af]/60 px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#93c5fd]">
                   On The Clock

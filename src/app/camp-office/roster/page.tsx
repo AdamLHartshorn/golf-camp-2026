@@ -17,10 +17,10 @@ type PlayerRow = {
 };
 
 const rankStyles: Record<string, string> = {
-  A: "border-[#b08a38] bg-[#f0e2bf] text-[#6f521b]",
-  B: "border-[#aaa39a] bg-[#e3ded4] text-[#57534e]",
-  C: "border-[#a6744a] bg-[#ead6c5] text-[#704728]",
-  D: "border-[#8c93a0] bg-[#dfe3e8] text-[#4b5563]",
+  A: "border-[#b08a38]/70 bg-[#2a2110] text-[#d9c06a]",
+  B: "border-[#aaa39a]/70 bg-[#232321] text-[#d8d3c8]",
+  C: "border-[#a6744a]/70 bg-[#281b13] text-[#d0a078]",
+  D: "border-[#8c93a0]/70 bg-[#171b22] text-[#aeb7c4]",
 };
 
 export default function CampRosterPage() {
@@ -79,20 +79,20 @@ export default function CampRosterPage() {
           <span className="text-xl text-[#a3a3a3]">⌕</span>
         </div>
 
-        <div className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.34)]">
-          <div className="border-b border-[#d8d1c4] px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
+        <div className="overflow-hidden rounded-[1.65rem] border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.48),0_0_48px_rgba(244,241,234,0.05)]">
+          <div className="border-b border-[#2a2925] px-5 py-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#b8b0a1]">
               Players, rooms, arrivals
             </p>
           </div>
-          <div className="grid grid-cols-[4.25rem_1fr_3rem] border-b border-[#d8d1c4] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+          <div className="grid grid-cols-[4.25rem_1fr_3rem] border-b border-[#2a2925] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b8b0a1]">
             <span>ID</span>
             <span>Player</span>
             <span className="text-right">Rank</span>
           </div>
 
           {isLoading && (
-            <div className="p-5 text-center text-sm text-[#7a6f60]">
+            <div className="p-5 text-center text-sm text-[#b8b0a1]">
               Loading roster...
             </div>
           )}
@@ -104,7 +104,7 @@ export default function CampRosterPage() {
           )}
 
           {!isLoading && !error && players.length === 0 && (
-            <div className="p-5 text-center text-sm text-[#7a6f60]">
+            <div className="p-5 text-center text-sm text-[#b8b0a1]">
               No active players yet.
             </div>
           )}
@@ -113,12 +113,12 @@ export default function CampRosterPage() {
             <Link
               key={player.id}
               href={`/camp-office/roster/${player.id}`}
-              className="grid grid-cols-[4.25rem_1fr_3rem] items-center border-b border-[#d8d1c4]/80 px-4 py-3.5 transition hover:bg-[#f6f0e3] last:border-b-0"
+              className="grid grid-cols-[4.25rem_1fr_3rem] items-center border-b border-[#2a2925] px-4 py-3.5 transition hover:bg-[#161511] last:border-b-0"
             >
               {player.photo_url ? (
                 <div
                   aria-label={`${player.display_name} profile`}
-                  className="h-12 w-12 shrink-0 rounded-full border border-[#cfc4b3] bg-cover bg-center"
+                  className="h-12 w-12 shrink-0 rounded-full border border-[#34312a] bg-cover bg-center"
                   role="img"
                   style={{ backgroundImage: `url(${player.photo_url})` }}
                 />
@@ -134,7 +134,7 @@ export default function CampRosterPage() {
                   {player.display_name}
                 </h2>
 
-                <p className="mt-1 text-sm text-[#7a6f60]">
+                <p className="mt-1 text-sm text-[#b8b0a1]">
                   Room {player.room || "-"} · {player.arrival || "Arrival TBD"}
                 </p>
               </div>
@@ -142,7 +142,7 @@ export default function CampRosterPage() {
               <div
                 className={`flex h-10 w-10 items-center justify-center justify-self-end rounded-xl border text-lg font-semibold ${
                   rankStyles[player.rank || ""] ||
-                  "border-[#cfc4b3] bg-[#e6dfd2] text-[#7a6f60]"
+                  "border-[#34312a] bg-black/35 text-[#b8b0a1]"
                 }`}
               >
                 {player.rank || "-"}

@@ -287,6 +287,23 @@ export function formatScoreToCompletedPar(
   return formatScoreToPar(score, completedPar);
 }
 
+export function formatScoreToCompletedParForHoles(
+  score: number,
+  scoresByHole: Record<number, number>,
+  selectedHoles: number[],
+) {
+  const completedHoles = selectedHoles.filter(
+    (hole) => typeof scoresByHole[hole] === "number",
+  );
+  const completedPar = getParForHoles(completedHoles);
+
+  if (completedPar === 0) {
+    return `${score} (-)`;
+  }
+
+  return formatScoreToPar(score, completedPar);
+}
+
 export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {
   const scoresByTeam = getScoresByTeam(scores);
   const sortedTeams = teams

@@ -8,6 +8,7 @@ export type DraftSession = {
   draft_type: string | null;
   draft_order: string[] | null;
   current_pick_number: number | null;
+  current_pick_started_at?: string | null;
   started_at: string | null;
   completed_at: string | null;
   created_at: string | null;

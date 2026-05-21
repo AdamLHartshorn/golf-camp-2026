@@ -6,9 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   formatScoreToCompletedPar,
-  formatScoreToPar,
-  frontNinePar,
-  getParForHoles,
+  formatScoreToCompletedParForHoles,
   getScoresByTeam,
   getTeamScoreStatus,
   holes,
@@ -24,7 +22,6 @@ type ScoreDrafts = Record<number, string>;
 
 const frontNine = holes.slice(0, 9);
 const backNine = holes.slice(9);
-const backNinePar = getParForHoles(backNine);
 const scorecardByHole = new Map<number, (typeof moneyRoundScorecard)[number]>(
   moneyRoundScorecard.map((item) => [item.hole, item]),
 );
@@ -96,6 +93,7 @@ export default function MoneyRoundSubmitPage() {
   const total = outTotal + inTotal;
   const draftedScoresByHole = Object.fromEntries(
     Object.entries(scoreDrafts)
+      .filter(([, value]) => value.trim() !== "")
       .map(([hole, value]) => [Number(hole), Number(value)])
       .filter(([, value]) => Number.isFinite(value)),
   ) as Record<number, number>;
@@ -244,8 +242,13 @@ export default function MoneyRoundSubmitPage() {
     setIsSaving(false);
   }
 
-  function renderNine(label: string, selectedHoles: number[], par: number) {
+  function renderNine(label: string, selectedHoles: number[]) {
     const subtotal = sumDraftScores(scoreDrafts, selectedHoles);
+    const scoreToPar = formatScoreToCompletedParForHoles(
+      subtotal,
+      draftedScoresByHole,
+      selectedHoles,
+    );
 
     return (
       <div className="rounded-xl border border-[#242424] bg-[#111111] p-3">
@@ -255,7 +258,7 @@ export default function MoneyRoundSubmitPage() {
           </p>
           <p className="text-sm font-bold text-[#16a34a]">
             {label === "Front 9" ? "OUT" : "IN"}{" "}
-            {formatScoreToPar(subtotal, par)}
+            {scoreToPar}
           </p>
         </div>
         <div className="grid grid-cols-5 gap-2 sm:grid-cols-10">
@@ -295,7 +298,7 @@ export default function MoneyRoundSubmitPage() {
               {label === "Front 9" ? "OUT" : "IN"}
             </span>
             <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
-              {formatScoreToPar(subtotal, par)}
+              {scoreToPar}
             </div>
           </div>
         </div>
@@ -411,8 +414,8 @@ export default function MoneyRoundSubmitPage() {
                   </p>
                 )}
 
-                {renderNine("Front 9", frontNine, frontNinePar)}
-                {renderNine("Back 9", backNine, backNinePar)}
+                {renderNine("Front 9", frontNine)}
+                {renderNine("Back 9", backNine)}
 
                 <button
                   type="button"

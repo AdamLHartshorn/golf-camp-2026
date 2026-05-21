@@ -166,7 +166,7 @@ export default function MoneyRoundsPage() {
   const bankPreviewRows = yearlyBankRows.slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(49,95,72,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
           <Link href="/home" className="text-2xl text-[#a3a3a3]">
@@ -206,8 +206,8 @@ export default function MoneyRoundsPage() {
           )}
 
           {!isLoading && !error && activeRound && (
-            <div className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
-              <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#cec5b5] bg-[#dfe9d2] px-5 py-4">
+            <div className="overflow-hidden rounded-2xl border border-[#166534]/70 bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_48px_rgba(49,95,72,0.1)]">
+              <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#166534]/45 bg-[#0f1f16] px-5 py-4">
                 <div>
                   <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#8ee6a7]">
                     Active Money Round
@@ -217,15 +217,15 @@ export default function MoneyRoundsPage() {
                   </h1>
                 </div>
                 <div className="text-right">
-                  <p className="rounded-full border border-[#31552d]/30 bg-[#f8f2e6] px-2.5 py-1 font-mono text-[10px] font-black uppercase text-[#31552d]">
+                  <p className="rounded-full border border-[#16a34a]/40 bg-black/35 px-2.5 py-1 font-mono text-[10px] font-black uppercase text-[#8ee6a7]">
                     {activeRound.status}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 border-b border-[#d2c8b8] text-sm">
-                <div className="border-r border-[#d2c8b8] px-5 py-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+              <div className="grid grid-cols-2 border-b border-[#2a2925] text-sm">
+                <div className="border-r border-[#2a2925] px-5 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b8b0a1]">
                     Date
                   </p>
                   <p className="mt-1 font-semibold">
@@ -233,7 +233,7 @@ export default function MoneyRoundsPage() {
                   </p>
                 </div>
                 <div className="px-5 py-3">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#b8b0a1]">
                     Buy-In
                   </p>
                   <p className="mt-1 font-semibold">
@@ -252,7 +252,7 @@ export default function MoneyRoundsPage() {
                       <p className="mt-1 truncate text-xl font-black">
                         {activeLeader.team.name}
                       </p>
-                      <p className="mt-1 truncate text-sm text-[#5f574b]">
+                      <p className="mt-1 truncate text-sm text-[#b8b0a1]">
                         {activeLeader.team.player_names.join(", ")}
                       </p>
                     </div>
@@ -269,8 +269,8 @@ export default function MoneyRoundsPage() {
                   </p>
                 )}
 
-                <div className="mt-4 overflow-hidden rounded-xl border border-[#d2c8b8] bg-[#f8f2e6]">
-                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem] bg-[#dfe9d2] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#31552d]">
+                <div className="mt-4 overflow-hidden rounded-xl border border-[#2a2925] bg-black/35">
+                  <div className="grid grid-cols-[2.5rem_1fr_4.5rem] bg-[#0f1f16] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8ee6a7]">
                     <span>Pos</span>
                     <span>Team</span>
                     <span className="text-right">Score</span>
@@ -278,12 +278,12 @@ export default function MoneyRoundsPage() {
                   {activeCalculation?.standings.slice(0, 3).map((standing) => (
                   <div
                     key={standing.team.id}
-                    className="grid grid-cols-[2.5rem_1fr_4.5rem] border-t border-[#d2c8b8] px-3 py-2 text-sm"
+                    className="grid grid-cols-[2.5rem_1fr_4.5rem] border-t border-[#2a2925] px-3 py-2 text-sm"
                   >
-                    <span className="font-mono text-[#5f574b]">
+                    <span className="font-mono text-[#b8b0a1]">
                       {standing.position}
                     </span>
-                    <span className="truncate text-[#17130e]">
+                    <span className="truncate text-[#f4f1ea]">
                       {standing.team.name}
                     </span>
                     <span className="text-right font-mono font-black text-[#16a34a]">
@@ -297,29 +297,29 @@ export default function MoneyRoundsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 border-t border-[#d2c8b8]">
+              <div className="grid grid-cols-2 border-t border-[#2a2925]">
                 <Link
                   href={`/money-rounds/${activeRound.id}`}
-                  className="border-b border-r border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#15803d] transition hover:bg-[#f6f0e3]"
+                  className="border-b border-r border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#16a34a] transition hover:bg-[#0f1f16]"
                 >
                   View Round
                 </Link>
                 <Link
                   href={`/money-rounds/${activeRound.id}/submit`}
-                  className="border-b border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#17130e] transition hover:bg-[#f6f0e3]"
+                  className="border-b border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:bg-[#0f1f16]"
                 >
                   Enter Scores
                 </Link>
                 <Link
                   href={`/money-rounds/${activeRound.id}/submit`}
-                  className="border-r border-[#d2c8b8] px-4 py-3 text-center text-sm font-black text-[#17130e] transition hover:bg-[#f6f0e3]"
+                  className="border-r border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:bg-[#0f1f16]"
                 >
                   Submit Team Scores
                 </Link>
                 {canPresentActiveRound && (
                   <Link
                     href={`/money-rounds/${activeRound.id}/results`}
-                    className="px-4 py-3 text-center text-sm font-black text-[#15803d] transition hover:bg-[#f6f0e3]"
+                    className="px-4 py-3 text-center text-sm font-black text-[#16a34a] transition hover:bg-[#0f1f16]"
                   >
                     Results Presentation
                   </Link>

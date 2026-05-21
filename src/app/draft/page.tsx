@@ -76,7 +76,7 @@ export default function DraftPage() {
     session && completedDraftStatuses.includes(String(session.status));
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(37,99,235,0.14),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(50,77,112,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
           <Link href="/home" className="text-2xl text-[#a3a3a3]">
@@ -103,12 +103,12 @@ export default function DraftPage() {
         )}
 
         {!isLoading && !error && session && (
-          <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+          <section className="overflow-hidden rounded-2xl border border-[#1e40af]/70 bg-[#071123]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_48px_rgba(50,77,112,0.11)]">
             <Link
               href="/draft/live"
-              className="block transition hover:bg-[#f6f0e3]"
+              className="block transition hover:bg-[#0b1730]"
             >
-              <div className="border-b border-[#c6d3e8] bg-[#dbe7fb] px-5 py-5">
+              <div className="border-b border-[#1e40af]/60 bg-[#08152d] px-5 py-5">
                 <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
                   {isCompleteDraft ? "Complete Draft Board" : "On The Clock Board"}
                 </p>
@@ -117,9 +117,9 @@ export default function DraftPage() {
                 </h1>
               </div>
 
-              <div className="grid grid-cols-2 divide-x divide-[#d2c8b8]">
+              <div className="grid grid-cols-2 divide-x divide-[#1e40af]/35">
                 <div className="px-5 py-4">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#93c5fd]">
                     Status
                   </p>
                   <p className="mt-1 font-black text-[#1d4ed8]">
@@ -127,7 +127,7 @@ export default function DraftPage() {
                   </p>
                 </div>
                 <div className="px-5 py-4">
-                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#5f574b]">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#93c5fd]">
                     View
                   </p>
                   <p className="mt-1 font-black">TV Board →</p>
@@ -137,7 +137,7 @@ export default function DraftPage() {
 
             <Link
               href="/draft/mobile"
-              className="block border-t border-[#d2c8b8] px-5 py-4 text-center text-sm font-black text-[#1d4ed8] transition hover:bg-[#f6f0e3]"
+              className="block border-t border-[#1e40af]/35 px-5 py-4 text-center text-sm font-black text-[#60a5fa] transition hover:bg-[#0b1730]"
             >
               Open Mobile Draft View
             </Link>
@@ -145,8 +145,8 @@ export default function DraftPage() {
         )}
 
         {!isLoading && !error && !session && (
-          <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
-            <div className="border-b border-[#c6d3e8] bg-[#dbe7fb] px-5 py-5">
+          <section className="overflow-hidden rounded-2xl border border-[#1e40af]/70 bg-[#071123]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_48px_rgba(50,77,112,0.11)]">
+            <div className="border-b border-[#1e40af]/60 bg-[#08152d] px-5 py-5">
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
                 No Active Draft
               </p>
@@ -156,7 +156,7 @@ export default function DraftPage() {
               </h1>
             </div>
 
-            <p className="px-5 py-4 text-sm leading-6 text-[#4f483f]">
+            <p className="px-5 py-4 text-sm leading-6 text-[#b8b0a1]">
               When Nick starts a draft from Admin, the live board will appear
               here.
             </p>

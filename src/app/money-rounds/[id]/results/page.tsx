@@ -318,7 +318,7 @@ export default function MoneyRoundResultsPage() {
             Hole scoring data is not available yet.
           </p>
         ) : (
-          <div className="rounded-[2.2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.26),transparent_52%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18)]">
+          <div className="rounded-[2.2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.16),transparent_52%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_58px_rgba(49,95,72,0.11)]">
             <p className="text-lg font-semibold uppercase tracking-[0.28em] text-[#86efac]">
               {label}
             </p>
@@ -412,7 +412,7 @@ export default function MoneyRoundResultsPage() {
   });
 
   return (
-    <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_8%,rgba(22,163,74,0.22),transparent_30%),radial-gradient(circle_at_88%_78%,rgba(20,83,45,0.18),transparent_36%),linear-gradient(135deg,#020604_0%,#050806_48%,#000_100%)] text-[#f5f5f5]">
+    <main className="results-tv-shell min-h-screen overflow-hidden bg-[radial-gradient(circle_at_18%_8%,rgba(49,95,72,0.16),transparent_30%),radial-gradient(circle_at_88%_78%,rgba(36,76,58,0.14),transparent_36%),linear-gradient(135deg,#020604_0%,#050806_48%,#000_100%)] text-[#f5f5f5]">
       <div className="flex min-h-screen flex-col justify-between p-8 lg:p-12">
         <header className="flex items-start justify-between gap-6 border-b border-[#24452f]/70 pb-5">
           <div>
@@ -440,7 +440,7 @@ export default function MoneyRoundResultsPage() {
         </header>
 
         <section className="flex flex-1 items-center py-8">
-          <div className="w-full">
+          <div key={`${currentSection}-${currentIndex}`} className="results-slide w-full">
             {isLoading && (
               <p className="text-4xl font-bold text-[#a3a3a3]">
                 Loading results...
@@ -459,7 +459,7 @@ export default function MoneyRoundResultsPage() {
                   <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                     Official Results
                   </p>
-                  <h1 className="mt-5 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
+                  <h1 className="results-major-title mt-5 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
                     {round.name}
                   </h1>
                   <p className="mt-5 text-3xl text-[#a3a3a3]">
@@ -467,7 +467,7 @@ export default function MoneyRoundResultsPage() {
                   </p>
                 </div>
 
-                <div className="rounded-[2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.24),transparent_58%),#07120c] p-8 shadow-[0_0_70px_rgba(22,163,74,0.18)]">
+                <div className="results-spotlight-card rounded-[2rem] border border-[#22c55e]/70 bg-[radial-gradient(circle_at_top,rgba(49,95,72,0.16),transparent_58%),#07120c] p-8 shadow-[0_0_58px_rgba(49,95,72,0.11)]">
                   <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
                     Total Pot
                   </p>
@@ -508,7 +508,7 @@ export default function MoneyRoundResultsPage() {
                     <div
                       className={`rounded-[2.2rem] border p-10 shadow-[0_28px_90px_rgba(0,0,0,0.48)] ${
                         currentPlacement.position <= 3
-                          ? "border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))]"
+                          ? "border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.16),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))]"
                           : "border-[#24452f] bg-[linear-gradient(180deg,rgba(17,17,17,0.95),rgba(0,0,0,0.65))]"
                       }`}
                     >
@@ -533,7 +533,7 @@ export default function MoneyRoundResultsPage() {
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Total Score
                           </p>
-                          <p className="text-7xl font-black tracking-[-0.06em]">
+                          <p className="results-score-value text-7xl font-black tracking-[-0.06em]">
                             {formatScoreToCompletedPar(
                               currentPlacement.total,
                               currentPlacement.scoresByHole,
@@ -544,7 +544,7 @@ export default function MoneyRoundResultsPage() {
                           </p>
                           {(bankByTeam[currentPlacement.team.name]?.placement || 0) >
                           0 ? (
-                            <p className="text-5xl font-black text-[#86efac]">
+                            <p className="results-payout-value text-5xl font-black text-[#86efac]">
                               {money(
                                 bankByTeam[currentPlacement.team.name]?.placement ||
                                   0,
@@ -574,7 +574,7 @@ export default function MoneyRoundResultsPage() {
                     <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                       Skin {currentIndex + 1} of {skins.length}
                     </p>
-                    <div className="rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18),0_28px_90px_rgba(0,0,0,0.48)]">
+                    <div className="results-spotlight-card rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.16),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_58px_rgba(49,95,72,0.11),0_28px_90px_rgba(0,0,0,0.48)]">
                       <p className="text-3xl font-black text-[#86efac]">
                         Hole {currentSkin.hole}
                       </p>
@@ -607,7 +607,7 @@ export default function MoneyRoundResultsPage() {
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Skin Value
                           </p>
-                          <p className="mt-3 text-6xl font-black text-[#86efac]">
+                          <p className="results-payout-value mt-3 text-6xl font-black text-[#86efac]">
                             {money(currentSkin.value)}
                           </p>
                         </div>
@@ -629,7 +629,7 @@ export default function MoneyRoundResultsPage() {
                     <p className="text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
                       Player Payouts
                     </p>
-                    <div className="rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(22,163,74,0.24),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_70px_rgba(22,163,74,0.18),0_28px_90px_rgba(0,0,0,0.48)]">
+                    <div className="results-spotlight-card rounded-[2.2rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.16),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_58px_rgba(49,95,72,0.11),0_28px_90px_rgba(0,0,0,0.48)]">
                       <div>
                         <h1 className="text-7xl font-black tracking-[-0.08em] lg:text-8xl">
                           {currentPayout.playerName}
@@ -668,7 +668,7 @@ export default function MoneyRoundResultsPage() {
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">
                             Total Winnings
                           </p>
-                          <p className="mt-3 text-5xl font-black text-[#86efac]">
+                          <p className="results-payout-value mt-3 text-5xl font-black text-[#86efac]">
                             {money(currentPayout.totalWinnings)}
                           </p>
                           <p className="mt-3 text-lg font-bold text-[#a3a3a3]">
@@ -688,12 +688,12 @@ export default function MoneyRoundResultsPage() {
                   <p className="text-xl font-semibold uppercase tracking-[0.3em] text-[#86efac]">
                     Money Round Final
                   </p>
-                  <h1 className="mt-6 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
+                  <h1 className="results-major-title mt-6 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
                     {round.name} Complete
                   </h1>
 
                   <div className="mt-12 grid gap-4 text-left lg:grid-cols-5">
-                    <div className="rounded-[1.5rem] border border-[#22c55e]/75 bg-[#07120c] p-6 shadow-[0_0_45px_rgba(22,163,74,0.14)]">
+                    <div className="rounded-[1.5rem] border border-[#22c55e]/75 bg-[#07120c] p-6 shadow-[0_0_38px_rgba(49,95,72,0.1)]">
                       <p className="text-xs uppercase tracking-[0.24em] text-[#a3a3a3]">
                         Winning Team
                       </p>
@@ -791,6 +791,107 @@ export default function MoneyRoundResultsPage() {
           </button>
         </footer>
       </div>
+      <style>{`
+        .results-tv-shell {
+          position: relative;
+          isolation: isolate;
+        }
+
+        .results-tv-shell::before {
+          content: "";
+          position: fixed;
+          inset: -16%;
+          pointer-events: none;
+          z-index: -1;
+          background:
+            radial-gradient(circle at 22% 16%, rgba(143, 170, 153, 0.07), transparent 28rem),
+            radial-gradient(circle at 82% 74%, rgba(49, 95, 72, 0.075), transparent 30rem);
+          animation: resultsAmbientDrift 20s ease-in-out infinite alternate;
+        }
+
+        .results-tv-shell::after {
+          content: "";
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          z-index: -1;
+          background:
+            radial-gradient(circle at center, transparent 38%, rgba(0, 0, 0, 0.38) 100%),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 22%);
+        }
+
+        .results-slide {
+          animation: resultsSlideSettle 620ms ease both;
+        }
+
+        .results-spotlight-card {
+          animation: resultsSpotlightGlow 5.8s ease-in-out infinite alternate;
+        }
+
+        .results-major-title {
+          text-shadow: 0 0 34px rgba(244, 241, 234, 0.07);
+        }
+
+        .results-score-value,
+        .results-payout-value {
+          animation: resultsValueEmphasis 720ms ease both;
+          text-shadow: 0 0 30px rgba(143, 170, 153, 0.1);
+        }
+
+        @keyframes resultsAmbientDrift {
+          from {
+            transform: translate3d(-0.55%, -0.45%, 0) scale(1);
+            opacity: 0.82;
+          }
+          to {
+            transform: translate3d(0.65%, 0.55%, 0) scale(1.022);
+            opacity: 1;
+          }
+        }
+
+        @keyframes resultsSlideSettle {
+          from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.996);
+            filter: blur(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+          }
+        }
+
+        @keyframes resultsSpotlightGlow {
+          from {
+            box-shadow: 0 0 44px rgba(49, 95, 72, 0.1), 0 28px 90px rgba(0, 0, 0, 0.46);
+          }
+          to {
+            box-shadow: 0 0 64px rgba(49, 95, 72, 0.16), 0 28px 90px rgba(0, 0, 0, 0.5);
+          }
+        }
+
+        @keyframes resultsValueEmphasis {
+          from {
+            opacity: 0.72;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .results-tv-shell::before,
+          .results-slide,
+          .results-spotlight-card,
+          .results-score-value,
+          .results-payout-value {
+            animation: none;
+          }
+        }
+      `}</style>
     </main>
   );
 }

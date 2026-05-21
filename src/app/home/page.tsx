@@ -29,8 +29,8 @@ const modules = [
     href: "/money-rounds",
     meta: "Scores • Skins • Bank",
     description: "Leaderboards, skins, bank",
-    accent: "#16a34a",
-    tint: "rgba(22,163,74,0.11)",
+    accent: "#315f48",
+    tint: "rgba(49,95,72,0.12)",
   },
   {
     icon: "draft",
@@ -39,8 +39,8 @@ const modules = [
     href: "/draft",
     meta: "Teams • Picks • Board",
     description: "Picks, teams, the board",
-    accent: "#2563eb",
-    tint: "rgba(37,99,235,0.12)",
+    accent: "#324d70",
+    tint: "rgba(50,77,112,0.13)",
   },
   {
     icon: "shenanigans",
@@ -49,8 +49,8 @@ const modules = [
     href: "/shenanigans",
     meta: "Points • Games • Events",
     description: "Points, games, chaos",
-    accent: "#b91c1c",
-    tint: "rgba(185,28,28,0.12)",
+    accent: "#6a313c",
+    tint: "rgba(106,49,60,0.14)",
   },
   {
     icon: "p2p",
@@ -110,15 +110,12 @@ export default function HomePage() {
       .slice(0, 2) || "GC";
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.12),transparent_32%),#050505] px-4 py-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(143,166,106,0.18),transparent_34%),radial-gradient(circle_at_95%_12%,rgba(244,241,234,0.08),transparent_26%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-3">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between gap-4 py-3">
           <div>
-            <p className="font-mono text-[11px] font-black uppercase tracking-[0.34em] text-[#f4f1ea]">
+            <p className="font-mono text-[30px] font-black uppercase leading-[0.9] tracking-[0.12em] text-[#f4f1ea] drop-shadow-[0_0_26px_rgba(244,241,234,0.18)]">
               GOLF CAMP 2026
-            </p>
-            <p className="mt-2 text-xs font-black uppercase tracking-[0.18em] text-[#9b927f]">
-              Play. Compete. Remember.
             </p>
           </div>
 
@@ -127,30 +124,30 @@ export default function HomePage() {
           </div>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+        <section className="overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_55px_rgba(143,166,106,0.08)] backdrop-blur">
           {modules.map((module) => (
             <Link
               key={module.href}
               href={module.href}
-              className="group grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-3.5 transition duration-200 hover:bg-[#f6f0e3] last:border-b-0"
+              className="group grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-4 py-3.5 transition duration-200 hover:bg-[#161511] last:border-b-0"
             >
               <div
-                className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6]"
+                className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#34312a] bg-black/40 shadow-[0_0_28px_rgba(244,241,234,0.04)]"
                 style={{ color: module.accent }}
               >
                 <GolfCampIcon name={module.icon} className="h-6 w-6" />
               </div>
 
               <div className="min-w-0">
-                <h2 className="truncate text-base font-black tracking-tight text-[#17130e]">
+                <h2 className="truncate text-base font-black tracking-tight text-[#f4f1ea]">
                   {module.name}
                 </h2>
-                <p className="mt-0.5 truncate text-xs font-semibold text-[#4f483f]">
+                <p className="mt-0.5 truncate text-xs font-semibold text-[#b8b0a1]">
                   {module.meta}
                 </p>
               </div>
 
-              <span className="font-mono text-xl font-black text-[#4f483f] transition group-hover:translate-x-0.5">
+              <span className="font-mono text-xl font-black text-[#82786a] transition group-hover:translate-x-0.5 group-hover:text-[#f4f1ea]">
                 →
               </span>
             </Link>

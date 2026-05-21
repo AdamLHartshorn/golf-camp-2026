@@ -571,7 +571,7 @@ export default function ShenanigansWagersPage() {
                         }));
                       }
                     }}
-                    className="cursor-pointer rounded-2xl border border-[#7f1d1d] bg-[#1a0f0f] p-5 shadow-[0_0_0_1px_rgba(185,28,28,0.12)] transition-colors duration-200 hover:border-[#b91c1c]"
+                    className="cursor-pointer rounded-2xl border border-[#7f1d1d] bg-[#1a0f0f] p-5 shadow-[0_0_0_1px_rgba(106,49,60,0.09)] transition-colors duration-200 hover:border-[#b91c1c]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">

@@ -24,6 +24,57 @@ function getCaptainTeamName(captain: DraftPlayer) {
   return lastName ? `Team ${lastName}` : captain.display_name;
 }
 
+function normalizeTeamName(name: string) {
+  return name.trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function getUniqueTeamName(baseName: string, existingNames: Iterable<string>) {
+  const cleanBaseName = baseName.trim().replace(/\s+/g, " ") || "Team";
+  const usedNames = new Set(
+    Array.from(existingNames)
+      .map(normalizeTeamName)
+      .filter(Boolean),
+  );
+
+  if (!usedNames.has(normalizeTeamName(cleanBaseName))) {
+    return cleanBaseName;
+  }
+
+  let suffix = 2;
+  let candidate = `${cleanBaseName} ${suffix}`;
+
+  while (usedNames.has(normalizeTeamName(candidate))) {
+    suffix += 1;
+    candidate = `${cleanBaseName} ${suffix}`;
+  }
+
+  return candidate;
+}
+
+function getUniqueTeamNameForTeams(
+  baseName: string,
+  teams: DraftTeam[],
+  currentTeamId?: string,
+) {
+  return getUniqueTeamName(
+    baseName,
+    teams
+      .filter((team) => team.id !== currentTeamId)
+      .map((team) => team.name),
+  );
+}
+
+function getDraftTeamErrorMessage(errorMessage: string | undefined) {
+  if (
+    errorMessage?.includes("draft_teams_draft_session_id_name_key") ||
+    errorMessage?.toLowerCase().includes("duplicate key")
+  ) {
+    return "That draft already has a team with this name. Try saving again or use a slightly different team name.";
+  }
+
+  return errorMessage;
+}
+
 export default function AdminDraftPage() {
   const [players, setPlayers] = useState<DraftPlayer[]>([]);
   const [sessions, setSessions] = useState<DraftSession[]>([]);
@@ -216,19 +267,31 @@ export default function AdminDraftPage() {
     }
 
     const session = sessionData as DraftSession;
-    const teamPayload = captains.map((captain, index) => ({
-      draft_session_id: session.id,
-      name: getCaptainTeamName(captain),
-      captain_player_id: captain.id,
-      draft_position: index + 1,
-    }));
+    const usedTeamNames = new Set<string>();
+    const teamPayload = captains.map((captain, index) => {
+      const teamName = getUniqueTeamName(
+        getCaptainTeamName(captain),
+        usedTeamNames,
+      );
+      usedTeamNames.add(teamName);
+
+      return {
+        draft_session_id: session.id,
+        name: teamName,
+        captain_player_id: captain.id,
+        draft_position: index + 1,
+      };
+    });
     const { data: teamData, error: teamError } = await supabase
       .from("draft_teams")
       .insert(teamPayload)
       .select("*");
 
     if (teamError) {
-      setError(teamError.message || "Could not create captain teams.");
+      setError(
+        getDraftTeamErrorMessage(teamError.message) ||
+          "Could not create captain teams.",
+      );
       setIsSaving(false);
       return;
     }
@@ -305,7 +368,9 @@ export default function AdminDraftPage() {
       return;
     }
 
-    if (captainPlayerIds.has(captain.id)) {
+    const isKnownDuplicateCaptain = captainPlayerIds.has(captain.id);
+
+    if (isKnownDuplicateCaptain) {
       const shouldContinue = window.confirm(
         `${captain.display_name} is already assigned as a captain. Add anyway?`,
       );
@@ -318,12 +383,41 @@ export default function AdminDraftPage() {
     setMessage("");
     setError("");
 
-    const nextPosition = orderedTeams.length + 1;
+    const { data: existingTeamData, error: existingTeamsError } = await supabase
+      .from("draft_teams")
+      .select("*")
+      .eq("draft_session_id", selectedSession.id)
+      .order("draft_position", { ascending: true });
+
+    if (existingTeamsError) {
+      setError(existingTeamsError.message || "Could not check existing teams.");
+      return;
+    }
+
+    const currentTeams = ((existingTeamData as DraftTeam[]) || []).sort(
+      (a, b) => (a.draft_position || 999) - (b.draft_position || 999),
+    );
+    const existingCaptainTeam = currentTeams.find(
+      (team) => team.captain_player_id === captain.id,
+    );
+
+    if (existingCaptainTeam && !isKnownDuplicateCaptain) {
+      await fetchDraftState(selectedSession.id);
+      setMessage(`${captain.display_name} is already assigned as captain.`);
+      setManualCaptainPlayerId("");
+      return;
+    }
+
+    const nextPosition = currentTeams.length + 1;
+    const nextTeamName = getUniqueTeamNameForTeams(
+      getCaptainTeamName(captain),
+      currentTeams,
+    );
     const { data, error: insertError } = await supabase
       .from("draft_teams")
       .insert({
         draft_session_id: selectedSession.id,
-        name: getCaptainTeamName(captain),
+        name: nextTeamName,
         captain_player_id: captain.id,
         draft_position: nextPosition,
       })
@@ -331,12 +425,15 @@ export default function AdminDraftPage() {
       .single();
 
     if (insertError || !data) {
-      setError(insertError?.message || "Could not add captain team.");
+      setError(
+        getDraftTeamErrorMessage(insertError?.message) ||
+          "Could not add captain team.",
+      );
       return;
     }
 
     const newTeam = data as DraftTeam;
-    const nextTeams = [...orderedTeams, newTeam];
+    const nextTeams = [...currentTeams, newTeam];
     await persistDraftOrder(nextTeams);
     setManualCaptainPlayerId("");
     setMessage(`${captain.display_name} added as captain.`);
@@ -406,18 +503,24 @@ export default function AdminDraftPage() {
     const nextDefaultName = getCaptainTeamName(nextCaptain);
     const shouldUseDefaultName =
       !team.name.trim() || team.name.trim() === currentDefaultName;
+    const nextTeamName = shouldUseDefaultName
+      ? getUniqueTeamNameForTeams(nextDefaultName, teams, team.id)
+      : team.name;
 
     const { error: updateError } = await supabase
       .from("draft_teams")
       .update({
         captain_player_id: nextCaptain.id,
-        name: shouldUseDefaultName ? nextDefaultName : team.name,
+        name: nextTeamName,
         updated_at: new Date().toISOString(),
       })
       .eq("id", team.id);
 
     if (updateError) {
-      setError(updateError.message || "Could not change captain.");
+      setError(
+        getDraftTeamErrorMessage(updateError.message) ||
+          "Could not change captain.",
+      );
       return;
     }
 
@@ -437,20 +540,27 @@ export default function AdminDraftPage() {
       return;
     }
 
+    const safeTeamName = getUniqueTeamNameForTeams(nextName, teams, team.id);
     const { error: updateError } = await supabase
       .from("draft_teams")
       .update({
-        name: nextName,
+        name: safeTeamName,
         updated_at: new Date().toISOString(),
       })
       .eq("id", team.id);
 
     if (updateError) {
-      setError(updateError.message || "Could not rename team.");
+      setError(
+        getDraftTeamErrorMessage(updateError.message) || "Could not rename team.",
+      );
       return;
     }
 
-    setMessage("Team name updated.");
+    setMessage(
+      safeTeamName === nextName
+        ? "Team name updated."
+        : `Team name updated to ${safeTeamName}.`,
+    );
     await fetchDraftState(selectedSession.id);
   }
 
@@ -469,6 +579,7 @@ export default function AdminDraftPage() {
         draft_type: "snake",
         draft_order: orderedTeams.map((team) => team.id),
         current_pick_number: picks.length + 1,
+        current_pick_started_at: new Date().toISOString(),
         started_at: selectedSession.started_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
@@ -517,6 +628,7 @@ export default function AdminDraftPage() {
       .from("draft_sessions")
       .update({
         current_pick_number: nextPickNumber + 1,
+        current_pick_started_at: new Date().toISOString(),
         status: remainingAfterPick <= 0 ? "complete" : "active",
         completed_at:
           remainingAfterPick <= 0 ? new Date().toISOString() : selectedSession.completed_at,
@@ -554,6 +666,7 @@ export default function AdminDraftPage() {
         status: "active",
         completed_at: null,
         current_pick_number: Math.max(1, lastPick.pick_number),
+        current_pick_started_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       })
       .eq("id", selectedSession.id);
@@ -738,56 +851,65 @@ export default function AdminDraftPage() {
               </button>
             </section>
 
-            {isPendingDraft && (
-              <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
-                    Manual Adjustments
-                  </p>
-                  <h2 className="mt-2 text-xl font-bold">
-                    Add Captain Team
-                  </h2>
-                  <p className="mt-1 text-xs leading-5 text-[#737373]">
-                    Use this for exceptions. Captain rank is guidance, not a lock.
-                  </p>
-                </div>
-
-                <select
-                  value={manualCaptainPlayerId}
-                  onChange={(event) => setManualCaptainPlayerId(event.target.value)}
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
-                >
-                  <option value="">Select player to add</option>
-                  {players.map((player) => (
-                    <option key={player.id} value={player.id}>
-                      {player.display_name} ({player.rank || "Unranked"})
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  type="button"
-                  onClick={handleAddCaptainTeam}
-                  disabled={!manualCaptainPlayerId}
-                  className="w-full rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Add Captain / Team
-                </button>
-              </section>
-            )}
-
-            <section className="space-y-3">
+            <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
-                  Draft Order
+                  Captain Teams
                 </p>
-                <h2 className="mt-2 text-xl font-bold">Captain Teams</h2>
-                {isPendingDraft && (
-                  <p className="mt-1 text-xs leading-5 text-[#737373]">
-                    Reorder, rename, remove, or change captains before the draft starts.
-                  </p>
-                )}
+                <h2 className="mt-2 text-xl font-bold">
+                  Draft Order & Captains
+                </h2>
+                <p className="mt-1 text-xs leading-5 text-[#737373]">
+                  Auto-generated and manually added captain teams live here together.
+                  {isPendingDraft
+                    ? " Reorder, rename, remove, or change captains before the draft starts."
+                    : ""}
+                </p>
               </div>
+
+              {isPendingDraft && (
+                <div className="space-y-3 rounded-xl border border-[#242424] bg-black/40 p-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                      Add Captain Team
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#737373]">
+                      Use this for exceptions. Captain rank is guidance, not a lock.
+                    </p>
+                  </div>
+
+                  <select
+                    value={manualCaptainPlayerId}
+                    onChange={(event) =>
+                      setManualCaptainPlayerId(event.target.value)
+                    }
+                    className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  >
+                    <option value="">Select player to add</option>
+                    {players.map((player) => (
+                      <option key={player.id} value={player.id}>
+                        {player.display_name} ({player.rank || "Unranked"})
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    type="button"
+                    onClick={handleAddCaptainTeam}
+                    disabled={!manualCaptainPlayerId}
+                    className="w-full rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Add Captain / Team
+                  </button>
+                </div>
+              )}
+
+              {orderedTeams.length === 0 && (
+                <div className="rounded-2xl border border-[#242424] bg-black/40 p-4 text-sm text-[#a3a3a3]">
+                  No captain teams yet. Create a draft with auto captains or add
+                  one manually.
+                </div>
+              )}
 
               {orderedTeams.map((team, index) => (
                 <div

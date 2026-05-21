@@ -7,10 +7,8 @@ import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
   formatScoreToCompletedPar,
-  formatScoreToPar,
-  frontNinePar,
+  formatScoreToCompletedParForHoles,
   getTeamScoreStatus,
-  getParForHoles,
   holes,
   isRoundPresentationReady,
   moneyRoundScorecard,
@@ -26,7 +24,6 @@ import {
 
 const frontNine = holes.slice(0, 9);
 const backNine = holes.slice(9);
-const backNinePar = getParForHoles(backNine);
 const scorecardByHole = new Map<number, (typeof moneyRoundScorecard)[number]>(
   moneyRoundScorecard.map((item) => [item.hole, item]),
 );
@@ -131,7 +128,7 @@ export default function MoneyRoundDetailPage() {
   }, [bankRows.length, error, isLoading, params.id, scores.length, teams.length]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(22,163,74,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(49,95,72,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto w-full max-w-3xl space-y-6 py-6">
         {isLoading && (
           <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
@@ -147,7 +144,7 @@ export default function MoneyRoundDetailPage() {
 
         {!isLoading && !error && round && (
           <>
-            <div className="overflow-hidden rounded-2xl border border-[#1f6c38] bg-[#0c0f0b] shadow-[0_0_35px_rgba(22,163,74,0.12)]">
+            <div className="overflow-hidden rounded-2xl border border-[#1f6c38] bg-[#0c0f0b] shadow-[0_0_32px_rgba(49,95,72,0.09)]">
               <div className="border-b border-[#164c2a] bg-[#102116] px-5 py-5">
                 <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8ee6a7]">
                   Money Rounds
@@ -261,16 +258,18 @@ export default function MoneyRoundDetailPage() {
                   <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold text-[#16a34a]">
                     <span className="rounded-full border border-[#166534]/70 px-3 py-1">
                       OUT{" "}
-                      {formatScoreToPar(
+                      {formatScoreToCompletedParForHoles(
                         sumHoleScores(scoresByTeam[team.id] || {}, frontNine),
-                        frontNinePar,
+                        scoresByTeam[team.id] || {},
+                        frontNine,
                       )}
                     </span>
                     <span className="rounded-full border border-[#166534]/70 px-3 py-1">
                       IN{" "}
-                      {formatScoreToPar(
+                      {formatScoreToCompletedParForHoles(
                         sumHoleScores(scoresByTeam[team.id] || {}, backNine),
-                        backNinePar,
+                        scoresByTeam[team.id] || {},
+                        backNine,
                       )}
                     </span>
                     <span className="rounded-full border border-[#16a34a] px-3 py-1">

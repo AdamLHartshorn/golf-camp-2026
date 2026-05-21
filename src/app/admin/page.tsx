@@ -64,7 +64,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="space-y-4">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+          <p className="font-mono text-[17px] font-black uppercase leading-none tracking-[0.26em] text-[#f5f5f5] drop-shadow-[0_0_18px_rgba(244,241,234,0.14)]">
             Golf Camp 2026
           </p>
 

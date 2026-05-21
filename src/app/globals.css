@@ -4,17 +4,19 @@
   --background: #050505;
   --foreground: #f4f1ea;
   --gc-bg: #050505;
-  --gc-panel: #11110f;
-  --gc-panel-soft: #151411;
+  --gc-panel: #0d0d0b;
+  --gc-panel-soft: #151511;
   --gc-panel-warm: #1b1712;
-  --gc-border: #2a2925;
-  --gc-line: #34312a;
-  --gc-muted: #a8a29a;
-  --gc-faint: #756f66;
+  --gc-panel-glass: rgba(17, 17, 15, 0.86);
+  --gc-border: #2e2b25;
+  --gc-line: #403a30;
+  --gc-muted: #b8b0a1;
+  --gc-faint: #82786a;
   --gc-text: #f4f1ea;
   --gc-paper: #d8d0bf;
   --gc-rule-soft: rgba(216, 208, 191, 0.07);
   --gc-rule-strong: rgba(216, 208, 191, 0.16);
+  --gc-glow: rgba(216, 208, 191, 0.09);
 }
 
 @theme inline {
@@ -49,7 +51,9 @@ body {
 
 main {
   background:
-    radial-gradient(circle at 50% 0%, rgba(216, 208, 191, 0.04), transparent 28rem),
+    radial-gradient(circle at 50% -8rem, rgba(216, 208, 191, 0.11), transparent 25rem),
+    radial-gradient(circle at 12% 12%, rgba(143, 166, 106, 0.08), transparent 18rem),
+    radial-gradient(circle at 90% 86%, rgba(216, 208, 191, 0.045), transparent 19rem),
     var(--gc-bg) !important;
 }
 
@@ -58,13 +62,29 @@ main {
   color: var(--gc-text);
 }
 
-/* Modern Scorecard base: warm official paper-on-black without a light theme. */
+/* Dark cinematic base: Apple-country-club surfaces with quiet scorecard order. */
 [class*="bg-[#111111]"],
 [class*="bg-[#0b0b0b]"],
 [class*="bg-[#14110c]"] {
   background:
-    linear-gradient(90deg, rgba(216, 208, 191, 0.035), transparent 5rem),
+    radial-gradient(circle at 12% 0%, rgba(244, 241, 234, 0.055), transparent 15rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0)),
     var(--gc-panel) !important;
+}
+
+[class*="bg-[#efe9dc]"],
+[class*="bg-[#f8f2e6]"],
+[class*="bg-[#f6f0e3]"],
+[class*="bg-[#dbe7fb]"],
+[class*="bg-[#dfe9d2]"],
+[class*="bg-[#e3ded4]"],
+[class*="bg-[#f0e2bf]"],
+[class*="bg-[#ead6c5]"],
+[class*="bg-[#dfe3e8]"] {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(244, 241, 234, 0.07), transparent 14rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.008)),
+    var(--gc-panel-glass) !important;
 }
 
 [class*="bg-black/30"],
@@ -75,7 +95,13 @@ main {
 
 [class*="border-[#242424]"],
 [class*="border-[#3a3a3a]"],
-[class*="border-[#3a2a12]"] {
+[class*="border-[#3a2a12]"],
+[class*="border-[#d8d1c4]"],
+[class*="border-[#d8d1c4]/80"],
+[class*="border-[#d2c8b8]"],
+[class*="border-[#cec5b5]"],
+[class*="border-[#c6d3e8]"],
+[class*="border-[#cfc4b3]"] {
   border-color: var(--gc-border) !important;
 }
 
@@ -84,9 +110,160 @@ main {
   color: var(--gc-text) !important;
 }
 
+[class*="text-[#17130e]"],
+[class*="text-[#4f483f]"] {
+  color: var(--gc-text) !important;
+}
+
 [class*="text-[#a3a3a3]"],
-[class*="text-[#737373]"] {
+[class*="text-[#737373]"],
+[class*="text-[#7a6f60]"],
+[class*="text-[#5f574b]"],
+[class*="text-[#756f66]"],
+[class*="text-[#57534e]"],
+[class*="text-[#4b5563]"] {
   color: var(--gc-muted) !important;
+}
+
+[class*="text-[#31552d]"],
+[class*="text-[#6f521b]"],
+[class*="text-[#704728]"] {
+  color: #d9caa7 !important;
+}
+
+/* Restrained subsystem accents for the dark cinematic direction. */
+[class*="text-[#16a34a]"],
+[class*="text-[#22c55e]"],
+[class*="text-[#86efac]"],
+[class*="text-[#8ee6a7]"] {
+  color: #8faa99 !important;
+}
+
+[class*="bg-[#16a34a]"],
+[class*="bg-[#22c55e]"] {
+  background-color: #315f48 !important;
+}
+
+[class*="bg-[#0f1f16]"],
+[class*="bg-[#102116]"],
+[class*="bg-[#07120c]"] {
+  background-color: #111a14 !important;
+}
+
+[class*="border-[#16a34a]"],
+[class*="border-[#22c55e]"],
+[class*="border-[#166534]"],
+[class*="border-[#24452f]"] {
+  border-color: #315f48 !important;
+}
+
+[class*="hover:bg-[#15803d]"]:hover,
+[class*="hover:bg-[#0f1f16]"]:hover {
+  background-color: #244c3a !important;
+}
+
+[class*="hover:border-[#16a34a]"]:hover,
+[class*="hover:border-[#22c55e]"]:hover {
+  border-color: #315f48 !important;
+}
+
+[class*="bg-[#16a34a]"][class*="text-black"],
+[class*="bg-[#22c55e]"][class*="text-black"] {
+  color: var(--gc-text) !important;
+}
+
+[class*="shadow-"][class*="rgba(22,163,74"],
+[class*="shadow-"][class*="rgba(34,197,94"] {
+  box-shadow:
+    inset 0 1px 0 rgba(244, 241, 234, 0.055),
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 38px rgba(49, 95, 72, 0.08) !important;
+}
+
+[class*="text-[#1d4ed8]"],
+[class*="text-[#2563eb]"],
+[class*="text-[#3b82f6]"],
+[class*="text-[#60a5fa]"],
+[class*="text-[#93c5fd]"] {
+  color: #9aacbf !important;
+}
+
+[class*="bg-[#1d4ed8]"],
+[class*="bg-[#2563eb]"] {
+  background-color: #324d70 !important;
+}
+
+[class*="bg-[#071123]"],
+[class*="bg-[#08152d]"],
+[class*="bg-[#0b1730]"] {
+  background-color: #0e1520 !important;
+}
+
+[class*="border-[#1e40af]"],
+[class*="border-[#2563eb]"],
+[class*="border-[#3b82f6]"] {
+  border-color: #324d70 !important;
+}
+
+[class*="hover:bg-[#0b1730]"]:hover,
+[class*="hover:bg-[#08152d]"]:hover {
+  background-color: #162235 !important;
+}
+
+[class*="hover:border-[#2563eb]"]:hover,
+[class*="hover:border-[#1d4ed8]"]:hover {
+  border-color: #324d70 !important;
+}
+
+[class*="shadow-"][class*="rgba(37,99,235"],
+[class*="shadow-"][class*="rgba(29,78,216"] {
+  box-shadow:
+    inset 0 1px 0 rgba(244, 241, 234, 0.055),
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 38px rgba(50, 77, 112, 0.09) !important;
+}
+
+[class*="text-[#b91c1c]"],
+[class*="text-[#dc2626]"],
+[class*="text-[#ef4444]"] {
+  color: #b48991 !important;
+}
+
+[class*="bg-[#b91c1c]"],
+[class*="bg-[#dc2626]"],
+[class*="bg-[#ef4444]"] {
+  background-color: #6a313c !important;
+}
+
+[class*="bg-[#1a0d0d]"],
+[class*="bg-[#1a0f0f]"] {
+  background-color: #171012 !important;
+}
+
+[class*="border-[#b91c1c]"],
+[class*="border-[#dc2626]"],
+[class*="border-[#ef4444]"],
+[class*="border-[#7f1d1d]"],
+[class*="border-[#3a1d1d]"] {
+  border-color: #6a313c !important;
+}
+
+[class*="hover:bg-[#991b1b]"]:hover,
+[class*="hover:bg-[#7f1d1d]"]:hover {
+  background-color: #5a2b33 !important;
+}
+
+[class*="hover:border-[#991b1b]"]:hover,
+[class*="hover:border-[#b91c1c]"]:hover {
+  border-color: #6a313c !important;
+}
+
+[class*="shadow-"][class*="rgba(185,28,28"],
+[class*="shadow-"][class*="rgba(239,68,68"] {
+  box-shadow:
+    inset 0 1px 0 rgba(244, 241, 234, 0.055),
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 38px rgba(106, 49, 60, 0.08) !important;
 }
 
 h1 {
@@ -119,19 +296,22 @@ span[class*="uppercase"],
 }
 
 [class*="rounded-2xl"][class*="border"],
-[class*="rounded-xl"][class*="border"] {
+[class*="rounded-xl"][class*="border"],
+[class*="rounded-[1.45rem]"][class*="border"],
+[class*="rounded-[1.65rem]"][class*="border"] {
   border-width: 1px;
   box-shadow:
-    inset 0 1px 0 rgba(244, 241, 234, 0.035),
-    0 8px 22px rgba(0, 0, 0, 0.14);
+    inset 0 1px 0 rgba(244, 241, 234, 0.055),
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 42px rgba(244, 241, 234, 0.035);
 }
 
 [class*="rounded-2xl"] {
-  border-radius: 8px !important;
+  border-radius: 22px !important;
 }
 
 [class*="rounded-xl"] {
-  border-radius: 6px !important;
+  border-radius: 16px !important;
 }
 
 a[class*="rounded-2xl"],
@@ -168,27 +348,28 @@ div[class*="rounded-2xl"] {
 section[class*="rounded-2xl"]::before,
 a.block[class*="rounded-2xl"]::before,
 div[class*="rounded-2xl"][class*="border"]::before {
-  content: none;
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
-  border-top: 1px solid var(--gc-rule-soft);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(244, 241, 234, 0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.55);
+  background: linear-gradient(135deg, rgba(244, 241, 234, 0.045), transparent 38%);
+  opacity: 0.85;
 }
 
 section[class*="rounded-2xl"]::after,
 a.block[class*="rounded-2xl"]::after,
 div[class*="rounded-2xl"][class*="border"]::after {
-  content: none;
+  content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   border-radius: inherit;
   background-image:
-    linear-gradient(to right, transparent calc(100% - 3.25rem), var(--gc-rule-soft) calc(100% - 3.25rem), var(--gc-rule-soft) calc(100% - 3.18rem), transparent calc(100% - 3.18rem)),
-    repeating-linear-gradient(0deg, transparent 0, transparent 2.55rem, rgba(216, 208, 191, 0.035) 2.55rem, rgba(216, 208, 191, 0.035) 2.6rem);
-  opacity: 0.55;
+    linear-gradient(to right, transparent calc(100% - 3.25rem), rgba(216, 208, 191, 0.035) calc(100% - 3.25rem), rgba(216, 208, 191, 0.035) calc(100% - 3.18rem), transparent calc(100% - 3.18rem));
+  opacity: 0.42;
 }
 
 input,

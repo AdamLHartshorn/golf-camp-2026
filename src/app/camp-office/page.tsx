@@ -40,25 +40,25 @@ export default function CampOfficePage() {
           </span>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.38)]">
+        <section className="overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.48),0_0_48px_rgba(244,241,234,0.05)]">
           {cards.map((card) => (
             <Link
               key={card.name}
               href={card.href}
-              className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition hover:bg-[#f6f0e3] last:border-b-0"
+              className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-4 py-4 transition hover:bg-[#161511] last:border-b-0"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#17130e]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#34312a] bg-black/40 text-[#f4f1ea]">
                 <GolfCampIcon name={card.icon} className="h-6 w-6" />
               </span>
 
               <div className="min-w-0">
                 <h2 className="text-base font-black">{card.name}</h2>
-                <p className="mt-0.5 truncate text-xs font-semibold text-[#4f483f]">
+                <p className="mt-0.5 truncate text-xs font-semibold text-[#b8b0a1]">
                   {card.label}
                 </p>
               </div>
 
-              <span className="self-center text-right font-mono text-xl font-black text-[#4f483f]">
+              <span className="self-center text-right font-mono text-xl font-black text-[#82786a]">
                 →
               </span>
             </Link>

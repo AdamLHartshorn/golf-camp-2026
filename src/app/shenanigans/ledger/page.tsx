@@ -127,7 +127,7 @@ export default function ShenanigansLedgerPage() {
   }, [events]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(185,28,28,0.16),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(106,49,60,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
           <Link href="/shenanigans" className="text-2xl text-[#a3a3a3]">
@@ -210,7 +210,7 @@ export default function ShenanigansLedgerPage() {
         )}
 
         {selectedGameId && (
-        <section className="overflow-hidden rounded-2xl border border-[#7f1d1d]/70 bg-[#120d0d] shadow-[0_0_38px_rgba(185,28,28,0.14)]">
+        <section className="overflow-hidden rounded-2xl border border-[#7f1d1d]/70 bg-[#120d0d] shadow-[0_0_32px_rgba(106,49,60,0.1)]">
           <div className="border-b border-[#3a1d1d] bg-[#1a0d0d] px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">

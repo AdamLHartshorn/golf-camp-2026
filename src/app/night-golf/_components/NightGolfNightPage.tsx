@@ -26,53 +26,53 @@ export function NightGolfNightPage({
           </span>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_55px_rgba(0,0,0,0.32)]">
+        <div className="overflow-hidden rounded-2xl border border-[#831843]/70 bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_52px_rgba(236,72,153,0.12)]">
           <Link
             href={`/night-golf/${nightPath}/submit`}
-            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition hover:bg-[#f6f0e3]"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-4 py-4 transition hover:bg-[#211019]"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#831843]/70 bg-[#211019] text-[#f472b6]">
               <GolfCampIcon name="log" className="h-6 w-6" />
             </span>
             <div>
               <h2 className="text-base font-black">Scorecard</h2>
-              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+              <p className="mt-0.5 text-xs font-semibold text-[#b8b0a1]">
                 Enter target-by-target results.
               </p>
             </div>
-            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
+            <span className="font-mono text-xl font-black text-[#b8b0a1]">→</span>
           </Link>
 
           <Link
             href={`/night-golf/${nightPath}/leaderboard`}
-            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#d2c8b8] px-4 py-4 transition hover:bg-[#f6f0e3]"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-4 py-4 transition hover:bg-[#211019]"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#831843]/70 bg-[#211019] text-[#f472b6]">
               <GolfCampIcon name="ledger" className="h-6 w-6" />
             </span>
             <div>
               <h2 className="text-base font-black">Leaderboard</h2>
-              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+              <p className="mt-0.5 text-xs font-semibold text-[#b8b0a1]">
                 Current standings and scores.
               </p>
             </div>
-            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
+            <span className="font-mono text-xl font-black text-[#b8b0a1]">→</span>
           </Link>
 
           <Link
             href="/night-golf/rules"
-            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-4 transition hover:bg-[#f6f0e3]"
+            className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 px-4 py-4 transition hover:bg-[#211019]"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#d2c8b8] bg-[#f8f2e6] text-[#f472b6]">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#831843]/70 bg-[#211019] text-[#f472b6]">
               <GolfCampIcon name="rules" className="h-6 w-6" />
             </span>
             <div>
               <h2 className="text-base font-black">Rules</h2>
-              <p className="mt-0.5 text-xs font-semibold text-[#4f483f]">
+              <p className="mt-0.5 text-xs font-semibold text-[#b8b0a1]">
                 Review scoring and target rules.
               </p>
             </div>
-            <span className="font-mono text-xl font-black text-[#4f483f]">→</span>
+            <span className="font-mono text-xl font-black text-[#b8b0a1]">→</span>
           </Link>
         </div>
 

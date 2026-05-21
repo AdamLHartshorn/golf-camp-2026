@@ -5,7 +5,7 @@ export default function RulesPage() {
     <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
       <div className="mx-auto w-full max-w-md space-y-8 py-10">
         <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+          <p className="font-mono text-[17px] font-black uppercase leading-none tracking-[0.26em] text-[#f5f5f5] drop-shadow-[0_0_18px_rgba(244,241,234,0.14)]">
             Golf Camp 2026
           </p>
 
