@@ -19,7 +19,7 @@ export function NightGolfNightPage({
             {date}
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#cfff82]">
+          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
             {nightLabel} Night Golf
           </h1>
 
@@ -31,7 +31,7 @@ export function NightGolfNightPage({
         <div className="space-y-4">
           <Link
             href={`/night-golf/${nightPath}/submit`}
-            className="block rounded-2xl bg-[#cfff82] p-5 transition hover:opacity-90"
+            className="block rounded-2xl bg-[#db2777] p-5 transition hover:opacity-90"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -50,7 +50,7 @@ export function NightGolfNightPage({
 
           <Link
             href={`/night-golf/${nightPath}/leaderboard`}
-            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#cfff82]"
+            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#ec4899]"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -63,13 +63,13 @@ export function NightGolfNightPage({
                 </p>
               </div>
 
-              <span className="text-2xl text-[#cfff82]">→</span>
+              <span className="text-2xl text-[#f472b6]">→</span>
             </div>
           </Link>
 
           <Link
             href="/night-golf/rules"
-            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#cfff82]"
+            className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#ec4899]"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -82,7 +82,7 @@ export function NightGolfNightPage({
                 </p>
               </div>
 
-              <span className="text-2xl text-[#cfff82]">→</span>
+              <span className="text-2xl text-[#f472b6]">→</span>
             </div>
           </Link>
         </div>

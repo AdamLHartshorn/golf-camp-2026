@@ -9,7 +9,7 @@ export default function RulesPage() {
             Golf Camp 2026
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#cfff82]">
+          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
             Rules
           </h1>
 
@@ -28,39 +28,39 @@ export default function RulesPage() {
               </p>
 
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   1G
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   1Y
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   1R
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   2G
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   2Y
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   2R
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   3G
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   3Y
                 </div>
 
-                <div className="rounded-lg bg-black p-3 text-[#cfff82]">
+                <div className="rounded-lg bg-black p-3 text-[#f472b6]">
                   3R
                 </div>
               </div>
@@ -98,17 +98,17 @@ export default function RulesPage() {
               <div className="flex items-center justify-between rounded-xl bg-black p-4">
                 <span>Stuck both shots</span>
 
-                <span className="font-bold text-[#cfff82]">
+                <span className="font-bold text-[#f472b6]">
                   3
                 </span>
               </div>
 
-              <div className="rounded-xl border border-[#cfff82] bg-black p-4 text-center">
+              <div className="rounded-xl border border-[#ec4899] bg-black p-4 text-center">
                 <p className="text-sm text-[#a3a3a3]">
                   Maximum Possible Score
                 </p>
 
-                <p className="mt-1 text-3xl font-bold text-[#cfff82]">
+                <p className="mt-1 text-3xl font-bold text-[#f472b6]">
                   27
                 </p>
               </div>

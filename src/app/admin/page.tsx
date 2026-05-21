@@ -14,6 +14,18 @@ const sections = [
     description: "Review scores, delete bad entries, and reset nights.",
   },
   {
+    label: "Draft",
+    title: "Live Draft Admin",
+    href: "/admin/draft",
+    description: "Create sessions, set captain order, and run the draft.",
+  },
+  {
+    label: "Money Rounds",
+    title: "Money Rounds Admin",
+    href: "/admin/money-rounds",
+    description: "Manage team scores, skins, payouts, and round bank previews.",
+  },
+  {
     label: "Shenanigans",
     title: "Shenanigans Admin",
     href: "/admin/shenanigans",

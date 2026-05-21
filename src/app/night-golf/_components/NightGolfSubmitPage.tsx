@@ -132,7 +132,7 @@ export function NightGolfSubmitPage({
             {nightLabel} Night Golf
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#cfff82]">
+          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
             Scorecard
           </h1>
 
@@ -168,8 +168,8 @@ export function NightGolfSubmitPage({
                     onClick={() => setChosenPlayerName(player.display_name)}
                     className={`rounded-xl border p-4 text-left text-sm font-semibold transition ${
                       selectedPlayerName === player.display_name
-                        ? "border-[#cfff82] bg-[#cfff82] text-black"
-                        : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#cfff82]"
+                        ? "border-[#ec4899] bg-[#db2777] text-black"
+                        : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#ec4899]"
                     }`}
                   >
                     {player.display_name}
@@ -191,8 +191,8 @@ export function NightGolfSubmitPage({
                   onClick={() => setSelectedTarget(target)}
                   className={`rounded-xl p-4 text-lg font-bold transition ${
                     selectedTarget === target
-                      ? "bg-[#cfff82] text-black"
-                      : "border border-[#242424] bg-black text-[#cfff82]"
+                      ? "bg-[#db2777] text-black"
+                      : "border border-[#242424] bg-black text-[#f472b6]"
                   }`}
                 >
                   {target}
@@ -233,7 +233,7 @@ export function NightGolfSubmitPage({
                 onClick={() => setSelectedScore(3)}
                 className={`rounded-xl p-5 text-xl font-bold transition ${
                   selectedScore === 3
-                    ? "bg-[#cfff82] text-black"
+                    ? "bg-[#db2777] text-black"
                     : "border border-[#242424] bg-black"
                 }`}
               >
@@ -248,13 +248,13 @@ export function NightGolfSubmitPage({
                 Current Total
               </p>
 
-              <p className="mt-1 text-4xl font-bold text-[#cfff82]">
+              <p className="mt-1 text-4xl font-bold text-[#f472b6]">
                 {selectedScore ?? 0}
               </p>
             </div>
 
             {message && (
-              <p className="text-center text-sm text-[#cfff82]">
+              <p className="text-center text-sm text-[#f472b6]">
                 {message}
               </p>
             )}
@@ -269,7 +269,7 @@ export function NightGolfSubmitPage({
               type="button"
               onClick={handleSubmit}
               disabled={isSubmitting || isLoadingPlayers || players.length === 0}
-              className="w-full rounded-2xl bg-[#cfff82] py-5 text-xl font-bold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-2xl bg-[#db2777] py-5 text-xl font-bold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? "Submitting..." : "Submit Result"}
             </button>

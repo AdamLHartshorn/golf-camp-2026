@@ -37,7 +37,7 @@ export default function NightGolfPage() {
             Golf Camp 2026
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#cfff82]">
+          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
             Night Golf
           </h1>
 
@@ -49,7 +49,7 @@ export default function NightGolfPage() {
         <div className="space-y-4">
           <Link
             href="/night-golf/rules"
-            className="block rounded-2xl bg-[#cfff82] p-5 transition hover:opacity-90"
+            className="block rounded-2xl bg-[#db2777] p-5 transition hover:opacity-90"
           >
             <div className="flex items-center justify-between gap-4">
               <div>
@@ -70,7 +70,7 @@ export default function NightGolfPage() {
             <Link
               key={night.name}
               href={night.href}
-              className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#cfff82]"
+              className="block rounded-2xl border border-[#242424] bg-[#111111] p-5 transition hover:border-[#ec4899]"
             >
               <h2 className="text-2xl font-bold">{night.name}</h2>
 

@@ -83,7 +83,7 @@ export function NightGolfLeaderboardPage({
             {nightLabel} Night Golf
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight text-[#cfff82]">
+          <h1 className="text-4xl font-bold tracking-tight text-[#f472b6]">
             Leaderboard
           </h1>
 
@@ -111,7 +111,7 @@ export function NightGolfLeaderboardPage({
                 key={player.name}
                 className={`flex items-center justify-between rounded-2xl border p-5 ${
                   index === 0
-                    ? "border-[#cfff82] bg-[#111111]"
+                    ? "border-[#ec4899] bg-[#111111]"
                     : "border-[#242424] bg-[#111111]"
                 }`}
               >
@@ -119,7 +119,7 @@ export function NightGolfLeaderboardPage({
                   <div
                     className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${
                       index === 0
-                        ? "bg-[#cfff82] text-black"
+                        ? "bg-[#db2777] text-black"
                         : "bg-black text-[#a3a3a3]"
                     }`}
                   >
@@ -135,7 +135,7 @@ export function NightGolfLeaderboardPage({
                   </div>
                 </div>
 
-                <p className="text-3xl font-bold text-[#cfff82]">
+                <p className="text-3xl font-bold text-[#f472b6]">
                   {player.total}
                 </p>
               </div>

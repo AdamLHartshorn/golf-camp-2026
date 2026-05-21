@@ -1,0 +1,629 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase";
+import {
+  comparePlayersForDraft,
+  DraftPick,
+  DraftPlayer,
+  DraftSession,
+  DraftTeam,
+  getAvailablePlayers,
+  getCurrentDraftTeam,
+  getOrderedTeams,
+  getPicksByTeam,
+  groupPlayersByRank,
+} from "@/app/draft/_lib/draftUtils";
+
+const ranks = ["A", "B", "C", "D"] as const;
+
+export default function AdminDraftPage() {
+  const [players, setPlayers] = useState<DraftPlayer[]>([]);
+  const [sessions, setSessions] = useState<DraftSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [selectedSession, setSelectedSession] = useState<DraftSession | null>(
+    null,
+  );
+  const [teams, setTeams] = useState<DraftTeam[]>([]);
+  const [picks, setPicks] = useState<DraftPick[]>([]);
+  const [sessionName, setSessionName] = useState("Wednesday Morning Draft");
+  const [captainRank, setCaptainRank] = useState<"A" | "B" | "C" | "D">("A");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  async function fetchPlayers() {
+    const { data, error: fetchError } = await supabase
+      .from("players")
+      .select("id, first_name, last_name, display_name, rank, internal_rank_order")
+      .eq("active", true);
+
+    console.log("draft active players:", { data, error: fetchError });
+
+    if (fetchError) {
+      setPlayers([]);
+      setError(fetchError.message || "Could not load active players.");
+      return;
+    }
+
+    setPlayers(((data as DraftPlayer[]) || []).sort(comparePlayersForDraft));
+  }
+
+  async function fetchSessions() {
+    const { data, error: fetchError } = await supabase
+      .from("draft_sessions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    console.log("draft sessions:", { data, error: fetchError });
+
+    if (fetchError) {
+      setSessions([]);
+      setError(fetchError.message || "Could not load draft sessions.");
+      return;
+    }
+
+    const nextSessions = (data as DraftSession[]) || [];
+    setSessions(nextSessions);
+
+    if (!selectedSessionId && nextSessions.length > 0) {
+      setSelectedSessionId(nextSessions[0].id);
+    }
+  }
+
+  async function fetchDraftState(sessionId: string) {
+    const [
+      { data: sessionData, error: sessionError },
+      { data: teamData, error: teamError },
+      { data: pickData, error: pickError },
+    ] = await Promise.all([
+      supabase.from("draft_sessions").select("*").eq("id", sessionId).single(),
+      supabase
+        .from("draft_teams")
+        .select("*")
+        .eq("draft_session_id", sessionId)
+        .order("draft_position", { ascending: true }),
+      supabase
+        .from("draft_picks")
+        .select("*")
+        .eq("draft_session_id", sessionId)
+        .order("pick_number", { ascending: true }),
+    ]);
+
+    console.log("draft state:", {
+      sessionData,
+      sessionError,
+      teamData,
+      teamError,
+      pickData,
+      pickError,
+    });
+
+    if (sessionError || teamError || pickError) {
+      setSelectedSession(null);
+      setTeams([]);
+      setPicks([]);
+      setError(
+        sessionError?.message ||
+          teamError?.message ||
+          pickError?.message ||
+          "Could not load draft state.",
+      );
+      return;
+    }
+
+    setSelectedSession(sessionData as DraftSession);
+    setTeams((teamData as DraftTeam[]) || []);
+    setPicks((pickData as DraftPick[]) || []);
+  }
+
+  useEffect(() => {
+    async function loadInitialData() {
+      setIsLoading(true);
+      await Promise.all([fetchPlayers(), fetchSessions()]);
+      setIsLoading(false);
+    }
+
+    loadInitialData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (selectedSessionId) {
+      window.setTimeout(() => {
+        fetchDraftState(selectedSessionId);
+      }, 0);
+    }
+  }, [selectedSessionId]);
+
+  const orderedTeams = useMemo(
+    () => getOrderedTeams(teams, selectedSession?.draft_order),
+    [selectedSession?.draft_order, teams],
+  );
+  const availablePlayers = useMemo(
+    () => getAvailablePlayers(players, teams, picks),
+    [picks, players, teams],
+  );
+  const availableByRank = useMemo(
+    () => groupPlayersByRank(availablePlayers),
+    [availablePlayers],
+  );
+  const picksByTeam = useMemo(() => getPicksByTeam(picks), [picks]);
+  const currentTeam = useMemo(
+    () => getCurrentDraftTeam(orderedTeams, picks.length),
+    [orderedTeams, picks.length],
+  );
+  const playersById = useMemo(
+    () => new Map(players.map((player) => [player.id, player])),
+    [players],
+  );
+
+  async function handleCreateSession() {
+    const trimmedName = sessionName.trim();
+    const captains = players.filter((player) => player.rank === captainRank);
+
+    setMessage("");
+    setError("");
+
+    if (!trimmedName) {
+      setError("Draft name is required.");
+      return;
+    }
+
+    if (captains.length === 0) {
+      setError(`No active ${captainRank} players found for captains.`);
+      return;
+    }
+
+    setIsSaving(true);
+
+    const { data: sessionData, error: sessionError } = await supabase
+      .from("draft_sessions")
+      .insert({
+        name: trimmedName,
+        captain_rank: captainRank,
+        draft_type: "snake",
+        status: "pending",
+        current_pick_number: 1,
+      })
+      .select("*")
+      .single();
+
+    if (sessionError || !sessionData) {
+      setError(sessionError?.message || "Could not create draft session.");
+      setIsSaving(false);
+      return;
+    }
+
+    const session = sessionData as DraftSession;
+    const teamPayload = captains.map((captain, index) => ({
+      draft_session_id: session.id,
+      name: captain.display_name,
+      captain_player_id: captain.id,
+      draft_position: index + 1,
+    }));
+    const { data: teamData, error: teamError } = await supabase
+      .from("draft_teams")
+      .insert(teamPayload)
+      .select("*");
+
+    if (teamError) {
+      setError(teamError.message || "Could not create captain teams.");
+      setIsSaving(false);
+      return;
+    }
+
+    const createdTeams = (teamData as DraftTeam[]) || [];
+    const draftOrder = createdTeams
+      .sort((a, b) => (a.draft_position || 999) - (b.draft_position || 999))
+      .map((team) => team.id);
+    await supabase
+      .from("draft_sessions")
+      .update({ draft_order: draftOrder, updated_at: new Date().toISOString() })
+      .eq("id", session.id);
+
+    setMessage("Draft session created.");
+    setSelectedSessionId(session.id);
+    await fetchSessions();
+    await fetchDraftState(session.id);
+    setIsSaving(false);
+  }
+
+  async function moveTeam(teamId: string, direction: -1 | 1) {
+    const currentIndex = orderedTeams.findIndex((team) => team.id === teamId);
+    const nextIndex = currentIndex + direction;
+
+    if (currentIndex < 0 || nextIndex < 0 || nextIndex >= orderedTeams.length) {
+      return;
+    }
+
+    const nextTeams = [...orderedTeams];
+    const [movedTeam] = nextTeams.splice(currentIndex, 1);
+    nextTeams.splice(nextIndex, 0, movedTeam);
+    await persistDraftOrder(nextTeams);
+  }
+
+  async function persistDraftOrder(nextTeams: DraftTeam[]) {
+    if (!selectedSession) {
+      return;
+    }
+
+    setError("");
+    const draftOrder = nextTeams.map((team) => team.id);
+    const updates = nextTeams.map((team, index) =>
+      supabase
+        .from("draft_teams")
+        .update({
+          draft_position: index + 1,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", team.id),
+    );
+    await Promise.all(updates);
+    const { error: updateError } = await supabase
+      .from("draft_sessions")
+      .update({ draft_order: draftOrder, updated_at: new Date().toISOString() })
+      .eq("id", selectedSession.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not update draft order.");
+      return;
+    }
+
+    await fetchDraftState(selectedSession.id);
+  }
+
+  async function handleStartDraft() {
+    if (!selectedSession || orderedTeams.length === 0) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    const { error: updateError } = await supabase
+      .from("draft_sessions")
+      .update({
+        status: "active",
+        draft_type: "snake",
+        draft_order: orderedTeams.map((team) => team.id),
+        current_pick_number: picks.length + 1,
+        started_at: selectedSession.started_at || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", selectedSession.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not start draft.");
+      return;
+    }
+
+    setMessage("Draft started.");
+    await fetchDraftState(selectedSession.id);
+  }
+
+  async function handleDraftPlayer(player: DraftPlayer) {
+    if (!selectedSession || !currentTeam) {
+      return;
+    }
+
+    const nextPickNumber = picks.length + 1;
+    const roundNumber = Math.floor(picks.length / Math.max(orderedTeams.length, 1)) + 1;
+
+    setMessage("");
+    setError("");
+
+    const { error: insertError } = await supabase.from("draft_picks").insert({
+      draft_session_id: selectedSession.id,
+      draft_team_id: currentTeam.id,
+      player_id: player.id,
+      pick_number: nextPickNumber,
+      round_number: roundNumber,
+    });
+
+    if (insertError) {
+      setError(insertError.message || "Could not draft player.");
+      return;
+    }
+
+    const remainingAfterPick = availablePlayers.length - 1;
+    await supabase
+      .from("draft_sessions")
+      .update({
+        current_pick_number: nextPickNumber + 1,
+        status: remainingAfterPick <= 0 ? "complete" : "active",
+        completed_at:
+          remainingAfterPick <= 0 ? new Date().toISOString() : selectedSession.completed_at,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", selectedSession.id);
+
+    setMessage(`${player.display_name} drafted by ${currentTeam.name}.`);
+    await fetchDraftState(selectedSession.id);
+  }
+
+  async function handleUndoLastPick() {
+    if (!selectedSession || picks.length === 0) {
+      return;
+    }
+
+    const lastPick = picks[picks.length - 1];
+
+    setMessage("");
+    setError("");
+
+    const { error: deleteError } = await supabase
+      .from("draft_picks")
+      .delete()
+      .eq("id", lastPick.id);
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not undo pick.");
+      return;
+    }
+
+    await supabase
+      .from("draft_sessions")
+      .update({
+        status: "active",
+        completed_at: null,
+        current_pick_number: Math.max(1, lastPick.pick_number),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", selectedSession.id);
+
+    setMessage("Last pick undone.");
+    await fetchDraftState(selectedSession.id);
+  }
+
+  return (
+    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <div className="mx-auto w-full max-w-md space-y-8 py-8">
+        <div className="space-y-2">
+          <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
+            Admin
+          </p>
+          <h1 className="text-4xl font-bold tracking-tight">Live Draft</h1>
+          <p className="text-[#a3a3a3]">
+            Commissioner control for draft night.
+          </p>
+        </div>
+
+        <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+              Session
+            </p>
+            <h2 className="mt-2 text-xl font-bold">Create or Select</h2>
+          </div>
+
+          <select
+            value={selectedSessionId}
+            onChange={(event) => {
+              const nextSessionId = event.target.value;
+              setSelectedSessionId(nextSessionId);
+
+              if (!nextSessionId) {
+                setSelectedSession(null);
+                setTeams([]);
+                setPicks([]);
+              }
+            }}
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          >
+            <option value="">New draft session</option>
+            {sessions.map((session) => (
+              <option key={session.id} value={session.id}>
+                {session.name} ({session.status})
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            value={sessionName}
+            onChange={(event) => setSessionName(event.target.value)}
+            placeholder="Draft session name"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          />
+
+          <div className="grid grid-cols-4 gap-2">
+            {ranks.map((rank) => (
+              <button
+                key={rank}
+                type="button"
+                onClick={() => setCaptainRank(rank)}
+                className={`rounded-xl border px-3 py-3 text-sm font-bold transition ${
+                  captainRank === rank
+                    ? "border-[#f5f5f5] bg-[#f5f5f5] text-black"
+                    : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#f5f5f5]"
+                }`}
+              >
+                {rank}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCreateSession}
+            disabled={isSaving || isLoading}
+            className="w-full rounded-xl bg-[#f5f5f5] px-4 py-3 font-bold text-black transition hover:bg-[#d4d4d4] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isSaving ? "Creating..." : "Create Captain Teams"}
+          </button>
+        </section>
+
+        {message && <p className="text-center text-sm">{message}</p>}
+        {error && <p className="text-center text-sm text-[#ff8a8a]">{error}</p>}
+
+        {selectedSession && (
+          <>
+            <section className="space-y-3 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                    {selectedSession.status}
+                  </p>
+                  <h2 className="mt-2 text-xl font-bold">
+                    {selectedSession.name}
+                  </h2>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    Captains: {selectedSession.captain_rank || "-"} · Snake
+                  </p>
+                </div>
+
+                <Link
+                  href="/draft/live"
+                  className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
+                >
+                  TV
+                </Link>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                  Draft Order
+                </p>
+                <h2 className="mt-2 text-xl font-bold">Captain Teams</h2>
+              </div>
+
+              {orderedTeams.map((team, index) => (
+                <div
+                  key={team.id}
+                  className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs uppercase tracking-[0.2em] text-[#737373]">
+                        Pick slot {index + 1}
+                      </p>
+                      <h3 className="truncate text-lg font-bold">{team.name}</h3>
+                    </div>
+                    {selectedSession.status === "pending" && (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => moveTeam(team.id, -1)}
+                          className="rounded-lg border border-[#242424] px-3 py-2 text-sm hover:border-[#f5f5f5]"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveTeam(team.id, 1)}
+                          className="rounded-lg border border-[#242424] px-3 py-2 text-sm hover:border-[#f5f5f5]"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {selectedSession.status === "pending" && (
+                <button
+                  type="button"
+                  onClick={handleStartDraft}
+                  className="w-full rounded-2xl border border-[#f5f5f5] bg-[#f5f5f5] px-5 py-4 font-bold text-black transition hover:bg-[#d4d4d4]"
+                >
+                  Start Draft
+                </button>
+              )}
+            </section>
+
+            {selectedSession.status !== "pending" && (
+              <section className="space-y-4">
+                <div className="rounded-2xl border border-[#f5f5f5] bg-[#111111] p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                    On The Clock
+                  </p>
+                  <h2 className="mt-2 text-3xl font-bold">
+                    {currentTeam?.name || "Draft complete"}
+                  </h2>
+                  <p className="mt-1 text-sm text-[#a3a3a3]">
+                    Pick {picks.length + 1}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleUndoLastPick}
+                  disabled={picks.length === 0}
+                  className="w-full rounded-xl border border-[#242424] px-4 py-3 font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Undo Last Pick
+                </button>
+
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                    Available Players
+                  </p>
+                  {Object.entries(availableByRank).map(([rank, rankPlayers]) => (
+                    <div key={rank} className="space-y-2">
+                      <h3 className="text-sm font-bold text-[#f5f5f5]">
+                        Rank {rank}
+                      </h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {rankPlayers.map((player) => (
+                          <button
+                            key={player.id}
+                            type="button"
+                            onClick={() => handleDraftPlayer(player)}
+                            disabled={!currentTeam || selectedSession.status === "complete"}
+                            className="rounded-xl border border-[#242424] bg-[#111111] p-3 text-left text-sm font-semibold transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {player.display_name}
+                            <span className="ml-2 text-xs text-[#737373]">
+                              {player.rank}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
+                Teams
+              </p>
+              {orderedTeams.map((team) => (
+                <div
+                  key={team.id}
+                  className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
+                >
+                  <h3 className="text-lg font-bold">{team.name}</h3>
+                  <div className="mt-3 space-y-2 text-sm text-[#a3a3a3]">
+                    <p>
+                      Captain:{" "}
+                      {playersById.get(team.captain_player_id || "")?.display_name ||
+                        team.name}
+                    </p>
+                    {(picksByTeam[team.id] || []).map((pick) => (
+                      <p key={pick.id}>
+                        {pick.pick_number}.{" "}
+                        {playersById.get(pick.player_id)?.display_name || "Unknown"}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+          </>
+        )}
+
+        <Link href="/admin" className="block text-center text-sm text-[#a3a3a3]">
+          ← Back to Admin
+        </Link>
+      </div>
+    </main>
+  );
+}
