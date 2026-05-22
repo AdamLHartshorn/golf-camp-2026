@@ -9,12 +9,14 @@ import {
   getPlayerSession,
   PlayerSession,
 } from "@/lib/playerSession";
+import { getPublicRankBucket } from "@/lib/playerRanks";
 
 type ProfilePlayer = {
   id: string;
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  internal_rank_order: string | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
@@ -47,7 +49,7 @@ export default function MyProfilePage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, display_name, nickname, rank, room, arrival, phone, email, pin_code",
+          "id, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, pin_code",
         )
         .eq("id", nextSession.id)
         .single();
@@ -97,7 +99,7 @@ export default function MyProfilePage() {
       })
       .eq("id", player.id)
       .select(
-        "id, display_name, nickname, rank, room, arrival, phone, email, pin_code",
+        "id, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, pin_code",
       )
       .single();
 
@@ -168,7 +170,7 @@ export default function MyProfilePage() {
               </div>
               <div className="grid grid-cols-2 gap-3 p-5 text-sm">
                 {[
-                  ["Rank", player.rank || "-"],
+                  ["Rank", getPublicRankBucket(player.rank, player.internal_rank_order)],
                   ["Room", player.room || "-"],
                   ["Arrival", player.arrival || "TBD"],
                   ["Phone", player.phone || "-"],

@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
+import { getPublicRankBucket } from "@/lib/playerRanks";
 
 type QuestionnaireAnswers = {
   favorite_golf_camp_memory?: string;
@@ -21,6 +22,7 @@ type PlayerRow = {
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  internal_rank_order: string | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
@@ -58,7 +60,7 @@ export default function PlayerProfilePage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, first_name, last_name, display_name, nickname, rank, room, arrival, phone, email, photo_url, player_notes, questionnaire_answers, active",
+          "id, first_name, last_name, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, photo_url, player_notes, questionnaire_answers, active",
         )
         .eq("id", params.slug)
         .single();
@@ -141,7 +143,7 @@ export default function PlayerProfilePage() {
                 </h1>
 
                 <p className="text-[#7a6f60]">
-                  Rank {player.rank || "-"} · Room {player.room || "-"}
+                  Rank {getPublicRankBucket(player.rank, player.internal_rank_order)} · Room {player.room || "-"}
                 </p>
               </div>
             </div>
@@ -153,7 +155,9 @@ export default function PlayerProfilePage() {
                     Rank
                   </p>
 
-                  <p className="mt-2 text-3xl font-semibold">{player.rank || "-"}</p>
+                  <p className="mt-2 text-3xl font-semibold">
+                    {getPublicRankBucket(player.rank, player.internal_rank_order)}
+                  </p>
                 </div>
 
                 <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">

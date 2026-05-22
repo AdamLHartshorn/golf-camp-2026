@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getPublicRankBucket } from "@/lib/playerRanks";
 import {
   comparePlayersForDraft,
   DraftPick,
@@ -336,7 +337,7 @@ export default function DraftLivePage() {
                         {player.display_name}
                       </span>
                       <span className="text-xs font-bold text-[#93c5fd]">
-                        {player.rank}
+                        {getPublicRankBucket(player.rank, player.internal_rank_order)}
                       </span>
                     </div>
                   ))}
@@ -367,7 +368,10 @@ export default function DraftLivePage() {
                 </h3>
                 <p className="mt-0.5 text-[11px] text-[#93c5fd]">
                   Captain ·{" "}
-                  {playersById.get(team.captain_player_id || "")?.rank || "-"}
+                  {getPublicRankBucket(
+                    playersById.get(team.captain_player_id || "")?.rank,
+                    playersById.get(team.captain_player_id || "")?.internal_rank_order,
+                  )}
                 </p>
                 <div className="mt-1.5 space-y-0.5">
                   {(picksByTeam[team.id] || []).slice(0, 4).map((pick) => {
@@ -377,7 +381,10 @@ export default function DraftLivePage() {
                       <p key={pick.id} className="draft-pick-row truncate text-[clamp(0.68rem,0.86vw,0.82rem)] leading-tight">
                         {player?.display_name || "Unknown"}{" "}
                         <span className="text-[10px] text-[#a3a3a3]">
-                          {player?.rank || ""}
+                          {getPublicRankBucket(
+                            player?.rank,
+                            player?.internal_rank_order,
+                          )}
                         </span>
                       </p>
                     );

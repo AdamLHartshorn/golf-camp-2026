@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getPublicRankBucket } from "@/lib/playerRanks";
 import {
   comparePlayersForDraft,
   DraftPick,
@@ -230,7 +231,11 @@ export default function DraftMobilePage() {
                           {player?.display_name || "Unknown"}
                         </p>
                         <p className="mt-1 truncate text-xs text-[#a3a3a3]">
-                          {team?.name || "Team"} · {player?.rank || "-"}
+                          {team?.name || "Team"} ·{" "}
+                          {getPublicRankBucket(
+                            player?.rank,
+                            player?.internal_rank_order,
+                          )}
                         </p>
                       </div>
                     </div>
@@ -265,7 +270,7 @@ export default function DraftMobilePage() {
                         {player.display_name}
                       </span>
                       <span className="text-xs font-bold text-[#5f574b]">
-                        {player.rank}
+                        {getPublicRankBucket(player.rank, player.internal_rank_order)}
                       </span>
                     </div>
                   ))}
@@ -298,7 +303,10 @@ export default function DraftMobilePage() {
                         <p key={pick.id} className="truncate">
                           {pick.pick_number}. {player?.display_name || "Unknown"}{" "}
                           <span className="text-[#737373]">
-                            {player?.rank || ""}
+                            {getPublicRankBucket(
+                              player?.rank,
+                              player?.internal_rank_order,
+                            )}
                           </span>
                         </p>
                       );

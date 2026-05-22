@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
+import { getPublicRankBucket } from "@/lib/playerRanks";
 
 type PlayerRow = {
   id: string;
@@ -11,6 +12,7 @@ type PlayerRow = {
   last_name: string;
   display_name: string;
   rank: "A" | "B" | "C" | "D" | null;
+  internal_rank_order: string | null;
   room: string | null;
   arrival: string | null;
   photo_url: string | null;
@@ -34,7 +36,7 @@ export default function CampRosterPage() {
     async function fetchPlayers() {
       const { data, error: fetchError } = await supabase
         .from("players")
-        .select("id, first_name, last_name, display_name, rank, room, arrival, photo_url")
+        .select("id, first_name, last_name, display_name, rank, internal_rank_order, room, arrival, photo_url")
         .eq("active", true)
         .order("last_name", { ascending: true })
         .order("first_name", { ascending: true });
@@ -145,7 +147,7 @@ export default function CampRosterPage() {
                   "border-[#34312a] bg-black/35 text-[#b8b0a1]"
                 }`}
               >
-                {player.rank || "-"}
+                {getPublicRankBucket(player.rank, player.internal_rank_order)}
               </div>
             </Link>
           ))}
