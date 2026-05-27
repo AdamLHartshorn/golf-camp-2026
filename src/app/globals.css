@@ -407,6 +407,28 @@ textarea:focus {
   }
 }
 
+.camp-feed-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143, 166, 106, 0.28) transparent;
+}
+
+.camp-feed-scroll::-webkit-scrollbar {
+  width: 0.35rem;
+}
+
+.camp-feed-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.camp-feed-scroll::-webkit-scrollbar-thumb {
+  background: rgba(143, 166, 106, 0.2);
+  border-radius: 999px;
+}
+
+.camp-feed-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(143, 166, 106, 0.32);
+}
+
 .login-field {
   background: rgba(5, 5, 5, 0.78) !important;
   border-color: #34312a !important;

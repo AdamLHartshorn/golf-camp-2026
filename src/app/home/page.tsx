@@ -297,7 +297,7 @@ function CampFeed({
         <span className="h-2 w-2 animate-[campFeedPulse_3.4s_ease-in-out_infinite] rounded-full bg-[#8fa66a] shadow-[0_0_18px_rgba(143,166,106,0.42)]" />
       </div>
 
-      <div className="relative max-h-[17.5rem] overflow-hidden">
+      <div className="camp-feed-scroll relative max-h-[13.25rem] overflow-y-auto overscroll-contain scroll-smooth">
         {isLoading && (
           <p className="px-4 py-5 text-sm font-semibold text-[#a3a3a3]">
             Loading camp activity...
