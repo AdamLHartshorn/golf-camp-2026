@@ -286,8 +286,9 @@ function CampFeed({
   isLoading: boolean;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#34312a] bg-[#0d0d0b]/95 shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_46px_rgba(244,241,234,0.06)] backdrop-blur">
-      <div className="flex items-center justify-between gap-4 border-b border-[#2a2925] bg-[#14130f]/90 px-4 py-3">
+    <section className="relative overflow-hidden rounded-2xl border border-[#3a4230] bg-[radial-gradient(circle_at_14%_-18%,rgba(143,166,106,0.16),transparent_42%),linear-gradient(180deg,rgba(143,166,106,0.055),rgba(13,13,11,0)_42%),#0d0d0b] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(143,166,106,0.08),inset_0_1px_0_rgba(244,241,234,0.035)] backdrop-blur">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(143,166,106,0.08),transparent_30%,transparent_72%,rgba(143,166,106,0.035))]" />
+      <div className="relative flex items-center justify-between gap-4 border-b border-[#303325] bg-[linear-gradient(90deg,rgba(143,166,106,0.09),rgba(20,19,15,0.92)_42%,rgba(20,19,15,0.84))] px-4 py-3">
         <div>
           <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#c8bfae]">
             Live Camp Feed
@@ -296,7 +297,7 @@ function CampFeed({
         <span className="h-2 w-2 animate-[campFeedPulse_3.4s_ease-in-out_infinite] rounded-full bg-[#8fa66a] shadow-[0_0_18px_rgba(143,166,106,0.42)]" />
       </div>
 
-      <div className="max-h-[17.5rem] overflow-hidden">
+      <div className="relative max-h-[17.5rem] overflow-hidden">
         {isLoading && (
           <p className="px-4 py-5 text-sm font-semibold text-[#a3a3a3]">
             Loading camp activity...
