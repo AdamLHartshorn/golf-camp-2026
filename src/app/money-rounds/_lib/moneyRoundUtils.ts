@@ -75,6 +75,9 @@ export type TeamStanding = {
   position: number;
   isTied: boolean;
   scoresByHole: Record<number, number>;
+  completedHoleCount: number;
+  completedPar: number;
+  relativeToPar: number | null;
 };
 
 export type SkinResult = {
@@ -304,6 +307,58 @@ export function formatScoreToCompletedParForHoles(
   return formatScoreToPar(score, completedPar);
 }
 
+export function compareTeamStandingsBestFirst(
+  a: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+  b: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+) {
+  const aHasScores = a.completedHoleCount > 0;
+  const bHasScores = b.completedHoleCount > 0;
+
+  if (aHasScores !== bHasScores) {
+    return aHasScores ? -1 : 1;
+  }
+
+  if (!aHasScores && !bHasScores) {
+    return a.team.name.localeCompare(b.team.name);
+  }
+
+  if (a.completedHoleCount === 18 && b.completedHoleCount === 18) {
+    return a.total - b.total || a.team.name.localeCompare(b.team.name);
+  }
+
+  return (
+    Number(a.relativeToPar ?? Number.POSITIVE_INFINITY) -
+      Number(b.relativeToPar ?? Number.POSITIVE_INFINITY) ||
+    a.team.name.localeCompare(b.team.name)
+  );
+}
+
+export function compareTeamStandingsWorstFirst(
+  a: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+  b: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+) {
+  const aHasScores = a.completedHoleCount > 0;
+  const bHasScores = b.completedHoleCount > 0;
+
+  if (aHasScores !== bHasScores) {
+    return aHasScores ? -1 : 1;
+  }
+
+  return compareTeamStandingsBestFirst(b, a);
+}
+
 export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {
   const scoresByTeam = getScoresByTeam(scores);
   const sortedTeams = teams
@@ -313,23 +368,34 @@ export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {
         (sum, score) => sum + Number(score || 0),
         0,
       );
+      const completedHoleCount = getCompletedHoles(teamScores).length;
+      const completedPar = getCompletedPar(teamScores);
+      const relativeToPar =
+        completedPar > 0 ? total - completedPar : null;
 
       return {
         team,
         total,
         scoresByHole: teamScores,
+        completedHoleCount,
+        completedPar,
+        relativeToPar,
       };
     })
-    .sort((a, b) => a.total - b.total || a.team.name.localeCompare(b.team.name));
+    .sort(compareTeamStandingsBestFirst);
 
   return sortedTeams.map((standing, index): TeamStanding => {
-    const previousTotal = sortedTeams[index - 1]?.total;
-    const nextTotal = sortedTeams[index + 1]?.total;
+    const previousRelative = sortedTeams[index - 1]?.relativeToPar;
+    const nextRelative = sortedTeams[index + 1]?.relativeToPar;
+    const hasScores = standing.completedHoleCount > 0;
 
     return {
       ...standing,
       position: index + 1,
-      isTied: standing.total === previousTotal || standing.total === nextTotal,
+      isTied:
+        hasScores &&
+        (standing.relativeToPar === previousRelative ||
+          standing.relativeToPar === nextRelative),
     };
   });
 }

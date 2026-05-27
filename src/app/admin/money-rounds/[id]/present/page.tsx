@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
+  compareTeamStandingsWorstFirst,
   MoneyRound,
   MoneyScore,
   MoneyTeam,
@@ -52,7 +53,7 @@ export default function MoneyRoundPresentationControllerPage() {
   );
   const placementSlides = calculation.standings
     .slice()
-    .sort((a, b) => b.total - a.total || b.position - a.position);
+    .sort(compareTeamStandingsWorstFirst);
   const payoutSlides = calculation.bankRows
     .filter((row) => row.net > 0 || row.totalWinnings > 0)
     .sort(

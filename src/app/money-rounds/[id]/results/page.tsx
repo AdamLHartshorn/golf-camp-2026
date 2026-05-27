@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
+  compareTeamStandingsWorstFirst,
   formatRelativeToPar,
   formatScoreToCompletedPar,
   getTeamScoreStatus,
@@ -265,7 +266,7 @@ export default function MoneyRoundResultsPage() {
   );
   const placementSlides = standings
     .slice()
-    .sort((a, b) => b.total - a.total || b.position - a.position);
+    .sort(compareTeamStandingsWorstFirst);
   const currentPlacement =
     placementSlides[Math.min(currentIndex, Math.max(placementSlides.length - 1, 0))];
   const currentSkin = skins[Math.min(currentIndex, Math.max(skins.length - 1, 0))];
