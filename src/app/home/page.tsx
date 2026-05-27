@@ -163,7 +163,7 @@ export default function HomePage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(143,166,106,0.18),transparent_34%),radial-gradient(circle_at_95%_12%,rgba(244,241,234,0.08),transparent_26%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-3">
         <div className="flex items-center justify-between gap-4 py-3">
-          <div>
+          <div className="min-w-0">
             <p className="font-mono text-[30px] font-black uppercase leading-[0.9] tracking-[0.12em] text-[#f4f1ea] drop-shadow-[0_0_26px_rgba(244,241,234,0.18)]">
               GOLF CAMP 2026
             </p>

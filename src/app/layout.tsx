@@ -5,6 +5,7 @@ import "./globals.css";
 const appTitle = "Golf Camp 2026";
 const appDescription =
   "Golf Camp 2026 — Night Golf, Shenanigans, Camp Roster, and live scoring.";
+const appLogo = "/longview-invitational-logo.png";
 const metadataBase = new URL(
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
 );
@@ -29,13 +30,17 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
   },
+  icons: {
+    icon: [{ url: appLogo, type: "image/png" }],
+    apple: [{ url: appLogo, type: "image/png" }],
+  },
   openGraph: {
     title: appTitle,
     description: appDescription,
     siteName: appTitle,
     images: [
       {
-        url: "/golf-camp-logo.png",
+        url: appLogo,
         alt: appTitle,
       },
     ],
@@ -45,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: appTitle,
     description: appDescription,
-    images: ["/golf-camp-logo.png"],
+    images: [appLogo],
   },
 };
 

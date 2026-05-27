@@ -104,12 +104,12 @@ export default function LoginPage() {
       <div className="w-full max-w-sm space-y-7">
         <div className="flex justify-center pt-2">
           <Image
-            src="/golf-camp-logo.png"
+            src="/longview-invitational-logo.png"
             alt="Golf Camp 2026"
             width={320}
             height={320}
             priority
-            className="h-auto w-full max-w-[270px] drop-shadow-[0_20px_45px_rgba(0,0,0,0.45)]"
+            className="h-auto w-full max-w-[285px] drop-shadow-[0_22px_55px_rgba(0,0,0,0.48)]"
           />
         </div>
 
