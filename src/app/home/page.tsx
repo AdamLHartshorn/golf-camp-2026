@@ -311,9 +311,11 @@ function CampFeed({
         )}
 
         {!isLoading &&
-          items.map((item) => {
-            const content = (
-              <div className="grid grid-cols-[auto_1fr_auto] items-start gap-3 border-b border-[#242420] px-4 py-3 transition last:border-b-0 hover:bg-[#161511]">
+          items.map((item) => (
+              <div
+                key={item.id}
+                className="grid grid-cols-[auto_1fr] items-start gap-3 border-b border-[#242420] px-4 py-3 last:border-b-0"
+              >
                 <span
                   className="mt-1 h-2 w-2 rounded-full shadow-[0_0_14px_currentColor]"
                   style={{ color: getFeedAccent(item.source) }}
@@ -337,20 +339,8 @@ function CampFeed({
                     {item.message}
                   </p>
                 </div>
-                <span className="font-mono text-sm font-black text-[#82786a]">
-                  →
-                </span>
               </div>
-            );
-
-            return item.link_url ? (
-              <Link key={item.id} href={item.link_url}>
-                {content}
-              </Link>
-            ) : (
-              <div key={item.id}>{content}</div>
-            );
-          })}
+          ))}
       </div>
     </section>
   );
