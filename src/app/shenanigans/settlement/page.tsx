@@ -47,6 +47,7 @@ export default function ShenanigansSettlementPage() {
     games,
     selectedGame,
     selectedGameId,
+    selectedGamePlayers,
     isLoadingGame,
     gameError,
     switchGame,
@@ -116,21 +117,29 @@ export default function ShenanigansSettlementPage() {
   }, [customUnitValue, unitOption]);
 
   const { finalTotals, paymentRows, minimizedPaymentRows } = useMemo(() => {
-    const totalsByPlayer = events.reduce<Record<string, number>>(
-      (accumulator, event) => {
-        const playerName = event.player_name?.trim();
-        const points = Number(event.points || 0);
+    const totalsByPlayer = selectedGamePlayers.reduce<Record<string, number>>(
+      (accumulator, player) => {
+        const playerName = player.player_name?.trim();
 
-        if (!playerName || !Number.isFinite(points)) {
-          return accumulator;
+        if (playerName) {
+          accumulator[playerName] = 0;
         }
-
-        accumulator[playerName] = (accumulator[playerName] || 0) + points;
 
         return accumulator;
       },
       {},
     );
+
+    events.forEach((event) => {
+      const playerName = event.player_name?.trim();
+      const points = Number(event.points || 0);
+
+      if (!playerName || !Number.isFinite(points)) {
+        return;
+      }
+
+      totalsByPlayer[playerName] = (totalsByPlayer[playerName] || 0) + points;
+    });
     const sortedTotals = Object.entries(totalsByPlayer)
       .map(([name, points]) => ({ name, points, net: 0 }))
       .sort((a, b) => b.points - a.points);
@@ -215,7 +224,7 @@ export default function ShenanigansSettlementPage() {
       paymentRows: settlementRows,
       minimizedPaymentRows: minimizedRows,
     };
-  }, [dollarPerPoint, events]);
+  }, [dollarPerPoint, events, selectedGamePlayers]);
   const hasSettlementData = finalTotals.length > 0;
 
   return (

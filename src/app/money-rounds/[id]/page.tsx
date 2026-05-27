@@ -156,21 +156,41 @@ export default function MoneyRoundDetailPage() {
                   {round.round_date || "Date TBD"} · {round.status}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-3 px-5 py-4">
-              <Link
-                href={`/money-rounds/${round.id}/submit`}
-                className="inline-flex rounded-xl border border-[#16a34a] px-4 py-3 text-sm font-bold text-[#16a34a] transition hover:bg-[#0f1f16]"
-              >
-                Team Score Submission
-              </Link>
-              {canPresentRound && (
+              <div className="grid grid-cols-3 border-b border-[#2a2925] text-center text-sm">
+                <div className="border-r border-[#2a2925] px-3 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+                    Status
+                  </p>
+                  <p className="mt-1 font-black text-[#8ee6a7]">{round.status}</p>
+                </div>
+                <div className="border-r border-[#2a2925] px-3 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+                    Teams
+                  </p>
+                  <p className="mt-1 font-black">{teams.length}</p>
+                </div>
+                <div className="px-3 py-3">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+                    Scores
+                  </p>
+                  <p className="mt-1 font-black">{hasScores ? "Live" : "Open"}</p>
+                </div>
+              </div>
+              <div className="grid gap-3 px-5 py-4 sm:grid-cols-2">
                 <Link
-                  href={`/money-rounds/${round.id}/results`}
-                  className="ml-0 mt-3 inline-flex rounded-xl border border-[#242424] px-4 py-3 text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a] sm:ml-3"
+                  href={`/money-rounds/${round.id}/submit`}
+                  className="rounded-xl border border-[#16a34a] bg-[#0f1f16] px-4 py-3 text-center text-sm font-bold text-[#8ee6a7] transition hover:bg-[#12301f]"
                 >
-                  Open Results Presentation
+                  Enter Team Scores
                 </Link>
-              )}
+                {canPresentRound && (
+                  <Link
+                    href={`/money-rounds/${round.id}/results`}
+                    className="rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
+                  >
+                    Results Presentation
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -217,7 +237,12 @@ export default function MoneyRoundDetailPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-xl font-bold">Teams & Scores</h2>
+              <div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                  Team Scores
+                </p>
+                <h2 className="mt-2 text-xl font-bold">Scorecards</h2>
+              </div>
               {teams.length === 0 && (
                 <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
                   No teams have been added to this round yet.
@@ -308,7 +333,10 @@ export default function MoneyRoundDetailPage() {
             </section>
 
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <h2 className="text-xl font-bold">Skins</h2>
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                Skins
+              </p>
+              <h2 className="mt-2 text-xl font-bold">Hole Winners</h2>
               <div className="mt-4 space-y-2 text-sm text-[#a3a3a3]">
                 {skins.length === 0 && <p>No skins won yet.</p>}
                 {skins.map((skin) => {
@@ -328,7 +356,10 @@ export default function MoneyRoundDetailPage() {
             </section>
 
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <h2 className="text-xl font-bold">Money Rounds Bank</h2>
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                Round Bank
+              </p>
+              <h2 className="mt-2 text-xl font-bold">Player Payouts</h2>
               <div className="mt-4 space-y-3 text-sm">
                 {bankRows.length === 0 && (
                   <p className="rounded-xl border border-[#242424] bg-black p-4 text-[#a3a3a3]">

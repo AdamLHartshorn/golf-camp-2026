@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { getPublicRankBucket } from "@/lib/playerRanks";
+import { getPublicDisplayRank } from "@/lib/playerRanks";
 import {
   comparePlayersForDraft,
   DraftPick,
@@ -79,7 +79,7 @@ export default function DraftMobilePage() {
     ] = await Promise.all([
       supabase
         .from("players")
-        .select("id, first_name, last_name, display_name, rank, internal_rank_order")
+        .select("id, first_name, last_name, display_name, rank, display_rank, internal_rank_order")
         .eq("active", true),
       supabase
         .from("draft_teams")
@@ -232,9 +232,9 @@ export default function DraftMobilePage() {
                         </p>
                         <p className="mt-1 truncate text-xs text-[#a3a3a3]">
                           {team?.name || "Team"} ·{" "}
-                          {getPublicRankBucket(
+                          {getPublicDisplayRank(
+                            player?.display_rank,
                             player?.rank,
-                            player?.internal_rank_order,
                           )}
                         </p>
                       </div>
@@ -270,7 +270,7 @@ export default function DraftMobilePage() {
                         {player.display_name}
                       </span>
                       <span className="text-xs font-bold text-[#5f574b]">
-                        {getPublicRankBucket(player.rank, player.internal_rank_order)}
+                        {getPublicDisplayRank(player.display_rank, player.rank)}
                       </span>
                     </div>
                   ))}
@@ -303,9 +303,9 @@ export default function DraftMobilePage() {
                         <p key={pick.id} className="truncate">
                           {pick.pick_number}. {player?.display_name || "Unknown"}{" "}
                           <span className="text-[#737373]">
-                            {getPublicRankBucket(
+                            {getPublicDisplayRank(
+                              player?.display_rank,
                               player?.rank,
-                              player?.internal_rank_order,
                             )}
                           </span>
                         </p>

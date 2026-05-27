@@ -190,10 +190,19 @@ export function ShenanigansGameBar({
   onEndGame: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-[#242424] bg-[#111111] p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#b91c1c]">
-        Current Game
-      </p>
+    <section className="rounded-2xl border border-[#242424] bg-[#111111] p-4 shadow-[0_0_28px_rgba(90,43,51,0.08)]">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#b91c1c]">
+          Current Game
+        </p>
+
+        <Link
+          href="/shenanigans"
+          className="text-xs font-bold uppercase tracking-[0.16em] text-[#a3a3a3] transition hover:text-[#f5f5f5]"
+        >
+          Start New
+        </Link>
+      </div>
 
       {isLoadingGame && (
         <p className="mt-2 text-sm text-[#a3a3a3]">Loading game...</p>
@@ -240,6 +249,7 @@ export function ShenanigansGameBar({
           <select
             value={selectedGameId}
             onChange={(event) => onSwitchGame(event.target.value)}
+            aria-label="Switch Shenanigans game"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none focus:border-[#b91c1c]"
           >
             {games.map((game) => (
@@ -251,6 +261,181 @@ export function ShenanigansGameBar({
         </div>
       )}
     </section>
+  );
+}
+
+export function CompactPlayerSelect({
+  players,
+  selectedName,
+  onSelect,
+  isLoading,
+  emptyLabel = "No players are in this game.",
+  label = "Player",
+}: {
+  players: GameAwarePlayer[];
+  selectedName: string;
+  onSelect: (displayName: string) => void;
+  isLoading?: boolean;
+  emptyLabel?: string;
+  label?: string;
+}) {
+  const selectId = `${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-select`;
+
+  return (
+    <div className="space-y-2">
+      <label className="block text-sm text-[#a3a3a3]" htmlFor={selectId}>
+        {label}
+      </label>
+
+      {isLoading && <p className="text-sm text-[#a3a3a3]">Loading players...</p>}
+
+      {!isLoading && players.length === 0 && (
+        <p className="text-sm text-[#a3a3a3]">{emptyLabel}</p>
+      )}
+
+      {!isLoading && players.length > 0 && (
+        <>
+          <select
+            id={selectId}
+            value={selectedName}
+            onChange={(event) => onSelect(event.target.value)}
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm text-[#f5f5f5] outline-none focus:border-[#b91c1c]"
+          >
+            {players.map((player) => (
+              <option key={player.id} value={player.display_name}>
+                {player.display_name}
+              </option>
+            ))}
+          </select>
+
+          {selectedName && (
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-[#5a2b33] bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]">
+                {selectedName}
+              </span>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+export function CompactPlayerMultiSelect({
+  players,
+  selectedNames,
+  onChange,
+  isLoading,
+  label = "Players",
+  minSelected,
+  maxSelected,
+}: {
+  players: GameAwarePlayer[];
+  selectedNames: string[];
+  onChange: (displayNames: string[]) => void;
+  isLoading?: boolean;
+  label?: string;
+  minSelected?: number;
+  maxSelected?: number;
+}) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const selectedSet = useMemo(() => new Set(selectedNames), [selectedNames]);
+  const filteredPlayers = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return players;
+    }
+
+    return players.filter((player) =>
+      player.display_name.toLowerCase().includes(normalizedSearch),
+    );
+  }, [players, searchTerm]);
+
+  function togglePlayer(displayName: string) {
+    if (selectedSet.has(displayName)) {
+      onChange(selectedNames.filter((name) => name !== displayName));
+      return;
+    }
+
+    if (maxSelected && selectedNames.length >= maxSelected) {
+      return;
+    }
+
+    onChange([...selectedNames, displayName]);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm text-[#a3a3a3]">{label}</p>
+        {(minSelected || maxSelected) && (
+          <span className="text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+            {selectedNames.length}
+            {maxSelected ? `/${maxSelected}` : ""} selected
+          </span>
+        )}
+      </div>
+
+      {isLoading && <p className="text-sm text-[#a3a3a3]">Loading players...</p>}
+
+      {!isLoading && players.length === 0 && (
+        <p className="text-sm text-[#a3a3a3]">No players available.</p>
+      )}
+
+      {!isLoading && players.length > 0 && (
+        <>
+          <input
+            type="search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search players"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm text-[#f5f5f5] outline-none placeholder:text-[#737373] focus:border-[#b91c1c]"
+          />
+
+          <div className="flex max-h-36 flex-wrap gap-2 overflow-y-auto rounded-xl border border-[#242424] bg-black/35 p-2">
+            {filteredPlayers.map((player) => {
+              const isSelected = selectedSet.has(player.display_name);
+              const isDisabled =
+                Boolean(maxSelected) &&
+                selectedNames.length >= Number(maxSelected) &&
+                !isSelected;
+
+              return (
+                <button
+                  key={player.id}
+                  type="button"
+                  onClick={() => togglePlayer(player.display_name)}
+                  disabled={isDisabled}
+                  className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                    isSelected
+                      ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                      : "border-[#242424] bg-[#111111] text-[#d4d4d4] hover:border-[#b91c1c]"
+                  } disabled:cursor-not-allowed disabled:opacity-35`}
+                >
+                  {player.display_name}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedNames.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {selectedNames.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => togglePlayer(name)}
+                  className="rounded-full border border-[#5a2b33] bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]"
+                >
+                  {name} ×
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import {
+  CompactPlayerSelect,
   NoShenanigansGamePrompt,
   ShenanigansGameBar,
   useShenanigansGame,
@@ -99,6 +101,13 @@ export default function ShenanigansLogEventPage() {
       }
 
       setMessage("Event added.");
+      await logActivityFeedItem({
+        type: "shenanigans_event_logged",
+        source: "Shenanigans",
+        sourceId: selectedGameId,
+        linkUrl: "/shenanigans/ledger",
+        message: `Shenanigans: ${selectedPlayer} ${signedPoints} — ${trimmedDescription}.`,
+      });
       setSelectedPoints(null);
       setDescription("");
     } catch (submitError) {
@@ -143,45 +152,18 @@ export default function ShenanigansLogEventPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
-        <section className="space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Player
           </p>
 
-          {isLoadingGame && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
-              Loading players...
-            </div>
-          )}
-
-          {!isLoadingGame && selectablePlayers.length === 0 && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
-              No players are in this game.
-            </div>
-          )}
-
-          {!isLoadingGame && selectablePlayers.length > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {selectablePlayers.map((player) => {
-                const isSelected = player.display_name === selectedPlayer;
-
-                return (
-                  <button
-                    key={player.id}
-                    type="button"
-                    onClick={() => setChosenPlayer(player.display_name)}
-                    className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
-                      isSelected
-                        ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
-                        : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
-                    }`}
-                  >
-                    {player.display_name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          <CompactPlayerSelect
+            players={selectablePlayers}
+            selectedName={selectedPlayer}
+            onSelect={setChosenPlayer}
+            isLoading={isLoadingGame}
+            label="Player"
+          />
         </section>
         )}
 

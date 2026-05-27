@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import {
   buildPlayerBank,
@@ -847,6 +848,15 @@ export default function AdminMoneyRoundsPage() {
         currentTeam.id === updatedTeam.id ? updatedTeam : currentTeam,
       ),
     );
+    if (round && scoreStatus === "verified") {
+      await logActivityFeedItem({
+        type: "money_round_score_verified",
+        source: "Money Rounds",
+        sourceId: round.id,
+        linkUrl: `/money-rounds/${round.id}`,
+        message: `${team.name} verified in ${round.name}.`,
+      });
+    }
     setMessage(
       scoreStatus === "verified"
         ? `${team.name} verified.`
@@ -938,6 +948,13 @@ export default function AdminMoneyRoundsPage() {
 
     await fetchRounds();
     await fetchRoundState(round.id);
+    await logActivityFeedItem({
+      type: "money_round_finalized",
+      source: "Money Rounds",
+      sourceId: round.id,
+      linkUrl: `/money-rounds/${round.id}`,
+      message: `${round.name} finalized.`,
+    });
     setMessage("Round marked final.");
     setIsSaving(false);
   }
@@ -1002,6 +1019,13 @@ export default function AdminMoneyRoundsPage() {
         </div>
 
         <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+          <div>
+            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+              Round Setup
+            </p>
+            <h2 className="mt-2 text-xl font-bold">Create or Configure Round</h2>
+          </div>
+
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#16a34a]">
               Select Round
@@ -1133,6 +1157,23 @@ export default function AdminMoneyRoundsPage() {
         {round && (
           <>
             <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                Commissioner Flow
+              </p>
+              <div className="mt-4 grid grid-cols-4 gap-2 text-center text-[11px]">
+                {["Teams", "Scores", "Verify", "Finalize"].map((step, index) => (
+                  <div
+                    key={step}
+                    className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3"
+                  >
+                    <p className="font-black text-[#8ee6a7]">{index + 1}</p>
+                    <p className="mt-1 text-[#a3a3a3]">{step}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">
@@ -1182,7 +1223,12 @@ export default function AdminMoneyRoundsPage() {
             </section>
 
             <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <h2 className="text-xl font-bold">Teams</h2>
+              <div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                  Team Setup
+                </p>
+                <h2 className="mt-2 text-xl font-bold">Teams</h2>
+              </div>
 
               <div className="space-y-3 rounded-2xl border border-[#166534]/60 bg-black/40 p-4">
                 <div>
@@ -1250,7 +1296,7 @@ export default function AdminMoneyRoundsPage() {
                   className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#16a34a]"
                   placeholder="Team name"
                 />
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid max-h-60 grid-cols-2 gap-2 overflow-y-auto rounded-xl border border-[#242424] bg-black/30 p-2">
                   {players.map((player) => (
                   <button
                     key={player.id}
@@ -1290,7 +1336,10 @@ export default function AdminMoneyRoundsPage() {
             <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                        <h2 className="text-xl font-bold">Score Entry</h2>
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                    Score Review
+                  </p>
+                  <h2 className="mt-2 text-xl font-bold">Score Entry</h2>
                         <p className="mt-1 text-sm text-[#a3a3a3]">
                     Nick can edit any team scorecard at any time. Scores
                     autosave on blur; use Save Scores to persist every current
@@ -1537,7 +1586,10 @@ export default function AdminMoneyRoundsPage() {
 
             <section className="space-y-4">
               <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-                <h2 className="text-xl font-bold">Calculate Preview</h2>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                  Payout Preview
+                </p>
+                <h2 className="mt-2 text-xl font-bold">Calculate Preview</h2>
                 <p className="mt-2 text-sm text-[#a3a3a3]">
                   Tie breaker by hole handicap coming soon.
                 </p>

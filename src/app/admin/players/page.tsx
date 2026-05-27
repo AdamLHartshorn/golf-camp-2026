@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { displayRanks } from "@/lib/playerRanks";
 
 const ranks = ["A", "B", "C", "D"];
 
@@ -22,7 +23,9 @@ type PlayerRow = {
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  display_rank: string | null;
   internal_rank_order: string | null;
+  years_served: number | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
@@ -47,7 +50,9 @@ type PlayerFormState = {
   display_name: string;
   nickname: string;
   rank: string;
+  display_rank: string;
   internal_rank_order: string;
+  years_served: string;
   room: string;
   arrival: string;
   phone: string;
@@ -73,7 +78,9 @@ const emptyForm: PlayerFormState = {
   display_name: "",
   nickname: "",
   rank: "A",
+  display_rank: "",
   internal_rank_order: "",
+  years_served: "",
   room: "",
   arrival: "",
   phone: "",
@@ -106,7 +113,10 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     display_name: player.display_name || "",
     nickname: player.nickname || "",
     rank: player.rank || "A",
+    display_rank: player.display_rank || "",
     internal_rank_order: player.internal_rank_order || "",
+    years_served:
+      typeof player.years_served === "number" ? String(player.years_served) : "",
     room: player.room || "",
     arrival: player.arrival || "",
     phone: player.phone || "",
@@ -148,7 +158,11 @@ function formToPayload(form: PlayerFormState) {
     player_key: createPlayerKey(displayName),
     nickname: form.nickname.trim() || null,
     rank: form.rank,
+    display_rank: form.display_rank || null,
     internal_rank_order: internalRankOrder || null,
+    years_served: form.years_served.trim()
+      ? Number(form.years_served.trim())
+      : null,
     room: form.room.trim() || null,
     arrival: form.arrival.trim() || null,
     phone: form.phone.trim() || null,
@@ -443,11 +457,24 @@ export default function PlayersAdminPage() {
       return;
     }
 
+    if (payload.display_rank && !displayRanks.includes(payload.display_rank as typeof displayRanks[number])) {
+      setError("Display rank must be A+, A, A-, B+, B, B-, C+, C, C-, D+, D, or D-.");
+      return;
+    }
+
     if (
       payload.internal_rank_order &&
       !/^[ABCD][0-9]+$/.test(payload.internal_rank_order)
     ) {
       setError("Internal rank order must look like A1, B2, or C11.");
+      return;
+    }
+
+    if (
+      payload.years_served !== null &&
+      (!Number.isInteger(payload.years_served) || payload.years_served < 0)
+    ) {
+      setError("Years served must be a positive whole number.");
       return;
     }
 
@@ -578,7 +605,7 @@ export default function PlayersAdminPage() {
               </h3>
 
               <span className="rounded-full border border-[#242424] px-2 py-1 text-xs font-bold text-[#f5f5f5]">
-                {player.rank || "-"}
+                {player.display_rank || player.rank || "-"}
               </span>
             </div>
 
@@ -592,7 +619,21 @@ export default function PlayersAdminPage() {
 
             <div className="mt-3 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-[0.16em]">
               <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Public {player.display_rank || "-"}
+              </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Rank {player.rank || "-"}
+              </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
                 Internal {player.internal_rank_order || "-"}
+              </span>
+
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                {typeof player.years_served === "number"
+                  ? `${player.years_served} Years Served`
+                  : "Years -"}
               </span>
 
               <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
@@ -727,6 +768,21 @@ export default function PlayersAdminPage() {
               ))}
             </select>
 
+            <select
+              value={form.display_rank}
+              onChange={(event) => updateForm("display_rank", event.target.value)}
+              className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            >
+              <option value="">Display rank</option>
+              {displayRanks.map((rank) => (
+                <option key={rank} value={rank}>
+                  Display {rank}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
             <input
               type="text"
               value={form.internal_rank_order}
@@ -737,6 +793,16 @@ export default function PlayersAdminPage() {
               className="rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
             />
           </div>
+
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={form.years_served}
+            onChange={(event) => updateForm("years_served", event.target.value)}
+            placeholder="Years Served"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+          />
 
           <div className="border-t border-[#242424] pt-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">

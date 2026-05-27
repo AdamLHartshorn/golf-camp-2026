@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import {
   formatScoreToCompletedPar,
@@ -237,6 +238,17 @@ export default function MoneyRoundSubmitPage() {
       return;
     }
 
+    await logActivityFeedItem({
+      type: "money_round_score_submitted",
+      source: "Money Rounds",
+      sourceId: round.id,
+      linkUrl: `/money-rounds/${round.id}`,
+      message: `${selectedTeam.name} submits ${formatScoreToCompletedPar(
+        total,
+        draftedScoresByHole,
+      )} in ${round.name}.`,
+    });
+
     await fetchRound();
     setMessage("Scorecard submitted. Awaiting commissioner verification.");
     setIsSaving(false);
@@ -334,6 +346,33 @@ export default function MoneyRoundSubmitPage() {
 
         {!isLoading && teams.length > 0 && (
           <>
+            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                Scorecard Flow
+              </p>
+              <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                  <p className="font-black text-[#8ee6a7]">1</p>
+                  <p className="mt-1 text-[#a3a3a3]">Select Team</p>
+                </div>
+                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                  <p className="font-black text-[#8ee6a7]">2</p>
+                  <p className="mt-1 text-[#a3a3a3]">Enter Scores</p>
+                </div>
+                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                  <p className="font-black text-[#8ee6a7]">3</p>
+                  <p className="mt-1 text-[#a3a3a3]">Submit</p>
+                </div>
+              </div>
+            </section>
+
+            <section className="space-y-3">
+              <div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+                  Select Team
+                </p>
+                <h2 className="mt-2 text-xl font-bold">Choose Your Scorecard</h2>
+              </div>
             <section className="grid gap-2 sm:grid-cols-2">
               {teams.map((team) => {
                 const status = getTeamScoreStatus(team);
@@ -378,6 +417,7 @@ export default function MoneyRoundSubmitPage() {
                 );
               })}
             </section>
+            </section>
 
             {selectedTeam && (
               <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
@@ -416,6 +456,14 @@ export default function MoneyRoundSubmitPage() {
 
                 {renderNine("Front 9", frontNine)}
                 {renderNine("Back 9", backNine)}
+
+                <div className="rounded-xl border border-[#242424] bg-black/45 p-4 text-sm text-[#a3a3a3]">
+                  {isVerified
+                    ? "This scorecard is verified. Nick can still adjust it in admin if needed."
+                    : selectedStatus === "submitted"
+                      ? "This scorecard is submitted and awaiting verification. You can edit and resubmit until Nick verifies it."
+                      : "Submit when your team scorecard is ready. Standings remain unofficial until Nick verifies."}
+                </div>
 
                 <button
                   type="button"

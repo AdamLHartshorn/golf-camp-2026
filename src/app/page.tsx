@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [loginName, setLoginName] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showFallbackAccess, setShowFallbackAccess] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [fallbackError, setFallbackError] = useState("");
   const router = useRouter();
@@ -178,42 +179,67 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="flex items-center gap-3 text-[10px] uppercase tracking-[0.18em] text-[#756f66]">
-          <span className="h-px flex-1 bg-[#242424]" />
-          Fallback Access
-          <span className="h-px flex-1 bg-[#242424]" />
-        </div>
-
-        <form
-          onSubmit={handleEnter}
-          className="space-y-3 rounded-2xl border border-[#242424] bg-black/35 p-4"
-        >
-          <input
-            type="text"
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              setLoginError("");
-              setFallbackError("");
-            }}
-            placeholder="Enter Password"
-            enterKeyHint="go"
-            className="login-field w-full rounded-xl border px-4 py-3 text-center text-sm tracking-[0.18em] outline-none"
-          />
-
-          {fallbackError && (
-            <p className="text-center text-sm text-[#ff8a8a]">
-              {fallbackError}
-            </p>
+        <div className="space-y-3 text-center">
+          {!showFallbackAccess && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowFallbackAccess(true);
+                setLoginError("");
+                setFallbackError("");
+              }}
+              className="text-xs font-semibold text-[#756f66] underline-offset-4 transition hover:text-[#c8bfae] hover:underline"
+            >
+              Alternate access
+            </button>
           )}
 
-          <button
-            type="submit"
-            className="w-full rounded-xl border border-[#34312a] py-3 text-sm font-semibold text-[#c8bfae] transition hover:border-[#8fa66a] hover:text-[#f5f5f5]"
-          >
-            Enter
-          </button>
-        </form>
+          {showFallbackAccess && (
+            <form
+              onSubmit={handleEnter}
+              className="space-y-3 rounded-2xl border border-[#242424] bg-black/25 p-4"
+            >
+              <input
+                type="text"
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                  setLoginError("");
+                  setFallbackError("");
+                }}
+                placeholder="Enter Password"
+                enterKeyHint="go"
+                className="login-field w-full rounded-xl border px-4 py-3 text-center text-sm tracking-[0.18em] outline-none"
+              />
+
+              {fallbackError && (
+                <p className="text-center text-sm text-[#ff8a8a]">
+                  {fallbackError}
+                </p>
+              )}
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowFallbackAccess(false);
+                    setPassword("");
+                    setFallbackError("");
+                  }}
+                  className="rounded-xl border border-[#242424] py-3 text-sm font-semibold text-[#756f66] transition hover:border-[#34312a] hover:text-[#c8bfae]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl border border-[#34312a] py-3 text-sm font-semibold text-[#c8bfae] transition hover:border-[#8fa66a] hover:text-[#f5f5f5]"
+                >
+                  Enter
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </main>
   );

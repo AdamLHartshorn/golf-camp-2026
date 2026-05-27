@@ -163,6 +163,32 @@ export default function DraftPage() {
           </section>
         )}
 
+        <section className="overflow-hidden rounded-2xl border border-[#324d70]/60 bg-[linear-gradient(135deg,rgba(50,77,112,0.18),rgba(7,17,35,0.94)_42%,rgba(8,13,24,0.96))] text-[#f5f5f5] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(50,77,112,0.1)]">
+          <div className="flex items-start justify-between gap-4 border-b border-[#324d70]/35 px-5 py-5">
+            <div>
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#8fb0d8]">
+                Coming Soon
+              </p>
+              <h2 className="mt-2 text-2xl font-black tracking-tight">
+                Draft Prep
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-[#b8c3d4]">
+                Scouting Reports · Rankings · Camp Lore · Sleeper Picks ·
+                Chemistry Notes
+              </p>
+            </div>
+
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#324d70]/70 bg-black/35 text-[#8fb0d8] shadow-[0_0_24px_rgba(50,77,112,0.16)]">
+              <GolfCampIcon name="draft" className="h-5 w-5" />
+            </span>
+          </div>
+
+          <p className="px-5 py-4 text-sm leading-6 text-[#93a3bb]">
+            A future commissioner prep room for context before the board goes
+            live.
+          </p>
+        </section>
+
         <Link href="/home" className="text-center text-sm text-[#a3a3a3]">
           ← Back to Dashboard
         </Link>

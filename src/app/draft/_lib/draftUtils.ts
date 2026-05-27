@@ -1,3 +1,5 @@
+import { getDisplayRankSortValue } from "@/lib/playerRanks";
+
 export type DraftStatus = "pending" | "active" | "complete";
 
 export type DraftSession = {
@@ -20,6 +22,7 @@ export type DraftPlayer = {
   last_name: string;
   display_name: string;
   rank: "A" | "B" | "C" | "D" | null;
+  display_rank: string | null;
   internal_rank_order: string | null;
 };
 
@@ -53,6 +56,13 @@ export function comparePlayersForDraft(a: DraftPlayer, b: DraftPlayer) {
 
   if (aOrder !== bOrder) {
     return aOrder - bOrder;
+  }
+
+  const displayRankCompare =
+    getDisplayRankSortValue(a.display_rank) - getDisplayRankSortValue(b.display_rank);
+
+  if (displayRankCompare !== 0) {
+    return displayRankCompare;
   }
 
   const lastNameCompare = a.last_name.localeCompare(b.last_name);

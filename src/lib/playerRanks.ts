@@ -1,27 +1,29 @@
-export function getPublicRankBucket(
+export const displayRanks = [
+  "A+",
+  "A",
+  "A-",
+  "B+",
+  "B",
+  "B-",
+  "C+",
+  "C",
+  "C-",
+  "D+",
+  "D",
+  "D-",
+] as const;
+
+export type DisplayRank = (typeof displayRanks)[number];
+
+export function getPublicDisplayRank(
+  displayRank?: string | null,
   rank?: string | null,
-  internalRankOrder?: string | null,
 ) {
-  if (!rank) {
-    return "-";
-  }
+  return displayRank || rank || "-";
+}
 
-  const publicRank = rank.toUpperCase();
-  const match = internalRankOrder?.toUpperCase().match(/^([ABCD])(\d+)$/);
+export function getDisplayRankSortValue(displayRank?: string | null) {
+  const index = displayRanks.indexOf(displayRank as DisplayRank);
 
-  if (!match || match[1] !== publicRank) {
-    return publicRank;
-  }
-
-  const order = Number(match[2]);
-
-  if (order <= 3) {
-    return `${publicRank}1`;
-  }
-
-  if (order <= 6) {
-    return `${publicRank}2`;
-  }
-
-  return `${publicRank}3`;
+  return index === -1 ? displayRanks.length : index;
 }

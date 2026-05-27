@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
-import { getPublicRankBucket } from "@/lib/playerRanks";
+import { getPublicDisplayRank } from "@/lib/playerRanks";
 
 type PlayerRow = {
   id: string;
@@ -12,7 +12,9 @@ type PlayerRow = {
   last_name: string;
   display_name: string;
   rank: "A" | "B" | "C" | "D" | null;
+  display_rank: string | null;
   internal_rank_order: string | null;
+  years_served: number | null;
   room: string | null;
   arrival: string | null;
   photo_url: string | null;
@@ -36,7 +38,7 @@ export default function CampRosterPage() {
     async function fetchPlayers() {
       const { data, error: fetchError } = await supabase
         .from("players")
-        .select("id, first_name, last_name, display_name, rank, internal_rank_order, room, arrival, photo_url")
+        .select("id, first_name, last_name, display_name, rank, display_rank, internal_rank_order, years_served, room, arrival, photo_url")
         .eq("active", true)
         .order("last_name", { ascending: true })
         .order("first_name", { ascending: true });
@@ -137,7 +139,10 @@ export default function CampRosterPage() {
                 </h2>
 
                 <p className="mt-1 text-sm text-[#b8b0a1]">
-                  Room {player.room || "-"} · {player.arrival || "Arrival TBD"}
+                  Room {player.room || "-"} ·{" "}
+                  {typeof player.years_served === "number"
+                    ? `${player.years_served} Years Served`
+                    : player.arrival || "Arrival TBD"}
                 </p>
               </div>
 
@@ -147,7 +152,7 @@ export default function CampRosterPage() {
                   "border-[#34312a] bg-black/35 text-[#b8b0a1]"
                 }`}
               >
-                {getPublicRankBucket(player.rank, player.internal_rank_order)}
+                {getPublicDisplayRank(player.display_rank, player.rank)}
               </div>
             </Link>
           ))}

@@ -392,6 +392,21 @@ textarea:focus {
   box-shadow: 0 0 0 1px rgba(216, 208, 191, 0.22);
 }
 
+@keyframes campFeedPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(0.92);
+    box-shadow: 0 0 10px rgba(143, 166, 106, 0.28);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 18px rgba(143, 166, 106, 0.44);
+  }
+}
+
 .login-field {
   background: rgba(5, 5, 5, 0.78) !important;
   border-color: #34312a !important;

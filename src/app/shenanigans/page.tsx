@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
 import { useActivePlayers } from "@/lib/useActivePlayers";
 import {
+  CompactPlayerMultiSelect,
   setCurrentShenanigansGameId,
   ShenanigansGameBar,
   useShenanigansGame,
@@ -85,23 +87,15 @@ export default function ShenanigansPage() {
   } = useShenanigansGame();
   const { players, isLoading: isLoadingPlayers } = useActivePlayers();
   const [gameName, setGameName] = useState("New Shenanigans Game");
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
+  const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  function togglePlayer(playerId: string) {
-    setSelectedPlayerIds((current) =>
-      current.includes(playerId)
-        ? current.filter((id) => id !== playerId)
-        : [...current, playerId],
-    );
-  }
-
   async function handleStartGame() {
     const trimmedName = gameName.trim();
     const selectedPlayers = players.filter((player) =>
-      selectedPlayerIds.includes(player.id),
+      selectedPlayerNames.includes(player.display_name),
     );
 
     setMessage("");
@@ -112,8 +106,8 @@ export default function ShenanigansPage() {
       return;
     }
 
-    if (selectedPlayers.length === 0) {
-      setError("Select at least one player.");
+    if (selectedPlayers.length < 2 || selectedPlayers.length > 4) {
+      setError("Select 2 to 4 players.");
       return;
     }
 
@@ -162,9 +156,16 @@ export default function ShenanigansPage() {
     }
 
     setCurrentShenanigansGameId(gameId);
+    await logActivityFeedItem({
+      type: "shenanigans_game_started",
+      source: "Shenanigans",
+      sourceId: gameId,
+      linkUrl: "/shenanigans",
+      message: `Shenanigans game started: ${trimmedName}.`,
+    });
     await refreshGameState();
     await switchGame(gameId);
-    setSelectedPlayerIds([]);
+    setSelectedPlayerNames([]);
     setMessage("Game started.");
     setIsCreating(false);
   }
@@ -217,34 +218,25 @@ export default function ShenanigansPage() {
             className="mt-4 w-full rounded-xl border border-[#3a1d1d] bg-black/55 px-4 py-3 outline-none focus:border-[#b91c1c]"
             placeholder="Game name"
           />
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {isLoadingPlayers && (
-              <p className="text-sm text-[#a3a3a3]">Loading players...</p>
-            )}
-            {!isLoadingPlayers &&
-              players.map((player) => {
-                const isSelected = selectedPlayerIds.includes(player.id);
-
-                return (
-                  <button
-                    key={player.id}
-                    type="button"
-                    onClick={() => togglePlayer(player.id)}
-                    className={`rounded-xl border p-3 text-left text-sm font-bold ${
-                      isSelected
-                        ? "border-[#b91c1c] bg-[#b91c1c]"
-                        : "border-[#3a1d1d] bg-black/45 hover:border-[#b91c1c]"
-                    }`}
-                  >
-                    {player.display_name}
-                  </button>
-                );
-              })}
+          <div className="mt-4">
+            <CompactPlayerMultiSelect
+              players={players}
+              selectedNames={selectedPlayerNames}
+              onChange={setSelectedPlayerNames}
+              isLoading={isLoadingPlayers}
+              label="Players"
+              minSelected={2}
+              maxSelected={4}
+            />
           </div>
           <button
             type="button"
             onClick={handleStartGame}
-            disabled={isCreating}
+            disabled={
+              isCreating ||
+              selectedPlayerNames.length < 2 ||
+              selectedPlayerNames.length > 4
+            }
             className="mt-4 w-full rounded-xl bg-[#b91c1c] px-4 py-3 font-bold transition hover:bg-[#991b1b] disabled:opacity-50"
           >
             {isCreating ? "Starting..." : "Start Game"}

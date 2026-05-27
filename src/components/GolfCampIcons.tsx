@@ -3,6 +3,7 @@ import type { SVGProps } from "react";
 export type GolfCampIconName =
   | "admin"
   | "bank"
+  | "calcutta"
   | "camp"
   | "draft"
   | "ledger"
@@ -27,7 +28,7 @@ function baseProps(props: SVGProps<SVGSVGElement>) {
     viewBox: "0 0 32 32",
     fill: "none",
     stroke: "currentColor",
-    strokeWidth: 2,
+    strokeWidth: 1.8,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     "aria-hidden": true,
@@ -40,9 +41,9 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
     case "admin":
       return (
         <svg {...baseProps(props)}>
-          <path d="M16 4 25 8v7c0 6-3.8 10.2-9 13-5.2-2.8-9-7-9-13V8l9-4Z" />
-          <path d="M12 16h8" />
-          <path d="M16 12v8" />
+          <path d="M16 5 24 8.8v7.4c0 5.2-3.2 8.6-8 11-4.8-2.4-8-5.8-8-11V8.8L16 5Z" />
+          <path d="M12 15.5h8" />
+          <path d="M16 11.5v8" />
         </svg>
       );
     case "bank":
@@ -56,23 +57,39 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
           <path d="M6 25h20" />
         </svg>
       );
+    case "calcutta":
+      return (
+        <svg {...baseProps(props)}>
+          <path d="M8 22h16" />
+          <path d="M11 22V10l5-4 5 4v12" />
+          <path d="M13 13h6" />
+          <path d="M13 17h6" />
+          <path d="M16 6v16" />
+        </svg>
+      );
     case "camp":
       return (
         <svg {...baseProps(props)}>
-          <path d="M7 25V11l9-5 9 5v14" />
-          <path d="M12 25v-7h8v7" />
-          <path d="M11 13h2" />
-          <path d="M19 13h2" />
+          <path d="M6.5 24.5h19" />
+          <path d="M8.5 24.5V12.5L16 7l7.5 5.5v12" />
+          <path d="M12.5 24.5v-7h7v7" />
+          <path d="M11.5 14h2" />
+          <path d="M18.5 14h2" />
+          <path d="M16 7V4.5" />
+          <path d="M16 4.5h4.5" />
         </svg>
       );
     case "draft":
       return (
         <svg {...baseProps(props)}>
-          <path d="M7 7h18v18H7z" />
-          <path d="M11 12h10" />
-          <path d="M11 17h7" />
-          <path d="M11 22h4" />
-          <path d="M23 4v6" />
+          <path d="M7 8h18v16H7z" />
+          <path d="M11 12h4" />
+          <path d="M17 12h4" />
+          <path d="M11 16h4" />
+          <path d="M17 16h4" />
+          <path d="M11 20h4" />
+          <path d="M17 20h4" />
+          <path d="M23 5v6" />
         </svg>
       );
     case "ledger":
@@ -96,11 +113,10 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
     case "money":
       return (
         <svg {...baseProps(props)}>
-          <path d="M6 10h20v14H6z" />
-          <path d="M10 14h.01" />
-          <path d="M22 20h.01" />
-          <path d="M16 13v8" />
-          <path d="M19 15.5c-.7-1-1.7-1.5-3-1.5-1.5 0-2.5.7-2.5 1.8 0 2.8 5 1.1 5 4 0 1.2-1 2.2-2.9 2.2-1.3 0-2.5-.5-3.3-1.4" />
+          <path d="M16 6v20" />
+          <path d="M21.5 10.5c-1.2-1.2-3-2-5.3-2-3.2 0-5.4 1.5-5.4 3.9 0 2.7 2.6 3.3 5.4 3.7 3.1.5 5.5 1.2 5.5 3.9 0 2.3-2.2 3.7-5.5 3.7-2.7 0-4.8-.9-6.1-2.4" />
+          <path d="M11 12.5h10" />
+          <path d="M11 20h10" />
         </svg>
       );
     case "night":
@@ -114,10 +130,13 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
     case "p2p":
       return (
         <svg {...baseProps(props)}>
-          <path d="M10 17 7 14a3 3 0 0 1 4.2-4.2l2 2" />
-          <path d="M22 17 25 14a3 3 0 0 0-4.2-4.2l-2 2" />
-          <path d="M11 18l4 4a2.8 2.8 0 0 0 4 0l2-2" />
-          <path d="M13 12h6l2 2-5 5-5-5 2-2Z" />
+          <path d="M12 8.5h8" />
+          <path d="M11 11.5h10" />
+          <path d="M12 11.5v12" />
+          <path d="M20 11.5v12" />
+          <path d="M13.5 25h5" />
+          <path d="M13.5 15h5" />
+          <path d="M13.5 20h5" />
         </svg>
       );
     case "rooms":
@@ -159,10 +178,13 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
     case "shenanigans":
       return (
         <svg {...baseProps(props)}>
-          <path d="M8 22c4-8 7-12 13-16" />
-          <path d="M9 9c3 1 5 3 6 6" />
-          <path d="M17 17c2 1 4 3 5 6" />
-          <path d="M8 22h16" />
+          <path d="M9 7 23 25" />
+          <path d="M23 7 9 25" />
+          <path d="M7.5 5.5 11 8" />
+          <path d="M21 8l3.5-2.5" />
+          <path d="M9 25l2-4" />
+          <path d="M23 25l-2-4" />
+          <path d="M13 16h6" />
         </svg>
       );
     case "sideGames":

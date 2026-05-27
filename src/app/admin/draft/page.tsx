@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import {
   comparePlayersForDraft,
@@ -96,7 +97,7 @@ export default function AdminDraftPage() {
   async function fetchPlayers() {
     const { data, error: fetchError } = await supabase
       .from("players")
-      .select("id, first_name, last_name, display_name, rank, internal_rank_order")
+      .select("id, first_name, last_name, display_name, rank, display_rank, internal_rank_order")
       .eq("active", true);
 
     console.log("draft active players:", { data, error: fetchError });
@@ -591,6 +592,13 @@ export default function AdminDraftPage() {
     }
 
     setMessage("Draft started.");
+    await logActivityFeedItem({
+      type: "draft_started",
+      source: "Live Draft",
+      sourceId: selectedSession.id,
+      linkUrl: "/draft/live",
+      message: `${selectedSession.name} started.`,
+    });
     await fetchDraftState(selectedSession.id);
   }
 
@@ -637,6 +645,15 @@ export default function AdminDraftPage() {
       .eq("id", selectedSession.id);
 
     setMessage(`${player.display_name} drafted by ${currentTeam.name}.`);
+    if (remainingAfterPick <= 0) {
+      await logActivityFeedItem({
+        type: "draft_completed",
+        source: "Live Draft",
+        sourceId: selectedSession.id,
+        linkUrl: "/draft/live",
+        message: `${selectedSession.name} completed.`,
+      });
+    }
     await fetchDraftState(selectedSession.id);
   }
 

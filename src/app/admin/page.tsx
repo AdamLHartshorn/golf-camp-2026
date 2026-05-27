@@ -43,10 +43,10 @@ const sections = [
   },
   {
     number: "06",
-    label: "P2P Wagers",
-    title: "P2P Admin",
-    href: "/admin/p2p-wagers",
-    description: "Review open bets, remove bad entries, and manage settled cash action.",
+    label: "Afternoon Rounds",
+    title: "Afternoon Rounds",
+    href: "/afternoon-rounds",
+    description: "View player-created optional rounds, participants, and team groups.",
     accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {

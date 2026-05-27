@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
-import { getPublicRankBucket } from "@/lib/playerRanks";
+import { getPublicDisplayRank } from "@/lib/playerRanks";
 
 type QuestionnaireAnswers = {
   favorite_golf_camp_memory?: string;
@@ -22,7 +22,9 @@ type PlayerRow = {
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  display_rank: string | null;
   internal_rank_order: string | null;
+  years_served: number | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
@@ -34,16 +36,8 @@ type PlayerRow = {
 };
 
 function loreItems(player: PlayerRow) {
-  const answers = player.questionnaire_answers || {};
-
   return [
-    ["Nickname", player.nickname],
     ["Player Notes", player.player_notes],
-    ["Favorite Golf Camp Memory", answers.favorite_golf_camp_memory],
-    ["Most Likely To", answers.most_likely_to],
-    ["Walk-Up Song", answers.walk_up_song],
-    ["Personal Scouting Report", answers.personal_scouting_report],
-    ["Other/Funny Notes", answers.other_funny_notes],
   ].filter(([, value]) => typeof value === "string" && value.trim());
 }
 
@@ -60,7 +54,7 @@ export default function PlayerProfilePage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, first_name, last_name, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, photo_url, player_notes, questionnaire_answers, active",
+          "id, first_name, last_name, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, player_notes, questionnaire_answers, active",
         )
         .eq("id", params.slug)
         .single();
@@ -143,7 +137,10 @@ export default function PlayerProfilePage() {
                 </h1>
 
                 <p className="text-[#7a6f60]">
-                  Rank {getPublicRankBucket(player.rank, player.internal_rank_order)} · Room {player.room || "-"}
+                  Rank {getPublicDisplayRank(player.display_rank, player.rank)} ·{" "}
+                  {typeof player.years_served === "number"
+                    ? `${player.years_served} Years Served`
+                    : `Room ${player.room || "-"}`}
                 </p>
               </div>
             </div>
@@ -156,17 +153,31 @@ export default function PlayerProfilePage() {
                   </p>
 
                   <p className="mt-2 text-3xl font-semibold">
-                    {getPublicRankBucket(player.rank, player.internal_rank_order)}
+                    {getPublicDisplayRank(player.display_rank, player.rank)}
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
-                    Room
+                    Years Served
                   </p>
 
-                  <p className="mt-2 text-3xl font-semibold">{player.room || "-"}</p>
+                  <p className="mt-2 text-3xl font-semibold">
+                    {typeof player.years_served === "number"
+                      ? player.years_served
+                      : "-"}
+                  </p>
                 </div>
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+                  Room
+                </p>
+
+                <p className="mt-2 text-lg font-semibold">
+                  {player.room || "-"}
+                </p>
               </div>
 
               <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
@@ -224,7 +235,7 @@ export default function PlayerProfilePage() {
                     Lore
                   </p>
                   <h2 className="mt-2 text-2xl font-bold">
-                    Questionnaire
+                    Lore
                   </h2>
                 </div>
 

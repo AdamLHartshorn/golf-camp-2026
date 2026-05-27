@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import {
   buildYearlyMoneyBank,
@@ -30,6 +31,7 @@ export default function MoneyRoundsPage() {
   const [scores, setScores] = useState<MoneyScore[]>([]);
   const [yearlyBankRows, setYearlyBankRows] = useState<YearlyMoneyBankRow[]>([]);
   const [hasScoredRounds, setHasScoredRounds] = useState(false);
+  const [session] = useState<PlayerSession | null>(() => getPlayerSession());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -147,9 +149,8 @@ export default function MoneyRoundsPage() {
   }, []);
 
   const activeRound = rounds.find(isOperationalRound) || null;
-  const recentRounds = activeRound
-    ? rounds.filter((round) => round.id !== activeRound.id)
-    : rounds;
+  const recentRounds = rounds.filter(isScoredOrFinalRound);
+  const isAdmin = Boolean(session?.is_admin);
   const activeTeams = activeRound
     ? teams.filter((team) => team.money_round_id === activeRound.id)
     : [];
@@ -297,33 +298,30 @@ export default function MoneyRoundsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 border-t border-[#2a2925]">
+              <div className="border-t border-[#2a2925] px-5 py-4">
                 <Link
                   href={`/money-rounds/${activeRound.id}`}
-                  className="border-b border-r border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#16a34a] transition hover:bg-[#0f1f16]"
+                  className="block rounded-xl border border-[#16a34a] bg-[#0f1f16] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:bg-[#12301f]"
                 >
                   View Round
                 </Link>
-                <Link
-                  href={`/money-rounds/${activeRound.id}/submit`}
-                  className="border-b border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:bg-[#0f1f16]"
-                >
-                  Enter Scores
-                </Link>
-                <Link
-                  href={`/money-rounds/${activeRound.id}/submit`}
-                  className="border-r border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:bg-[#0f1f16]"
-                >
-                  Submit Team Scores
-                </Link>
-                {canPresentActiveRound && (
+
+                <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                  <Link
+                    href={`/money-rounds/${activeRound.id}/submit`}
+                    className="rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
+                  >
+                    Enter Scores
+                  </Link>
+                  {canPresentActiveRound && (
                   <Link
                     href={`/money-rounds/${activeRound.id}/results`}
-                    className="px-4 py-3 text-center text-sm font-black text-[#16a34a] transition hover:bg-[#0f1f16]"
+                    className="rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
                   >
-                    Results Presentation
+                    Presentation
                   </Link>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -340,7 +338,7 @@ export default function MoneyRoundsPage() {
           <div>
             {!isLoading && !error && recentRounds.length === 0 && (
               <p className="p-5 text-sm text-[#a3a3a3]">
-                No previous rounds yet.
+                No scored or final rounds yet.
               </p>
             )}
 
@@ -353,9 +351,16 @@ export default function MoneyRoundsPage() {
                 >
                   <div className="grid grid-cols-[1fr_auto] items-center gap-3">
                     <Link href={`/money-rounds/${round.id}`} className="min-w-0">
-                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#16a34a]">
-                        {round.status}
-                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#16a34a]">
+                          {round.status}
+                        </p>
+                        {activeRound?.id === round.id && (
+                          <span className="rounded-full border border-[#315f48]/70 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-[#8ee6a7]">
+                            Current
+                          </span>
+                        )}
+                      </div>
                       <h3 className="mt-1 truncate text-lg font-black">
                         {round.name}
                       </h3>
@@ -363,14 +368,28 @@ export default function MoneyRoundsPage() {
                         {round.round_date || "Date TBD"}
                       </p>
                     </Link>
-                    {isScoredOrFinalRound(round) && (
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <Link
+                        href={`/money-rounds/${round.id}`}
+                        className="shrink-0 rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#16a34a] transition hover:border-[#16a34a]"
+                      >
+                        View
+                      </Link>
                       <Link
                         href={`/money-rounds/${round.id}/results`}
-                        className="shrink-0 rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#16a34a] transition hover:border-[#16a34a]"
+                        className="shrink-0 rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#16a34a]"
                       >
                         Results
                       </Link>
-                    )}
+                      {isAdmin && (
+                        <Link
+                          href={`/admin/money-rounds/${round.id}/present`}
+                          className="shrink-0 rounded-lg border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#16a34a]"
+                        >
+                          Control
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

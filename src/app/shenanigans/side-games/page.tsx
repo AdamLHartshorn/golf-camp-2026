@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import {
+  CompactPlayerSelect,
   NoShenanigansGamePrompt,
   ShenanigansGameBar,
   useShenanigansGame,
@@ -222,6 +224,13 @@ export default function ShenanigansSideGamesPage() {
       }
 
       setMessage("Side game logged.");
+      await logActivityFeedItem({
+        type: "shenanigans_side_game_logged",
+        source: "Shenanigans",
+        sourceId: selectedGameId,
+        linkUrl: "/shenanigans/side-games",
+        message: `Shenanigans: ${selectedPlayer} wins ${selectedType}.`,
+      });
       setSelectedPoints(null);
       setDescription("");
       await fetchSideGameEvents();
@@ -325,40 +334,13 @@ export default function ShenanigansSideGamesPage() {
 
           <div className="mt-4 space-y-4">
             <div className="space-y-3">
-              <p className="text-sm text-[#a3a3a3]">Winner</p>
-
-              {isLoadingGame && (
-                <p className="text-sm text-[#a3a3a3]">Loading players...</p>
-              )}
-
-              {!isLoadingGame && selectablePlayers.length === 0 && (
-                <p className="text-sm text-[#a3a3a3]">
-                  No players are in this game.
-                </p>
-              )}
-
-              {!isLoadingGame && selectablePlayers.length > 0 && (
-                <div className="grid grid-cols-2 gap-3">
-                  {selectablePlayers.map((player) => {
-                    const isSelected = player.display_name === selectedPlayer;
-
-                    return (
-                      <button
-                        key={player.id}
-                        type="button"
-                        onClick={() => setChosenPlayer(player.display_name)}
-                        className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
-                          isSelected
-                            ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
-                            : "border-[#242424] bg-black text-[#f5f5f5] hover:border-[#b91c1c]"
-                        }`}
-                      >
-                        {player.display_name}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <CompactPlayerSelect
+                players={selectablePlayers}
+                selectedName={selectedPlayer}
+                onSelect={setChosenPlayer}
+                isLoading={isLoadingGame}
+                label="Winner"
+              />
             </div>
 
             <div className="space-y-3">

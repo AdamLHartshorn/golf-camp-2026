@@ -4,23 +4,27 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
   clearPlayerSession,
   getPlayerSession,
   PlayerSession,
 } from "@/lib/playerSession";
-import { getPublicRankBucket } from "@/lib/playerRanks";
+import { getPublicDisplayRank } from "@/lib/playerRanks";
 
 type ProfilePlayer = {
   id: string;
   display_name: string;
   nickname: string | null;
   rank: string | null;
+  display_rank: string | null;
   internal_rank_order: string | null;
+  years_served: number | null;
   room: string | null;
   arrival: string | null;
   phone: string | null;
   email: string | null;
+  photo_url: string | null;
   pin_code: string | null;
 };
 
@@ -32,6 +36,7 @@ export default function MyProfilePage() {
   const [confirmPin, setConfirmPin] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -49,7 +54,7 @@ export default function MyProfilePage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, pin_code",
+          "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
         )
         .eq("id", nextSession.id)
         .single();
@@ -99,7 +104,7 @@ export default function MyProfilePage() {
       })
       .eq("id", player.id)
       .select(
-        "id, display_name, nickname, rank, internal_rank_order, room, arrival, phone, email, pin_code",
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
       )
       .single();
 
@@ -115,6 +120,92 @@ export default function MyProfilePage() {
     setNewPin("");
     setConfirmPin("");
     setMessage("PIN updated.");
+  }
+
+  async function handlePhotoUpload(file: File | null) {
+    setMessage("");
+    setError("");
+
+    if (!player) {
+      setError("Login required.");
+      return;
+    }
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Choose an image file.");
+      return;
+    }
+
+    const extensionFromName = file.name.split(".").pop()?.toLowerCase();
+    const extensionFromType = file.type.split("/").pop()?.toLowerCase();
+    const extension = extensionFromName || extensionFromType || "jpg";
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp", "gif"];
+
+    if (!allowedExtensions.includes(extension)) {
+      setError("Use a JPG, PNG, WebP, or GIF image.");
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+
+    const filePath = `${player.id}/profile.${extension}`;
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("player-photos")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: true,
+        contentType: file.type,
+      });
+
+    console.log("Self-service player photo upload:", {
+      playerId: player.id,
+      path: filePath,
+      data: uploadData,
+      error: uploadError,
+    });
+
+    if (uploadError) {
+      setError(uploadError.message || "Could not upload profile photo.");
+      setIsUploadingPhoto(false);
+      return;
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("player-photos")
+      .getPublicUrl(uploadData.path);
+    const photoUrl = `${publicUrlData.publicUrl}?v=${Date.now()}`;
+    const { data, error: updateError } = await supabase
+      .from("players")
+      .update({
+        photo_url: photoUrl,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", player.id)
+      .select(
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
+      )
+      .single();
+
+    console.log("Self-service player photo url update:", {
+      playerId: player.id,
+      photoUrl,
+      data,
+      error: updateError,
+    });
+
+    setIsUploadingPhoto(false);
+
+    if (updateError) {
+      setError(updateError.message || "Could not save profile photo.");
+      return;
+    }
+
+    setPlayer(data as ProfilePlayer);
+    setMessage("Profile picture updated.");
   }
 
   return (
@@ -156,21 +247,37 @@ export default function MyProfilePage() {
           <>
             <section className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
               <div className="border-b border-[#d8d1c4] px-5 py-5">
+              <div className="mb-4 flex justify-center">
+                {player.photo_url ? (
+                  <div
+                    aria-label={`${player.display_name} profile`}
+                    className="h-28 w-28 rounded-full border border-[#cfc4b3] bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
+                    role="img"
+                    style={{ backgroundImage: `url(${player.photo_url})` }}
+                  />
+                ) : (
+                  <PlayerSilhouette
+                    className="h-28 w-28"
+                    label={`${player.display_name} profile placeholder`}
+                  />
+                )}
+              </div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
                 Logged-In Player
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
                 {player.display_name}
               </h1>
-              {player.nickname && (
-                <p className="mt-1 text-sm text-[#7a6f60]">
-                  Nickname: {player.nickname}
-                </p>
-              )}
               </div>
               <div className="grid grid-cols-2 gap-3 p-5 text-sm">
                 {[
-                  ["Rank", getPublicRankBucket(player.rank, player.internal_rank_order)],
+                  ["Rank", getPublicDisplayRank(player.display_rank, player.rank)],
+                  [
+                    "Years Served",
+                    typeof player.years_served === "number"
+                      ? String(player.years_served)
+                      : "-",
+                  ],
                   ["Room", player.room || "-"],
                   ["Arrival", player.arrival || "TBD"],
                   ["Phone", player.phone || "-"],
@@ -187,6 +294,37 @@ export default function MyProfilePage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
+              <div>
+                <h2 className="text-xl font-semibold tracking-[-0.02em]">
+                  Profile Picture
+                </h2>
+                <p className="mt-1 text-sm text-[#a3a3a3]">
+                  Upload a photo for roster cards and your public profile.
+                </p>
+              </div>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                  Upload Profile Picture
+                </span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  onChange={(event) => {
+                    handlePhotoUpload(event.target.files?.[0] || null);
+                    event.target.value = "";
+                  }}
+                  disabled={isUploadingPhoto}
+                  className="block w-full text-sm text-[#a3a3a3] file:mr-4 file:rounded-xl file:border-0 file:bg-[#efe9dc] file:px-4 file:py-3 file:text-sm file:font-semibold file:text-[#17130e] disabled:cursor-not-allowed disabled:opacity-50"
+                />
+              </label>
+
+              {isUploadingPhoto && (
+                <p className="text-sm text-[#a3a3a3]">Uploading photo...</p>
+              )}
             </section>
 
             <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
