@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CampFeedAdminForm } from "@/app/admin/CampFeedAdminForm";
 
 const sections = [
   {
@@ -51,6 +52,14 @@ const sections = [
   },
   {
     number: "07",
+    label: "Camp Feed",
+    title: "Camp Feed Admin",
+    href: "/admin/camp-feed",
+    description: "Post updates and remove stale or incorrect live feed entries.",
+    accent: "border-[#8fa66a] text-[#8fa66a] hover:border-[#a6ba80]",
+  },
+  {
+    number: "08",
     label: "System",
     title: "System Tools",
     href: "/admin/system",
@@ -122,6 +131,8 @@ export default function AdminPage() {
             </Link>
           </div>
         </section>
+
+        <CampFeedAdminForm />
 
         <div className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_55px_rgba(0,0,0,0.42)]">
           <div className="grid grid-cols-[3.5rem_1fr_2.5rem] border-b border-[#34312a] bg-[#151411] px-4 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#a8a29a]">

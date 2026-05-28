@@ -158,7 +158,7 @@ export default function ShenanigansPage() {
     setCurrentShenanigansGameId(gameId);
     await logActivityFeedItem({
       type: "shenanigans_game_started",
-      source: "Shenanigans",
+      source: "shenanigans",
       sourceId: gameId,
       linkUrl: "/shenanigans",
       message: `Shenanigans game started: ${trimmedName}.`,

@@ -39,6 +39,27 @@ function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleString() : "No timestamp";
 }
 
+async function deleteShenanigansFeedItems(sourceIds: string[]) {
+  const uniqueSourceIds = Array.from(new Set(sourceIds.filter(Boolean)));
+
+  if (uniqueSourceIds.length === 0) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("activity_feed")
+    .delete()
+    .in("source", ["shenanigans", "Shenanigans"])
+    .in("source_id", uniqueSourceIds)
+    .select();
+
+  console.log("Admin shenanigans activity_feed cleanup:", {
+    sourceIds: uniqueSourceIds,
+    data,
+    error,
+  });
+}
+
 export default function ShenanigansAdminPage() {
   const [games, setGames] = useState<ShenanigansGame[]>([]);
   const [events, setEvents] = useState<ShenanigansEvent[]>([]);
@@ -254,6 +275,11 @@ export default function ShenanigansAdminPage() {
 
     setMessage("");
 
+    const [{ data: linkedEvents }, { data: linkedWagers }] = await Promise.all([
+      supabase.from("shenanigans_events").select("id").eq("game_id", game.id),
+      supabase.from("shenanigans_wagers").select("id").eq("game_id", game.id),
+    ]);
+
     const { data, error } = await supabase
       .from("shenanigans_games")
       .delete()
@@ -267,6 +293,15 @@ export default function ShenanigansAdminPage() {
       return;
     }
 
+    await deleteShenanigansFeedItems([
+      game.id,
+      ...(((linkedEvents as { id: string }[] | null) || []).map(
+        (event) => event.id,
+      )),
+      ...(((linkedWagers as { id: string }[] | null) || []).map(
+        (wager) => wager.id,
+      )),
+    ]);
     setMessage("Game deleted.");
     await Promise.all([fetchGames(), fetchEvents(), fetchWagers()]);
   }
@@ -291,6 +326,7 @@ export default function ShenanigansAdminPage() {
       return;
     }
 
+    await deleteShenanigansFeedItems([event.id]);
     setMessage("Ledger event deleted.");
     await fetchEvents();
   }
@@ -319,6 +355,9 @@ export default function ShenanigansAdminPage() {
       return;
     }
 
+    await deleteShenanigansFeedItems(
+      ((data as ShenanigansEvent[] | null) || []).map((event) => event.id),
+    );
     setMessage("All Shenanigans ledger events reset.");
     await fetchEvents();
   }
@@ -343,6 +382,7 @@ export default function ShenanigansAdminPage() {
       return;
     }
 
+    await deleteShenanigansFeedItems([wager.id]);
     setMessage("Wager deleted.");
     await fetchWagers();
   }

@@ -101,10 +101,11 @@ export default function ShenanigansLogEventPage() {
       }
 
       setMessage("Event added.");
+      const createdEventId = Array.isArray(data) ? data[0]?.id : null;
       await logActivityFeedItem({
         type: "shenanigans_event_logged",
-        source: "Shenanigans",
-        sourceId: selectedGameId,
+        source: "shenanigans",
+        sourceId: createdEventId || null,
         linkUrl: "/shenanigans/ledger",
         message: `Shenanigans: ${selectedPlayer} ${signedPoints} — ${trimmedDescription}.`,
       });

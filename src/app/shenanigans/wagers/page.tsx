@@ -335,8 +335,8 @@ export default function ShenanigansWagersPage() {
       setMessage("Wager settled and ledger updated.");
       await logActivityFeedItem({
         type: "shenanigans_wager_settled",
-        source: "Shenanigans",
-        sourceId: wager.game_id,
+        source: "shenanigans",
+        sourceId: wager.id,
         linkUrl: "/shenanigans/wagers",
         message: `Shenanigans wager settled: ${winnerName} wins ${wager.points} pts.`,
       });

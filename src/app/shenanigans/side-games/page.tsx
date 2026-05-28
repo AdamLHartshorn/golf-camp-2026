@@ -224,10 +224,11 @@ export default function ShenanigansSideGamesPage() {
       }
 
       setMessage("Side game logged.");
+      const createdEventId = Array.isArray(data) ? data[0]?.id : null;
       await logActivityFeedItem({
         type: "shenanigans_side_game_logged",
-        source: "Shenanigans",
-        sourceId: selectedGameId,
+        source: "shenanigans",
+        sourceId: createdEventId || null,
         linkUrl: "/shenanigans/side-games",
         message: `Shenanigans: ${selectedPlayer} wins ${selectedType}.`,
       });
