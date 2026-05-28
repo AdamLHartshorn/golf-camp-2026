@@ -1,5 +1,6 @@
 "use client";
 
+import Cropper, { Area, Point } from "react-easy-crop";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -28,6 +29,58 @@ type ProfilePlayer = {
   pin_code: string | null;
 };
 
+function createImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", reject);
+    image.setAttribute("crossOrigin", "anonymous");
+    image.src = src;
+  });
+}
+
+async function getCroppedImageBlob(imageSrc: string, crop: Area) {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const size = Math.min(crop.width, crop.height);
+
+  canvas.width = size;
+  canvas.height = size;
+
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("Could not prepare image crop.");
+  }
+
+  context.drawImage(
+    image,
+    crop.x,
+    crop.y,
+    size,
+    size,
+    0,
+    0,
+    size,
+    size,
+  );
+
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Could not crop image."));
+          return;
+        }
+
+        resolve(blob);
+      },
+      "image/jpeg",
+      0.92,
+    );
+  });
+}
+
 export default function MyProfilePage() {
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [player, setPlayer] = useState<ProfilePlayer | null>(null);
@@ -37,6 +90,10 @@ export default function MyProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [cropImageUrl, setCropImageUrl] = useState("");
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
@@ -122,7 +179,18 @@ export default function MyProfilePage() {
     setMessage("PIN updated.");
   }
 
-  async function handlePhotoUpload(file: File | null) {
+  function resetCropper() {
+    if (cropImageUrl) {
+      window.URL.revokeObjectURL(cropImageUrl);
+    }
+
+    setCropImageUrl("");
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+  }
+
+  function handlePhotoSelection(file: File | null) {
     setMessage("");
     setError("");
 
@@ -150,15 +218,47 @@ export default function MyProfilePage() {
       return;
     }
 
+    resetCropper();
+    setCropImageUrl(window.URL.createObjectURL(file));
+  }
+
+  async function handlePhotoUpload() {
+    setMessage("");
+    setError("");
+
+    if (!player) {
+      setError("Login required.");
+      return;
+    }
+
+    if (!cropImageUrl || !croppedAreaPixels) {
+      setError("Position your photo before saving.");
+      return;
+    }
+
     setIsUploadingPhoto(true);
 
-    const filePath = `${player.id}/profile.${extension}`;
+    let croppedBlob: Blob;
+
+    try {
+      croppedBlob = await getCroppedImageBlob(cropImageUrl, croppedAreaPixels);
+    } catch (cropError) {
+      setError(
+        cropError instanceof Error
+          ? cropError.message
+          : "Could not crop profile photo.",
+      );
+      setIsUploadingPhoto(false);
+      return;
+    }
+
+    const filePath = `${player.id}/profile.jpg`;
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("player-photos")
-      .upload(filePath, file, {
+      .upload(filePath, croppedBlob, {
         cacheControl: "3600",
         upsert: true,
-        contentType: file.type,
+        contentType: "image/jpeg",
       });
 
     console.log("Self-service player photo upload:", {
@@ -205,6 +305,7 @@ export default function MyProfilePage() {
     }
 
     setPlayer(data as ProfilePlayer);
+    resetCropper();
     setMessage("Profile picture updated.");
   }
 
@@ -314,7 +415,7 @@ export default function MyProfilePage() {
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
                   onChange={(event) => {
-                    handlePhotoUpload(event.target.files?.[0] || null);
+                    handlePhotoSelection(event.target.files?.[0] || null);
                     event.target.value = "";
                   }}
                   disabled={isUploadingPhoto}
@@ -322,8 +423,76 @@ export default function MyProfilePage() {
                 />
               </label>
 
+              {cropImageUrl && (
+                <div className="space-y-4 rounded-2xl border border-[#34312a] bg-black/35 p-4">
+                  <div>
+                    <p className="text-sm font-semibold text-[#f5f5f5]">
+                      Position your photo
+                    </p>
+                    <p className="mt-1 text-xs leading-5 text-[#a3a3a3]">
+                      Drag to center your face, then zoom until it feels right
+                      inside the circular frame.
+                    </p>
+                  </div>
+
+                  <div className="relative h-72 overflow-hidden rounded-2xl border border-[#242424] bg-black">
+                    <Cropper
+                      image={cropImageUrl}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={1}
+                      cropShape="round"
+                      showGrid={false}
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onCropComplete={(_, croppedPixels) =>
+                        setCroppedAreaPixels(croppedPixels)
+                      }
+                    />
+                  </div>
+
+                  <label
+                    htmlFor="profile-photo-zoom"
+                    className="block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                  >
+                    Zoom
+                  </label>
+                  <input
+                    id="profile-photo-zoom"
+                    type="range"
+                    min={1}
+                    max={3}
+                    step={0.01}
+                    value={zoom}
+                    onChange={(event) => setZoom(Number(event.target.value))}
+                    className="w-full accent-[#efe9dc]"
+                  />
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={resetCropper}
+                      disabled={isUploadingPhoto}
+                      className="rounded-xl border border-[#34312a] px-4 py-3 text-sm font-semibold text-[#a3a3a3] transition hover:border-[#efe9dc] hover:text-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handlePhotoUpload}
+                      disabled={isUploadingPhoto}
+                      className="rounded-xl bg-[#efe9dc] px-4 py-3 text-sm font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isUploadingPhoto ? "Saving..." : "Save Photo"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {isUploadingPhoto && (
-                <p className="text-sm text-[#a3a3a3]">Uploading photo...</p>
+                <p className="text-sm text-[#a3a3a3]">
+                  Saving cropped profile photo...
+                </p>
               )}
             </section>
 
