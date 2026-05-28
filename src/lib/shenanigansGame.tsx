@@ -190,30 +190,42 @@ export function ShenanigansGameBar({
   onEndGame: () => void;
 }) {
   return (
-    <section className="rounded-2xl border border-[#242424] bg-[#111111] p-4 shadow-[0_0_28px_rgba(90,43,51,0.08)]">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#b91c1c]">
-          Current Game
-        </p>
+    <section className="overflow-hidden rounded-2xl border border-[#242424] bg-[linear-gradient(90deg,rgba(90,43,51,0.18),rgba(17,17,17,0.98)_42%,rgba(17,17,17,0.92))] shadow-[0_0_28px_rgba(90,43,51,0.08)]">
+      <div className="flex items-center justify-between gap-3 border-b border-[#242424] px-4 py-3">
+        <div className="min-w-0">
+          <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#b98590]">
+            Current Game
+          </p>
+          <p className="mt-1 truncate text-sm font-black text-[#f5f5f5]">
+            {selectedGame?.name || (isLoadingGame ? "Loading..." : "No game selected")}
+          </p>
+        </div>
 
-        <Link
-          href="/shenanigans"
-          className="text-xs font-bold uppercase tracking-[0.16em] text-[#a3a3a3] transition hover:text-[#f5f5f5]"
-        >
-          Start New
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          {selectedGame && (
+            <span className="rounded-full border border-[#5a2b33] bg-black/35 px-2.5 py-1 font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#b98590]">
+              {selectedGame.status || "active"}
+            </span>
+          )}
+          <Link
+            href="/shenanigans"
+            className="rounded-full border border-[#5a2b33] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4d4d4] transition hover:border-[#b98590] hover:text-[#f5f5f5]"
+          >
+            New
+          </Link>
+        </div>
       </div>
 
       {isLoadingGame && (
-        <p className="mt-2 text-sm text-[#a3a3a3]">Loading game...</p>
+        <p className="px-4 py-3 text-sm text-[#a3a3a3]">Loading game...</p>
       )}
 
       {!isLoadingGame && gameError && (
-        <p className="mt-2 text-sm text-[#fca5a5]">{gameError}</p>
+        <p className="px-4 py-3 text-sm text-[#fca5a5]">{gameError}</p>
       )}
 
       {!isLoadingGame && !selectedGame && (
-        <div className="mt-3 space-y-3">
+        <div className="space-y-3 px-4 py-3">
           <p className="text-sm text-[#a3a3a3]">
             Start or select a Shenanigans game before logging live activity.
           </p>
@@ -227,30 +239,12 @@ export function ShenanigansGameBar({
       )}
 
       {selectedGame && (
-        <div className="mt-3 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold">{selectedGame.name}</h2>
-              <p className="text-xs uppercase tracking-[0.2em] text-[#a3a3a3]">
-                {selectedGame.status || "active"}
-              </p>
-            </div>
-            {selectedGame.status === "active" && (
-              <button
-                type="button"
-                onClick={onEndGame}
-                className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#b91c1c]"
-              >
-                End Game
-              </button>
-            )}
-          </div>
-
+        <div className="grid gap-2 px-4 py-3 sm:grid-cols-[1fr_auto]">
           <select
             value={selectedGameId}
             onChange={(event) => onSwitchGame(event.target.value)}
             aria-label="Switch Shenanigans game"
-            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none focus:border-[#b91c1c]"
+            className="min-w-0 rounded-xl border border-[#242424] bg-black/70 px-3 py-2 text-sm outline-none focus:border-[#b98590]"
           >
             {games.map((game) => (
               <option key={game.id} value={game.id}>
@@ -258,6 +252,18 @@ export function ShenanigansGameBar({
               </option>
             ))}
           </select>
+
+          <div className="flex gap-2">
+            {selectedGame.status === "active" && (
+              <button
+                type="button"
+                onClick={onEndGame}
+                className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#b98590]"
+              >
+                End Game
+              </button>
+            )}
+          </div>
         </div>
       )}
     </section>

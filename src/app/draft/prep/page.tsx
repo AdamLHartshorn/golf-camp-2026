@@ -282,6 +282,13 @@ export default function DraftPrepPage() {
                 Next →
               </button>
             </div>
+
+            <Link
+              href="/draft"
+              className="sticky bottom-4 z-10 block rounded-2xl border border-[#324d70]/60 bg-[#071123]/90 px-5 py-4 text-center text-sm font-black uppercase tracking-[0.14em] text-[#d7dfeb] shadow-[0_18px_46px_rgba(0,0,0,0.45),0_0_30px_rgba(50,77,112,0.14)] backdrop-blur transition hover:border-[#8fb0d8]/70"
+            >
+              Back to Draft
+            </Link>
           </>
         )}
       </div>

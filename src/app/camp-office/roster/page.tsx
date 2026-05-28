@@ -89,7 +89,7 @@ export default function CampRosterPage() {
               Players, rooms, arrivals
             </p>
           </div>
-          <div className="grid grid-cols-[4.25rem_1fr_3rem] border-b border-[#2a2925] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b8b0a1]">
+          <div className="grid grid-cols-[5rem_1fr_3rem] border-b border-[#2a2925] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b8b0a1]">
             <span>ID</span>
             <span>Player</span>
             <span className="text-right">Rank</span>
@@ -117,18 +117,18 @@ export default function CampRosterPage() {
             <Link
               key={player.id}
               href={`/camp-office/roster/${player.id}`}
-              className="grid grid-cols-[4.25rem_1fr_3rem] items-center border-b border-[#2a2925] px-4 py-3.5 transition hover:bg-[#161511] last:border-b-0"
+              className="grid grid-cols-[5rem_1fr_3rem] items-center border-b border-[#2a2925] px-4 py-4 transition hover:bg-[#161511] last:border-b-0"
             >
               {player.photo_url ? (
                 <div
                   aria-label={`${player.display_name} profile`}
-                  className="h-12 w-12 shrink-0 rounded-full border border-[#34312a] bg-cover bg-center"
+                  className="h-14 w-14 shrink-0 rounded-full border border-[#4a453c] bg-cover bg-center shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
                   role="img"
                   style={{ backgroundImage: `url(${player.photo_url})` }}
                 />
               ) : (
                 <PlayerSilhouette
-                  className="h-12 w-12"
+                  className="h-14 w-14 border-[#4a453c] shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
                   label={`${player.display_name} profile placeholder`}
                 />
               )}

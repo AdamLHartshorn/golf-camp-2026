@@ -351,7 +351,13 @@ export default function MoneyRoundSubmitPage() {
 
         {!isLoading && teams.length === 0 && (
           <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
-            No teams have been added to this round yet.
+            <p className="font-semibold text-[#f4f1ea]">
+              No team scorecards are ready yet.
+            </p>
+            <p className="mt-1 leading-5">
+              A commissioner needs to add or import teams before players can
+              submit scores for this round.
+            </p>
           </div>
         )}
 

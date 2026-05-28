@@ -92,6 +92,7 @@ export default function MyProfilePage() {
   const [confirmPin, setConfirmPin] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [emailAddress, setEmailAddress] = useState("");
+  const [yearsServed, setYearsServed] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -131,6 +132,11 @@ export default function MyProfilePage() {
       setPlayer(loadedPlayer);
       setPhoneNumber(loadedPlayer.phone_number || loadedPlayer.phone || "");
       setEmailAddress(loadedPlayer.email_address || loadedPlayer.email || "");
+      setYearsServed(
+        typeof loadedPlayer.years_served === "number"
+          ? String(loadedPlayer.years_served)
+          : "",
+      );
       setIsLoading(false);
     }, 0);
   }, []);
@@ -242,6 +248,67 @@ export default function MyProfilePage() {
         phone_number: updatedPlayer.phone_number,
         email_address: updatedPlayer.email_address,
       },
+    });
+  }
+
+  async function handleSaveCampIdentity() {
+    setMessage("");
+    setError("");
+
+    if (!player) {
+      setError("Login required.");
+      return;
+    }
+
+    const trimmedYearsServed = yearsServed.trim();
+    const parsedYearsServed = trimmedYearsServed
+      ? Number(trimmedYearsServed)
+      : null;
+
+    if (
+      parsedYearsServed !== null &&
+      (!Number.isInteger(parsedYearsServed) || parsedYearsServed < 0)
+    ) {
+      setError("Years Served must be a whole number.");
+      return;
+    }
+
+    setIsSaving(true);
+
+    const { data, error: updateError } = await supabase
+      .from("players")
+      .update({
+        years_served: parsedYearsServed,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", player.id)
+      .select(
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, phone_number, email_address, photo_url, pin_code",
+      )
+      .single();
+
+    setIsSaving(false);
+
+    if (updateError) {
+      setError(updateError.message || "Could not update Years Served.");
+      return;
+    }
+
+    const updatedPlayer = data as ProfilePlayer;
+    setPlayer(updatedPlayer);
+    setYearsServed(
+      typeof updatedPlayer.years_served === "number"
+        ? String(updatedPlayer.years_served)
+        : "",
+    );
+    setMessage("Years Served updated.");
+    await logAuditEvent({
+      actionType: "player_years_served_updated",
+      entityType: "player",
+      entityId: player.id,
+      summary: `${player.display_name} updated Years Served.`,
+      oldValue: { years_served: player.years_served },
+      newValue: { years_served: updatedPlayer.years_served },
     });
   }
 
@@ -468,6 +535,48 @@ export default function MyProfilePage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
+              <h2 className="text-xl font-semibold tracking-[-0.02em]">
+                Camp Identity
+              </h2>
+              <p className="text-sm text-[#a3a3a3]">
+                Keep your roster card current with a little earned seniority.
+              </p>
+
+              <div>
+                <label
+                  htmlFor="profile-years-served"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  Years Served
+                </label>
+                <input
+                  id="profile-years-served"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  value={yearsServed}
+                  onChange={(event) => {
+                    setYearsServed(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="Years Served"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveCampIdentity}
+                disabled={isSaving}
+                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Camp Identity"}
+              </button>
             </section>
 
             <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">

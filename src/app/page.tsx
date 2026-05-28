@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { setPlayerSession } from "@/lib/playerSession";
+import { getPlayerSession, setPlayerSession } from "@/lib/playerSession";
 
 type LoginPlayer = {
   id: string;
@@ -18,11 +18,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loginName, setLoginName] = useState("");
   const [pinCode, setPinCode] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [showFallbackAccess, setShowFallbackAccess] = useState(false);
   const [loginError, setLoginError] = useState("");
   const [fallbackError, setFallbackError] = useState("");
   const router = useRouter();
+
+  useEffect(() => {
+    if (getPlayerSession()) {
+      router.replace("/home");
+    }
+  }, [router]);
 
   function handleEnter(event?: FormEvent<HTMLFormElement>) {
     event?.preventDefault();
@@ -89,12 +96,15 @@ export default function LoginPage() {
       .from("players")
       .update({ last_login_at: new Date().toISOString() })
       .eq("id", player.id);
-    setPlayerSession({
-      id: player.id,
-      display_name: player.display_name,
-      login_name: player.login_name,
-      is_admin: player.is_admin === true,
-    });
+    setPlayerSession(
+      {
+        id: player.id,
+        display_name: player.display_name,
+        login_name: player.login_name,
+        is_admin: player.is_admin === true,
+      },
+      { remember: rememberMe },
+    );
     setIsLoading(false);
     router.push("/home");
   }
@@ -119,52 +129,62 @@ export default function LoginPage() {
         >
           <div className="space-y-4">
             <div>
-            <label
-              htmlFor="login-name"
-              className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
-            >
-              Login Name
-            </label>
-            <input
-              id="login-name"
-              type="text"
-              value={loginName}
-              onChange={(event) => {
-                setLoginName(event.target.value.toLowerCase());
-                setLoginError("");
-                setFallbackError("");
-              }}
-              placeholder="Login Name"
-              autoComplete="username"
-              enterKeyHint="next"
-              className="login-field w-full rounded-xl border px-4 py-4 text-center text-base outline-none"
-            />
+              <label
+                htmlFor="login-name"
+                className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
+              >
+                Login Name
+              </label>
+              <input
+                id="login-name"
+                type="text"
+                value={loginName}
+                onChange={(event) => {
+                  setLoginName(event.target.value.toLowerCase());
+                  setLoginError("");
+                  setFallbackError("");
+                }}
+                placeholder="Login Name"
+                autoComplete="username"
+                enterKeyHint="next"
+                className="login-field w-full rounded-xl border px-4 py-4 text-center text-base outline-none"
+              />
             </div>
 
             <div>
-            <label
-              htmlFor="pin-code"
-              className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
-            >
-              PIN
-            </label>
-            <input
-              id="pin-code"
-              type="text"
-              value={pinCode}
-              onChange={(event) => {
-                setPinCode(event.target.value);
-                setLoginError("");
-                setFallbackError("");
-              }}
-              placeholder="PIN"
-              autoComplete="current-password"
-              inputMode="numeric"
-              enterKeyHint="go"
-              className="login-field w-full rounded-xl border px-4 py-4 text-center text-base tracking-[0.18em] outline-none"
-            />
+              <label
+                htmlFor="pin-code"
+                className="mb-2 block text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#c8bfae]"
+              >
+                PIN
+              </label>
+              <input
+                id="pin-code"
+                type="text"
+                value={pinCode}
+                onChange={(event) => {
+                  setPinCode(event.target.value);
+                  setLoginError("");
+                  setFallbackError("");
+                }}
+                placeholder="PIN"
+                autoComplete="current-password"
+                inputMode="numeric"
+                enterKeyHint="go"
+                className="login-field w-full rounded-xl border px-4 py-4 text-center text-base tracking-[0.18em] outline-none"
+              />
             </div>
           </div>
+
+          <label className="flex items-center justify-center gap-3 rounded-xl border border-[#242424] bg-black/20 px-4 py-3 text-sm font-semibold text-[#c8bfae]">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(event) => setRememberMe(event.target.checked)}
+              className="h-4 w-4 rounded border-[#34312a] accent-[#efe9dc]"
+            />
+            <span>Remember me</span>
+          </label>
 
           {loginError && (
             <p className="text-sm font-semibold text-[#fca5a5]">{loginError}</p>

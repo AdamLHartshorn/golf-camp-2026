@@ -6,15 +6,14 @@ export type PlayerSession = {
 };
 
 const sessionKey = "golfCampPlayerSession";
+const temporarySessionKey = "golfCampPlayerSessionTemporary";
 const sessionEventName = "golfCampPlayerSessionChange";
 
-export function getPlayerSession() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-
-  const rawSession = window.localStorage.getItem(sessionKey);
-
+function parseStoredSession(
+  rawSession: string | null,
+  storage: Storage,
+  key: string,
+) {
   if (!rawSession) {
     return null;
   }
@@ -22,18 +21,54 @@ export function getPlayerSession() {
   try {
     return JSON.parse(rawSession) as PlayerSession;
   } catch {
-    window.localStorage.removeItem(sessionKey);
+    storage.removeItem(key);
     return null;
   }
 }
 
-export function setPlayerSession(session: PlayerSession) {
-  window.localStorage.setItem(sessionKey, JSON.stringify(session));
+export function getPlayerSession() {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const rememberedSession = parseStoredSession(
+    window.localStorage.getItem(sessionKey),
+    window.localStorage,
+    sessionKey,
+  );
+
+  if (rememberedSession) {
+    return rememberedSession;
+  }
+
+  return parseStoredSession(
+    window.sessionStorage.getItem(temporarySessionKey),
+    window.sessionStorage,
+    temporarySessionKey,
+  );
+}
+
+export function setPlayerSession(
+  session: PlayerSession,
+  options: { remember?: boolean } = {},
+) {
+  const shouldRemember = options.remember ?? true;
+  const serializedSession = JSON.stringify(session);
+
+  if (shouldRemember) {
+    window.localStorage.setItem(sessionKey, serializedSession);
+    window.sessionStorage.removeItem(temporarySessionKey);
+  } else {
+    window.sessionStorage.setItem(temporarySessionKey, serializedSession);
+    window.localStorage.removeItem(sessionKey);
+  }
+
   window.dispatchEvent(new Event(sessionEventName));
 }
 
 export function clearPlayerSession() {
   window.localStorage.removeItem(sessionKey);
+  window.sessionStorage.removeItem(temporarySessionKey);
   window.dispatchEvent(new Event(sessionEventName));
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -152,26 +153,18 @@ export default function HomePage() {
     };
   }, []);
 
-  const initials =
-    session?.display_name
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2) || "GC";
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(143,166,106,0.18),transparent_34%),radial-gradient(circle_at_95%_12%,rgba(244,241,234,0.08),transparent_26%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-3">
-        <div className="flex items-center justify-between gap-4 py-3">
-          <div className="min-w-0">
-            <p className="font-mono text-[30px] font-black uppercase leading-[0.9] tracking-[0.12em] text-[#f4f1ea] drop-shadow-[0_0_26px_rgba(244,241,234,0.18)]">
-              GOLF CAMP
-            </p>
-          </div>
-
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#3a372f] bg-[#161511] font-mono text-sm font-black text-[#f4f1ea]">
-            {initials}
-          </div>
+        <div className="flex justify-center py-2">
+          <Image
+            src="/longview-invitational-logo.png"
+            alt="Golf Camp"
+            width={96}
+            height={96}
+            priority
+            className="h-16 w-16 object-contain opacity-95 drop-shadow-[0_16px_34px_rgba(0,0,0,0.42)]"
+          />
         </div>
 
         <CampFeed items={feedItems} isLoading={isLoadingFeed} />
@@ -286,17 +279,30 @@ function CampChatBridge() {
       href="https://groupme.com/join_group/42409831/UEGIef"
       target="_blank"
       rel="noreferrer"
-      className="group grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-4 py-3 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
+      className="group grid grid-cols-[2.35rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-3.5 py-2 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
     >
-      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#4d8fd8]/40 bg-black/35 font-mono text-sm font-black text-[#7bbcff] shadow-[0_0_24px_rgba(0,132,255,0.12)]">
-        GM
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#4d8fd8]/40 bg-black/35 text-[#7bbcff] shadow-[0_0_24px_rgba(0,132,255,0.12)]">
+        <svg
+          aria-hidden="true"
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.9"
+          viewBox="0 0 24 24"
+        >
+          <path d="M6.5 17.5 4 20v-4.5A7.5 7.5 0 0 1 2.5 11C2.5 6.9 6.5 3.5 12 3.5S21.5 6.9 21.5 11 17.5 18.5 12 18.5a12 12 0 0 1-5.5-1Z" />
+          <path d="M8 10.25h8" />
+          <path d="M8 13.25h5.5" />
+        </svg>
       </span>
       <div className="min-w-0">
-        <h2 className="truncate text-sm font-black tracking-tight text-[#f4f1ea]">
-          GroupMe Golf Camp Chat
+        <h2 className="truncate font-mono text-[13px] font-black uppercase tracking-[0.12em] text-[#f4f1ea]">
+          GroupMe Camp Chat
         </h2>
         <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-[0.12em] text-[#7bbcff]">
-          Open the camp group chat
+          Open the golf camp group chat
         </p>
       </div>
       <span className="font-mono text-lg font-black text-[#7bbcff] transition group-hover:translate-x-0.5">
@@ -314,18 +320,18 @@ function CampFeed({
   isLoading: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-[#3a4230] bg-[radial-gradient(circle_at_14%_-18%,rgba(143,166,106,0.16),transparent_42%),linear-gradient(180deg,rgba(143,166,106,0.055),rgba(13,13,11,0)_42%),#0d0d0b] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(143,166,106,0.08),inset_0_1px_0_rgba(244,241,234,0.035)] backdrop-blur">
-      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(143,166,106,0.08),transparent_30%,transparent_72%,rgba(143,166,106,0.035))]" />
-      <div className="relative flex items-center justify-between gap-4 border-b border-[#303325] bg-[linear-gradient(90deg,rgba(143,166,106,0.09),rgba(20,19,15,0.92)_42%,rgba(20,19,15,0.84))] px-4 py-3">
+    <section className="relative overflow-hidden rounded-2xl border border-[#4d232b] bg-[radial-gradient(circle_at_14%_-18%,rgba(106,49,60,0.22),transparent_42%),linear-gradient(180deg,rgba(106,49,60,0.08),rgba(13,13,11,0)_42%),#0d0d0b] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(106,49,60,0.1),inset_0_1px_0_rgba(244,241,234,0.035)] backdrop-blur">
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(106,49,60,0.11),transparent_30%,transparent_72%,rgba(106,49,60,0.05))]" />
+      <div className="relative flex items-center justify-between gap-4 border-b border-[#3a2026] bg-[linear-gradient(90deg,rgba(106,49,60,0.14),rgba(20,19,15,0.92)_42%,rgba(20,19,15,0.84))] px-4 py-2.5">
         <div>
-          <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#c8bfae]">
-            Live Camp Feed
+          <p className="font-mono text-[15px] font-black uppercase tracking-[0.12em] text-[#f4f1ea]">
+            LIVE CAMP FEED
           </p>
         </div>
-        <span className="h-2 w-2 animate-[campFeedPulse_3.4s_ease-in-out_infinite] rounded-full bg-[#8fa66a] shadow-[0_0_18px_rgba(143,166,106,0.42)]" />
+        <span className="h-2 w-2 animate-[campFeedPulse_3.4s_ease-in-out_infinite] rounded-full bg-[#b98590] shadow-[0_0_18px_rgba(185,133,144,0.42)]" />
       </div>
 
-      <div className="camp-feed-scroll relative max-h-[13.25rem] overflow-y-auto overscroll-contain scroll-smooth">
+      <div className="camp-feed-scroll relative max-h-[10.5rem] overflow-y-auto overscroll-contain scroll-smooth">
         {isLoading && (
           <p className="px-4 py-5 text-sm font-semibold text-[#a3a3a3]">
             Loading camp activity...
@@ -385,7 +391,7 @@ function getFeedAccent(source: string | null) {
     case "afternoon rounds":
       return "#d6a84f";
     default:
-      return "#8fa66a";
+      return "#b98590";
   }
 }
 

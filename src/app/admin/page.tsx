@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { CampFeedAdminForm } from "@/app/admin/CampFeedAdminForm";
 
 const sections = [
@@ -8,7 +9,8 @@ const sections = [
     title: "Player Database",
     href: "/admin/players",
     description: "Maintain roster records, photos, ranks, payments, and player lore.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#f4f1ea",
+    tint: "rgba(244,241,234,0.06)",
   },
   {
     number: "02",
@@ -16,7 +18,8 @@ const sections = [
     title: "Draft Control",
     href: "/admin/draft",
     description: "Create draft sessions, set captain order, run picks, and clean up tests.",
-    accent: "border-[#1d4ed8] text-[#60a5fa] hover:border-[#2563eb]",
+    accent: "#324d70",
+    tint: "rgba(50,77,112,0.13)",
   },
   {
     number: "03",
@@ -24,7 +27,8 @@ const sections = [
     title: "Money Rounds Admin",
     href: "/admin/money-rounds",
     description: "Import teams, enter scorecards, preview skins, and finalize payouts.",
-    accent: "border-[#15803d] text-[#16a34a] hover:border-[#16a34a]",
+    accent: "#315f48",
+    tint: "rgba(49,95,72,0.12)",
   },
   {
     number: "04",
@@ -32,7 +36,8 @@ const sections = [
     title: "Night Golf Admin",
     href: "/admin/night-golf",
     description: "Review nightly scores, remove bad entries, and reset test nights.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#f472b6",
+    tint: "rgba(244,114,182,0.11)",
   },
   {
     number: "05",
@@ -40,7 +45,8 @@ const sections = [
     title: "Shenanigans Admin",
     href: "/admin/shenanigans",
     description: "Audit ledger events, manage wagers, and reset chaos data when needed.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#6a313c",
+    tint: "rgba(106,49,60,0.13)",
   },
   {
     number: "06",
@@ -48,7 +54,8 @@ const sections = [
     title: "Afternoon Rounds",
     href: "/admin/afternoon-rounds",
     description: "Review player-owned optional rounds and override when needed.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#d6a84f",
+    tint: "rgba(214,168,79,0.11)",
   },
   {
     number: "07",
@@ -56,7 +63,8 @@ const sections = [
     title: "Camp Feed Admin",
     href: "/admin/camp-feed",
     description: "Post updates and remove stale or incorrect live feed entries.",
-    accent: "border-[#8fa66a] text-[#8fa66a] hover:border-[#a6ba80]",
+    accent: "#b98590",
+    tint: "rgba(106,49,60,0.12)",
   },
   {
     number: "08",
@@ -64,7 +72,8 @@ const sections = [
     title: "Daily Schedule",
     href: "/admin/daily-schedule",
     description: "Maintain the camp itinerary board for Tuesday through Sunday.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#f4f1ea",
+    tint: "rgba(244,241,234,0.06)",
   },
   {
     number: "09",
@@ -72,7 +81,8 @@ const sections = [
     title: "Audit Log",
     href: "/admin/audit-log",
     description: "Review who changed what and when across Golf Camp systems.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#a8a29a",
+    tint: "rgba(168,162,154,0.08)",
   },
   {
     number: "10",
@@ -80,7 +90,8 @@ const sections = [
     title: "System Tools",
     href: "/admin/system",
     description: "Prepare exports, archives, resets, and future camp-year utilities.",
-    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+    accent: "#a8a29a",
+    tint: "rgba(168,162,154,0.08)",
   },
 ];
 
@@ -161,7 +172,19 @@ export default function AdminPage() {
             <Link
               key={section.href}
               href={section.href}
-              className={`grid grid-cols-[3.5rem_1fr_2.5rem] border-b border-[#242420] bg-[#0d0d0b] px-4 py-4 transition hover:bg-[#15150f] last:border-b-0 ${section.accent}`}
+              className="group grid grid-cols-[3.5rem_1fr_2.5rem] border-b border-[#242420] bg-[linear-gradient(90deg,var(--admin-tint),rgba(13,13,11,0.96)_36%,rgba(13,13,11,0.92))] px-4 py-4 shadow-[inset_1px_0_0_var(--admin-edge)] transition hover:bg-[linear-gradient(90deg,var(--admin-tint-strong),rgba(21,21,18,0.98)_36%,rgba(21,21,18,0.94))] last:border-b-0"
+              style={
+                {
+                  "--admin-tint": section.tint,
+                  "--admin-tint-strong": section.tint
+                    .replace("0.06", "0.1")
+                    .replace("0.08", "0.12")
+                    .replace("0.11", "0.16")
+                    .replace("0.12", "0.17")
+                    .replace("0.13", "0.18"),
+                  "--admin-edge": `${section.accent}35`,
+                } as CSSProperties
+              }
             >
               <span className="pt-1 font-mono text-sm font-bold text-[#a8a29a]">
                 {section.number}
@@ -169,10 +192,13 @@ export default function AdminPage() {
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                  <h2 className="text-xl font-black">
+                  <h2 className="text-xl font-black text-[#f5f5f5]">
                     {section.title}
                   </h2>
-                  <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#a3a3a3]">
+                  <p
+                    className="font-mono text-[10px] font-black uppercase tracking-[0.16em]"
+                    style={{ color: section.accent }}
+                  >
                     {section.label}
                   </p>
                 </div>
@@ -182,7 +208,12 @@ export default function AdminPage() {
                 </p>
               </div>
 
-              <span className="self-center text-right font-mono text-xl font-black">→</span>
+              <span
+                className="self-center text-right font-mono text-xl font-black transition group-hover:translate-x-0.5"
+                style={{ color: section.accent }}
+              >
+                →
+              </span>
             </Link>
           ))}
         </div>

@@ -202,9 +202,15 @@ export default function MoneyRoundDetailPage() {
               </p>
               <div className="mt-4 space-y-3">
                 {!hasScores && (
-                  <p className="rounded-xl border border-[#242424] bg-black p-4 text-sm text-[#a3a3a3]">
-                    This round does not have scores entered yet.
-                  </p>
+                  <div className="rounded-xl border border-[#242424] bg-black p-4">
+                    <p className="font-semibold text-[#f4f1ea]">
+                      Waiting on the first scorecard.
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-[#a3a3a3]">
+                      Submitted team scores will appear here immediately as
+                      unofficial standings until the commissioner verifies them.
+                    </p>
+                  </div>
                 )}
                 {hasScores &&
                   standings.map((standing) => (
@@ -245,7 +251,14 @@ export default function MoneyRoundDetailPage() {
               </div>
               {teams.length === 0 && (
                 <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
-                  No teams have been added to this round yet.
+                  <p className="font-semibold text-[#f4f1ea]">
+                    No teams have been added yet.
+                  </p>
+                  <p className="mt-1 leading-5">
+                    Once teams are imported from the draft or created manually,
+                    this page will show scorecards, standings, skins, and the
+                    round bank.
+                  </p>
                 </div>
               )}
               {teams.map((team) => {
@@ -338,7 +351,17 @@ export default function MoneyRoundDetailPage() {
               </p>
               <h2 className="mt-2 text-xl font-bold">Hole Winners</h2>
               <div className="mt-4 space-y-2 text-sm text-[#a3a3a3]">
-                {skins.length === 0 && <p>No skins won yet.</p>}
+                {skins.length === 0 && (
+                  <div className="rounded-xl border border-[#242424] bg-black p-4">
+                    <p className="font-semibold text-[#f4f1ea]">
+                      No skins awarded yet.
+                    </p>
+                    <p className="mt-1 leading-5">
+                      Skins calculate after every team has a valid score for a
+                      hole. Tied low scores produce no skin.
+                    </p>
+                  </div>
+                )}
                 {skins.map((skin) => {
                   const metadata = scorecardByHole.get(skin.hole);
 
@@ -363,7 +386,8 @@ export default function MoneyRoundDetailPage() {
               <div className="mt-4 space-y-3 text-sm">
                 {bankRows.length === 0 && (
                   <p className="rounded-xl border border-[#242424] bg-black p-4 text-[#a3a3a3]">
-                    No Money Rounds bank activity yet.
+                    No bank activity yet. Player payouts will calculate once
+                    teams and scorecards are available.
                   </p>
                 )}
                 {bankRows.map((row) => (

@@ -195,13 +195,26 @@ export default function MoneyRoundsPage() {
           )}
 
           {!isLoading && !error && rounds.length === 0 && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+            <div className="rounded-2xl border border-[#315f48]/45 bg-[#0d0d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.3)]">
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
                 No Rounds Yet
               </p>
-              <h2 className="mt-2 text-2xl font-bold">Coming Soon</h2>
+              <h2 className="mt-2 text-2xl font-bold">Waiting on the first card.</h2>
               <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
-                Money Rounds will appear here when a commissioner creates them.
+                Once a commissioner creates the morning round, this becomes the
+                live scoring hub for teams, skins, and the bank.
+              </p>
+            </div>
+          )}
+
+          {!isLoading && !error && rounds.length > 0 && !activeRound && (
+            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
+                No Active Round
+              </p>
+              <h2 className="mt-2 text-2xl font-bold">Nothing live right now.</h2>
+              <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
+                Scored and finalized rounds are available below in Recent Rounds.
               </p>
             </div>
           )}
@@ -265,11 +278,18 @@ export default function MoneyRoundsPage() {
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-2 text-sm text-[#a3a3a3]">
-                    No scores submitted yet.
-                  </p>
+                  <div className="rounded-xl border border-[#242424] bg-black/35 p-4">
+                    <p className="font-semibold text-[#f4f1ea]">
+                      No scores submitted yet.
+                    </p>
+                    <p className="mt-1 text-sm leading-5 text-[#a3a3a3]">
+                      Teams can enter scorecards as soon as play is underway.
+                      Standings will update here immediately as unofficial.
+                    </p>
+                  </div>
                 )}
 
+                {activeCalculation?.standings.length ? (
                 <div className="mt-4 overflow-hidden rounded-xl border border-[#2a2925] bg-black/35">
                   <div className="grid grid-cols-[2.5rem_1fr_4.5rem] bg-[#0f1f16] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#8ee6a7]">
                     <span>Pos</span>
@@ -296,6 +316,7 @@ export default function MoneyRoundsPage() {
                   </div>
                   ))}
                 </div>
+                ) : null}
               </div>
 
               <div className="border-t border-[#2a2925] px-5 py-4">
@@ -337,9 +358,15 @@ export default function MoneyRoundsPage() {
 
           <div>
             {!isLoading && !error && recentRounds.length === 0 && (
-              <p className="p-5 text-sm text-[#a3a3a3]">
-                No scored or final rounds yet.
-              </p>
+              <div className="p-5">
+                <p className="font-semibold text-[#f4f1ea]">
+                  No completed Money Rounds yet.
+                </p>
+                <p className="mt-1 text-sm leading-5 text-[#a3a3a3]">
+                  Once a round is marked scored or final, it will live here with
+                  results and presentation access.
+                </p>
+              </div>
             )}
 
             {!isLoading &&
@@ -406,11 +433,17 @@ export default function MoneyRoundsPage() {
 
           <div className="text-sm">
             {!isLoading && bankPreviewRows.length === 0 && (
-              <p className="p-5 text-[#a3a3a3]">
-                {hasScoredRounds
-                  ? "No Money Rounds bank activity yet."
-                  : "No finalized/scored Money Rounds yet."}
-              </p>
+              <div className="p-5">
+                <p className="font-semibold text-[#f4f1ea]">
+                  {hasScoredRounds
+                    ? "No bank rows calculated yet."
+                    : "No yearly bank activity yet."}
+                </p>
+                <p className="mt-1 text-sm leading-5 text-[#a3a3a3]">
+                  Finalized/scored rounds with teams and scorecards will build
+                  the yearly Money Rounds Bank automatically.
+                </p>
+              </div>
             )}
 
             {bankPreviewRows.map((row, index) => (
