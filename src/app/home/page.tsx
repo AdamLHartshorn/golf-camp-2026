@@ -205,8 +205,8 @@ export default function HomePage() {
               </div>
 
               <div className="min-w-0">
-                <h2 className="truncate text-base font-black tracking-tight text-[#f4f1ea]">
-                  {module.name}
+                <h2 className="truncate font-mono text-[15px] font-black uppercase tracking-[0.12em] text-[#f4f1ea]">
+                  {module.name.toUpperCase()}
                 </h2>
                 <p className="mt-0.5 truncate text-xs font-semibold text-[#b8b0a1]">
                   {module.comingSoon ? "Coming Soon • " : ""}
@@ -231,7 +231,7 @@ export default function HomePage() {
                 <GolfCampIcon name="admin" className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <h2 className="text-base font-black tracking-tight text-[#f5f5f5]">
+                <h2 className="font-mono text-[15px] font-black uppercase tracking-[0.12em] text-[#f5f5f5]">
                   Admin
                 </h2>
                 <p className="mt-1 truncate text-xs font-bold uppercase tracking-[0.12em] text-[#8fa66a]">
