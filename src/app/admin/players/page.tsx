@@ -30,6 +30,8 @@ type PlayerRow = {
   arrival: string | null;
   phone: string | null;
   email: string | null;
+  phone_number: string | null;
+  email_address: string | null;
   photo_url: string | null;
   login_name: string | null;
   pin_code: string | null;
@@ -57,6 +59,8 @@ type PlayerFormState = {
   arrival: string;
   phone: string;
   email: string;
+  phone_number: string;
+  email_address: string;
   photo_url: string;
   login_name: string;
   pin_code: string;
@@ -85,6 +89,8 @@ const emptyForm: PlayerFormState = {
   arrival: "",
   phone: "",
   email: "",
+  phone_number: "",
+  email_address: "",
   photo_url: "",
   login_name: "",
   pin_code: "",
@@ -121,6 +127,8 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     arrival: player.arrival || "",
     phone: player.phone || "",
     email: player.email || "",
+    phone_number: player.phone_number || "",
+    email_address: player.email_address || "",
     photo_url: player.photo_url || "",
     login_name: player.login_name || "",
     pin_code: player.pin_code || "",
@@ -167,6 +175,8 @@ function formToPayload(form: PlayerFormState) {
     arrival: form.arrival.trim() || null,
     phone: form.phone.trim() || null,
     email: form.email.trim() || null,
+    phone_number: form.phone_number.trim() || null,
+    email_address: form.email_address.trim() || null,
     photo_url: form.photo_url.trim() || null,
     login_name: form.login_name.trim().toLowerCase() || null,
     pin_code: form.pin_code.trim() || null,
@@ -258,7 +268,9 @@ export default function PlayersAdminPage() {
           player.arrival,
           player.login_name,
           player.email,
+          player.email_address,
           player.phone,
+          player.phone_number,
         ]
           .filter(Boolean)
           .join(" ")
@@ -648,6 +660,11 @@ export default function PlayersAdminPage() {
                 Login {player.login_name || "-"}
               </span>
 
+              <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
+                Contact{" "}
+                {player.phone_number || player.email_address ? "Set" : "Open"}
+              </span>
+
               {player.is_admin && (
                 <span className="rounded-full border border-[#f5f5f5] px-2 py-1 text-[#f5f5f5]">
                   Admin
@@ -856,7 +873,7 @@ export default function PlayersAdminPage() {
             type="tel"
             value={form.phone}
             onChange={(event) => updateForm("phone", event.target.value)}
-            placeholder="Phone"
+            placeholder="Legacy Phone"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
 
@@ -864,9 +881,34 @@ export default function PlayersAdminPage() {
             type="email"
             value={form.email}
             onChange={(event) => updateForm("email", event.target.value)}
-            placeholder="Email"
+            placeholder="Legacy Email"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <input
+              type="tel"
+              value={form.phone_number}
+              onChange={(event) => updateForm("phone_number", event.target.value)}
+              placeholder="Phone Number"
+              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+
+            <input
+              type="email"
+              value={form.email_address}
+              onChange={(event) =>
+                updateForm("email_address", event.target.value)
+              }
+              placeholder="Email Address"
+              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+          </div>
+
+          <p className="text-xs leading-5 text-[#737373]">
+            Phone Number and Email Address are the player-editable contact
+            fields used for downloadable roster contacts.
+          </p>
 
           <div className="border-t border-[#242424] pt-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">

@@ -25,6 +25,8 @@ type ProfilePlayer = {
   arrival: string | null;
   phone: string | null;
   email: string | null;
+  phone_number: string | null;
+  email_address: string | null;
   photo_url: string | null;
   pin_code: string | null;
 };
@@ -87,6 +89,8 @@ export default function MyProfilePage() {
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [emailAddress, setEmailAddress] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -111,7 +115,7 @@ export default function MyProfilePage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
+          "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, phone_number, email_address, photo_url, pin_code",
         )
         .eq("id", nextSession.id)
         .single();
@@ -122,7 +126,10 @@ export default function MyProfilePage() {
         return;
       }
 
-      setPlayer(data as ProfilePlayer);
+      const loadedPlayer = data as ProfilePlayer;
+      setPlayer(loadedPlayer);
+      setPhoneNumber(loadedPlayer.phone_number || loadedPlayer.phone || "");
+      setEmailAddress(loadedPlayer.email_address || loadedPlayer.email || "");
       setIsLoading(false);
     }, 0);
   }, []);
@@ -161,7 +168,7 @@ export default function MyProfilePage() {
       })
       .eq("id", player.id)
       .select(
-        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, phone_number, email_address, photo_url, pin_code",
       )
       .single();
 
@@ -177,6 +184,44 @@ export default function MyProfilePage() {
     setNewPin("");
     setConfirmPin("");
     setMessage("PIN updated.");
+  }
+
+  async function handleSaveContactInfo() {
+    setMessage("");
+    setError("");
+
+    if (!player) {
+      setError("Login required.");
+      return;
+    }
+
+    setIsSaving(true);
+
+    const { data, error: updateError } = await supabase
+      .from("players")
+      .update({
+        phone_number: phoneNumber.trim() || null,
+        email_address: emailAddress.trim() || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", player.id)
+      .select(
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, phone_number, email_address, photo_url, pin_code",
+      )
+      .single();
+
+    setIsSaving(false);
+
+    if (updateError) {
+      setError(updateError.message || "Could not update contact info.");
+      return;
+    }
+
+    const updatedPlayer = data as ProfilePlayer;
+    setPlayer(updatedPlayer);
+    setPhoneNumber(updatedPlayer.phone_number || "");
+    setEmailAddress(updatedPlayer.email_address || "");
+    setMessage("Contact info updated.");
   }
 
   function resetCropper() {
@@ -286,7 +331,7 @@ export default function MyProfilePage() {
       })
       .eq("id", player.id)
       .select(
-        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, photo_url, pin_code",
+        "id, display_name, nickname, rank, display_rank, internal_rank_order, years_served, room, arrival, phone, email, phone_number, email_address, photo_url, pin_code",
       )
       .single();
 
@@ -381,8 +426,8 @@ export default function MyProfilePage() {
                   ],
                   ["Room", player.room || "-"],
                   ["Arrival", player.arrival || "TBD"],
-                  ["Phone", player.phone || "-"],
-                  ["Email", player.email || "-"],
+                  ["Phone", player.phone_number || player.phone || "-"],
+                  ["Email", player.email_address || player.email || "-"],
                 ].map(([label, value]) => (
                   <div
                     key={label}
@@ -395,6 +440,67 @@ export default function MyProfilePage() {
                   </div>
                 ))}
               </div>
+            </section>
+
+            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
+              <h2 className="text-xl font-semibold tracking-[-0.02em]">
+                Contact Info
+              </h2>
+              <p className="text-sm text-[#a3a3a3]">
+                Optional. This powers your downloadable contact card in the Camp
+                Roster.
+              </p>
+
+              <div>
+                <label
+                  htmlFor="profile-phone-number"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  Phone Number
+                </label>
+                <input
+                  id="profile-phone-number"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(event) => {
+                    setPhoneNumber(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="Phone Number"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="profile-email-address"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]"
+                >
+                  Email Address
+                </label>
+                <input
+                  id="profile-email-address"
+                  type="email"
+                  value={emailAddress}
+                  onChange={(event) => {
+                    setEmailAddress(event.target.value);
+                    setMessage("");
+                    setError("");
+                  }}
+                  placeholder="Email Address"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSaveContactInfo}
+                disabled={isSaving}
+                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSaving ? "Saving..." : "Save Contact Info"}
+              </button>
             </section>
 
             <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
