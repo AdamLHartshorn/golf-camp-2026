@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import {
   CompactPlayerMultiSelect,
@@ -228,6 +229,14 @@ export default function ShenanigansWagersPage() {
       setPoints("3");
       setSelectedPlayers([]);
       setMessage("Wager created.");
+      await logAuditEvent({
+        actionType: "shenanigans_wager_created",
+        entityType: "shenanigans_wager",
+        entityId: Array.isArray(data) ? data[0]?.id || null : null,
+        summary: `Shenanigans wager created: ${trimmedDescription}.`,
+        newValue: Array.isArray(data) ? data[0] : payload,
+        metadata: { game_id: selectedGameId },
+      });
       await fetchWagers();
     } catch (createError) {
       console.error("shenanigans_wagers insert failed:", createError);
@@ -339,6 +348,15 @@ export default function ShenanigansWagersPage() {
         sourceId: wager.id,
         linkUrl: "/shenanigans/wagers",
         message: `Shenanigans wager settled: ${winnerName} wins ${wager.points} pts.`,
+      });
+      await logAuditEvent({
+        actionType: "shenanigans_wager_settled",
+        entityType: "shenanigans_wager",
+        entityId: wager.id,
+        summary: `Shenanigans wager settled: ${winnerName} won ${wager.description}.`,
+        oldValue: wager,
+        newValue: updateData?.[0] || updatePayload,
+        metadata: { game_id: wager.game_id, ledger_events: eventData },
       });
       await fetchWagers();
     } catch (settleError) {

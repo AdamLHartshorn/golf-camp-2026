@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import {
   CompactPlayerSelect,
@@ -231,6 +232,14 @@ export default function ShenanigansSideGamesPage() {
         sourceId: createdEventId || null,
         linkUrl: "/shenanigans/side-games",
         message: `Shenanigans: ${selectedPlayer} wins ${selectedType}.`,
+      });
+      await logAuditEvent({
+        actionType: "shenanigans_ledger_event_created",
+        entityType: "shenanigans_event",
+        entityId: createdEventId || null,
+        summary: `${selectedPlayer} logged a ${selectedType} side game.`,
+        newValue: Array.isArray(data) ? data[0] : payload,
+        metadata: { game_id: selectedGameId },
       });
       setSelectedPoints(null);
       setDescription("");

@@ -165,7 +165,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between gap-4 py-3">
           <div className="min-w-0">
             <p className="font-mono text-[30px] font-black uppercase leading-[0.9] tracking-[0.12em] text-[#f4f1ea] drop-shadow-[0_0_26px_rgba(244,241,234,0.18)]">
-              GOLF CAMP 2026
+              GOLF CAMP
             </p>
           </div>
 
@@ -175,6 +175,8 @@ export default function HomePage() {
         </div>
 
         <CampFeed items={feedItems} isLoading={isLoadingFeed} />
+
+        <CampChatBridge />
 
         <section className="overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_55px_rgba(143,166,106,0.08)] backdrop-blur">
           {modules.map((module) => (
@@ -275,6 +277,32 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+function CampChatBridge() {
+  return (
+    <a
+      href="https://groupme.com/join_group/424908312/UEGlef"
+      target="_blank"
+      rel="noreferrer"
+      className="group grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-4 py-3 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
+    >
+      <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#4d8fd8]/40 bg-black/35 font-mono text-sm font-black text-[#7bbcff] shadow-[0_0_24px_rgba(0,132,255,0.12)]">
+        GM
+      </span>
+      <div className="min-w-0">
+        <h2 className="truncate text-sm font-black tracking-tight text-[#f4f1ea]">
+          GroupMe Golf Camp Chat
+        </h2>
+        <p className="mt-0.5 truncate text-[11px] font-bold uppercase tracking-[0.12em] text-[#7bbcff]">
+          Open the camp group chat
+        </p>
+      </div>
+      <span className="font-mono text-lg font-black text-[#7bbcff] transition group-hover:translate-x-0.5">
+        ↗
+      </span>
+    </a>
   );
 }
 

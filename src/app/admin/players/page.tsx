@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { displayRanks } from "@/lib/playerRanks";
 
@@ -446,6 +447,13 @@ export default function PlayersAdminPage() {
       ),
     );
     setMessage("Player photo uploaded.");
+    await logAuditEvent({
+      actionType: "admin_player_photo_updated",
+      entityType: "player",
+      entityId: editingId,
+      summary: `Admin updated ${form.display_name || "player"} photo.`,
+      newValue: { photo_url: photoUrl },
+    });
   }
 
   async function handleSave() {
@@ -544,6 +552,14 @@ export default function PlayersAdminPage() {
       );
       resetForm({ preserveFeedback: true });
       setMessage("Player updated.");
+      await logAuditEvent({
+        actionType: "admin_player_updated",
+        entityType: "player",
+        entityId: editingId,
+        summary: `Admin updated ${payload.display_name}.`,
+        oldValue: players.find((player) => player.id === editingId) || null,
+        newValue: data,
+      });
       return;
     }
 
@@ -569,6 +585,13 @@ export default function PlayersAdminPage() {
     setPlayers((currentPlayers) => [...currentPlayers, data as PlayerRow]);
     resetForm({ preserveFeedback: true });
     setMessage("Player created.");
+    await logAuditEvent({
+      actionType: "admin_player_created",
+      entityType: "player",
+      entityId: (data as PlayerRow).id,
+      summary: `Admin created player ${payload.display_name}.`,
+      newValue: data,
+    });
   }
 
   async function handleToggleActive(player: PlayerRow) {
@@ -599,6 +622,18 @@ export default function PlayersAdminPage() {
     }
 
     setMessage(nextActive ? "Player activated." : "Player deactivated.");
+    await logAuditEvent({
+      actionType: nextActive
+        ? "admin_player_reactivated"
+        : "admin_player_deactivated",
+      entityType: "player",
+      entityId: player.id,
+      summary: nextActive
+        ? `Admin reactivated ${player.display_name}.`
+        : `Admin deactivated ${player.display_name}.`,
+      oldValue: { active: player.active },
+      newValue: { active: nextActive },
+    });
     setIsLoading(true);
     await fetchPlayers();
   }

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
 import { useActivePlayers } from "@/lib/useActivePlayers";
@@ -162,6 +163,13 @@ export default function ShenanigansPage() {
       sourceId: gameId,
       linkUrl: "/shenanigans",
       message: `Shenanigans game started: ${trimmedName}.`,
+    });
+    await logAuditEvent({
+      actionType: "shenanigans_game_created",
+      entityType: "shenanigans_game",
+      entityId: gameId,
+      summary: `Shenanigans game created: ${trimmedName}.`,
+      newValue: { game: gameData, players: playerRows },
     });
     await refreshGameState();
     await switchGame(gameId);

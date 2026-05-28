@@ -46,8 +46,8 @@ const sections = [
     number: "06",
     label: "Afternoon Rounds",
     title: "Afternoon Rounds",
-    href: "/afternoon-rounds",
-    description: "View player-created optional rounds, participants, and team groups.",
+    href: "/admin/afternoon-rounds",
+    description: "Review player-owned optional rounds and override when needed.",
     accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
   },
   {
@@ -60,6 +60,22 @@ const sections = [
   },
   {
     number: "08",
+    label: "Schedule",
+    title: "Daily Schedule",
+    href: "/admin/daily-schedule",
+    description: "Maintain the camp itinerary board for Tuesday through Sunday.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+  },
+  {
+    number: "09",
+    label: "Audit",
+    title: "Audit Log",
+    href: "/admin/audit-log",
+    description: "Review who changed what and when across Golf Camp systems.",
+    accent: "border-[#3a3a3a] text-[#f5f5f5] hover:border-[#f5f5f5]",
+  },
+  {
+    number: "10",
     label: "System",
     title: "System Tools",
     href: "/admin/system",

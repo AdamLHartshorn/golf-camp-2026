@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { CampFeedAdminForm } from "@/app/admin/CampFeedAdminForm";
 
@@ -107,6 +108,13 @@ export default function AdminCampFeedPage() {
       currentItems.filter((currentItem) => currentItem.id !== item.id),
     );
     setMessage("Feed item deleted.");
+    await logAuditEvent({
+      actionType: "camp_feed_post_deleted",
+      entityType: "activity_feed",
+      entityId: item.id,
+      summary: `Admin deleted LIVE CAMP FEED item: ${item.message.slice(0, 80)}`,
+      oldValue: item,
+    });
   }
 
   return (

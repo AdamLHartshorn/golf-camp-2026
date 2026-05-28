@@ -4,6 +4,7 @@ import Cropper, { Area, Point } from "react-easy-crop";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
@@ -184,6 +185,12 @@ export default function MyProfilePage() {
     setNewPin("");
     setConfirmPin("");
     setMessage("PIN updated.");
+    await logAuditEvent({
+      actionType: "player_pin_changed",
+      entityType: "player",
+      entityId: player.id,
+      summary: `${player.display_name} changed their PIN.`,
+    });
   }
 
   async function handleSaveContactInfo() {
@@ -222,6 +229,20 @@ export default function MyProfilePage() {
     setPhoneNumber(updatedPlayer.phone_number || "");
     setEmailAddress(updatedPlayer.email_address || "");
     setMessage("Contact info updated.");
+    await logAuditEvent({
+      actionType: "player_contact_updated",
+      entityType: "player",
+      entityId: player.id,
+      summary: `${player.display_name} updated contact information.`,
+      oldValue: {
+        phone_number: player.phone_number,
+        email_address: player.email_address,
+      },
+      newValue: {
+        phone_number: updatedPlayer.phone_number,
+        email_address: updatedPlayer.email_address,
+      },
+    });
   }
 
   function resetCropper() {
@@ -352,6 +373,13 @@ export default function MyProfilePage() {
     setPlayer(data as ProfilePlayer);
     resetCropper();
     setMessage("Profile picture updated.");
+    await logAuditEvent({
+      actionType: "player_photo_updated",
+      entityType: "player",
+      entityId: player.id,
+      summary: `${player.display_name} updated profile photo.`,
+      newValue: { photo_url: photoUrl },
+    });
   }
 
   return (

@@ -16,6 +16,13 @@ const cards = [
     href: "/camp-office/rooms",
     label: "Rooms • Groups • Timing",
   },
+  {
+    icon: "ledger",
+    initial: "S",
+    name: "Daily Schedule",
+    href: "/camp-office/schedule",
+    label: "Itinerary • Meals • Events",
+  },
 ] satisfies {
   icon: GolfCampIconName;
   initial: string;

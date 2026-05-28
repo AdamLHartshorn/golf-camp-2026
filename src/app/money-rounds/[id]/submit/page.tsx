@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import {
   formatScoreToCompletedPar,
@@ -247,6 +248,16 @@ export default function MoneyRoundSubmitPage() {
         total,
         draftedScoresByHole,
       )} in ${round.name}.`,
+    });
+    await logAuditEvent({
+      actionType: "money_round_score_submitted",
+      entityType: "money_round_team",
+      entityId: selectedTeam.id,
+      summary: `${selectedTeam.name} submitted scores for ${round.name}.`,
+      metadata: {
+        money_round_id: round.id,
+        score_to_par: formatScoreToCompletedPar(total, draftedScoresByHole),
+      },
     });
 
     await fetchRound();

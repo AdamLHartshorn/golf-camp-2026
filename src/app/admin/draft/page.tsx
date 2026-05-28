@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import {
   comparePlayersForDraft,
@@ -307,6 +308,13 @@ export default function AdminDraftPage() {
       .eq("id", session.id);
 
     setMessage("Draft session created.");
+    await logAuditEvent({
+      actionType: "draft_session_created",
+      entityType: "draft_session",
+      entityId: session.id,
+      summary: `Draft session created: ${session.name}.`,
+      newValue: { session, teams: createdTeams },
+    });
     setSelectedSessionId(session.id);
     await fetchSessions();
     await fetchDraftState(session.id);
@@ -438,6 +446,14 @@ export default function AdminDraftPage() {
     await persistDraftOrder(nextTeams);
     setManualCaptainPlayerId("");
     setMessage(`${captain.display_name} added as captain.`);
+    await logAuditEvent({
+      actionType: "draft_captain_team_added",
+      entityType: "draft_team",
+      entityId: newTeam.id,
+      summary: `${captain.display_name} added as draft captain.`,
+      newValue: newTeam,
+      metadata: { draft_session_id: selectedSession.id },
+    });
   }
 
   async function handleRemoveCaptainTeam(team: DraftTeam) {
@@ -467,6 +483,14 @@ export default function AdminDraftPage() {
     const nextTeams = orderedTeams.filter((item) => item.id !== team.id);
     await persistDraftOrder(nextTeams);
     setMessage(`${team.name} removed.`);
+    await logAuditEvent({
+      actionType: "draft_captain_team_removed",
+      entityType: "draft_team",
+      entityId: team.id,
+      summary: `${team.name} removed from draft captains.`,
+      oldValue: team,
+      metadata: { draft_session_id: selectedSession.id },
+    });
   }
 
   async function handleChangeCaptain(team: DraftTeam, nextCaptainId: string) {
@@ -526,6 +550,21 @@ export default function AdminDraftPage() {
     }
 
     setMessage(`${team.name} captain updated.`);
+    await logAuditEvent({
+      actionType: "draft_captain_changed",
+      entityType: "draft_team",
+      entityId: team.id,
+      summary: `${team.name} captain changed to ${nextCaptain.display_name}.`,
+      oldValue: {
+        captain_player_id: team.captain_player_id,
+        name: team.name,
+      },
+      newValue: {
+        captain_player_id: nextCaptain.id,
+        name: nextTeamName,
+      },
+      metadata: { draft_session_id: selectedSession.id },
+    });
     await fetchDraftState(selectedSession.id);
   }
 
@@ -562,6 +601,15 @@ export default function AdminDraftPage() {
         ? "Team name updated."
         : `Team name updated to ${safeTeamName}.`,
     );
+    await logAuditEvent({
+      actionType: "draft_team_renamed",
+      entityType: "draft_team",
+      entityId: team.id,
+      summary: `${team.name} renamed to ${safeTeamName}.`,
+      oldValue: { name: team.name },
+      newValue: { name: safeTeamName },
+      metadata: { draft_session_id: selectedSession.id },
+    });
     await fetchDraftState(selectedSession.id);
   }
 
@@ -598,6 +646,13 @@ export default function AdminDraftPage() {
       sourceId: selectedSession.id,
       linkUrl: "/draft/live",
       message: `${selectedSession.name} started.`,
+    });
+    await logAuditEvent({
+      actionType: "draft_started",
+      entityType: "draft_session",
+      entityId: selectedSession.id,
+      summary: `${selectedSession.name} started.`,
+      metadata: { team_count: orderedTeams.length },
     });
     await fetchDraftState(selectedSession.id);
   }
@@ -645,6 +700,18 @@ export default function AdminDraftPage() {
       .eq("id", selectedSession.id);
 
     setMessage(`${player.display_name} drafted by ${currentTeam.name}.`);
+    await logAuditEvent({
+      actionType: "draft_pick_made",
+      entityType: "draft_pick",
+      summary: `${currentTeam.name} drafted ${player.display_name}.`,
+      newValue: {
+        draft_session_id: selectedSession.id,
+        draft_team_id: currentTeam.id,
+        player_id: player.id,
+        pick_number: nextPickNumber,
+        round_number: roundNumber,
+      },
+    });
     if (remainingAfterPick <= 0) {
       await logActivityFeedItem({
         type: "draft_completed",
@@ -652,6 +719,12 @@ export default function AdminDraftPage() {
         sourceId: selectedSession.id,
         linkUrl: "/draft/live",
         message: `${selectedSession.name} completed.`,
+      });
+      await logAuditEvent({
+        actionType: "draft_completed",
+        entityType: "draft_session",
+        entityId: selectedSession.id,
+        summary: `${selectedSession.name} completed.`,
       });
     }
     await fetchDraftState(selectedSession.id);
@@ -689,6 +762,13 @@ export default function AdminDraftPage() {
       .eq("id", selectedSession.id);
 
     setMessage("Last pick undone.");
+    await logAuditEvent({
+      actionType: "draft_pick_undone",
+      entityType: "draft_pick",
+      entityId: lastPick.id,
+      summary: `Last draft pick undone in ${selectedSession.name}.`,
+      oldValue: lastPick,
+    });
     await fetchDraftState(selectedSession.id);
   }
 

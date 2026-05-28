@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 
 type ShenanigansEvent = {
@@ -261,6 +262,20 @@ export default function ShenanigansAdminPage() {
     }
 
     setMessage(status === "ended" ? "Game ended." : "Game reactivated.");
+    await logAuditEvent({
+      actionType:
+        status === "ended"
+          ? "shenanigans_game_ended"
+          : "shenanigans_game_reactivated",
+      entityType: "shenanigans_game",
+      entityId: game.id,
+      summary:
+        status === "ended"
+          ? `Shenanigans game ended: ${game.name}.`
+          : `Shenanigans game reactivated: ${game.name}.`,
+      oldValue: game,
+      newValue: data?.[0] || payload,
+    });
     await fetchGames();
   }
 
@@ -328,6 +343,13 @@ export default function ShenanigansAdminPage() {
 
     await deleteShenanigansFeedItems([event.id]);
     setMessage("Ledger event deleted.");
+    await logAuditEvent({
+      actionType: "shenanigans_ledger_event_deleted",
+      entityType: "shenanigans_event",
+      entityId: event.id,
+      summary: `Deleted Shenanigans ledger event for ${event.player_name}.`,
+      oldValue: event,
+    });
     await fetchEvents();
   }
 
@@ -384,6 +406,13 @@ export default function ShenanigansAdminPage() {
 
     await deleteShenanigansFeedItems([wager.id]);
     setMessage("Wager deleted.");
+    await logAuditEvent({
+      actionType: "shenanigans_wager_deleted",
+      entityType: "shenanigans_wager",
+      entityId: wager.id,
+      summary: `Deleted Shenanigans wager: ${wager.description}.`,
+      oldValue: wager,
+    });
     await fetchWagers();
   }
 

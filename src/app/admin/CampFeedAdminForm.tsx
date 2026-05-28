@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { logAuditEvent } from "@/lib/auditLog";
 import { getPlayerSession } from "@/lib/playerSession";
 import { supabase } from "@/lib/supabase";
 
@@ -35,13 +36,17 @@ export function CampFeedAdminForm() {
     setIsPosting(true);
     const session = getPlayerSession();
 
-    const { error: insertError } = await supabase.from("activity_feed").insert({
-      type: "admin",
-      source: trimmedSource,
-      message: trimmedMessage,
-      created_by_player_id: session?.id || null,
-      created_at: new Date().toISOString(),
-    });
+    const { data, error: insertError } = await supabase
+      .from("activity_feed")
+      .insert({
+        type: "admin",
+        source: trimmedSource,
+        message: trimmedMessage,
+        created_by_player_id: session?.id || null,
+        created_at: new Date().toISOString(),
+      })
+      .select("*")
+      .single();
 
     setIsPosting(false);
 
@@ -53,6 +58,13 @@ export function CampFeedAdminForm() {
     setMessage("");
     setSource("Admin");
     setSuccess("Update posted to LIVE CAMP FEED.");
+    await logAuditEvent({
+      actionType: "camp_feed_post_created",
+      entityType: "activity_feed",
+      entityId: data?.id || null,
+      summary: `${session?.display_name || "Admin"} posted a LIVE CAMP FEED update.`,
+      newValue: data,
+    });
   }
 
   return (

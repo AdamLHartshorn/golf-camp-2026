@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import {
   buildPlayerBank,
@@ -429,6 +430,14 @@ export default function AdminMoneyRoundsPage() {
 
       setRound(updatedRound);
       setMessage("Round settings updated.");
+      await logAuditEvent({
+        actionType: "money_round_settings_updated",
+        entityType: "money_round",
+        entityId: round.id,
+        summary: `Money Round settings updated: ${updatedRound.name}.`,
+        oldValue: round,
+        newValue: updatedRound,
+      });
       await fetchRounds();
       setIsSaving(false);
       return;
@@ -447,6 +456,13 @@ export default function AdminMoneyRoundsPage() {
     }
 
     setMessage("Round created.");
+    await logAuditEvent({
+      actionType: "money_round_created",
+      entityType: "money_round",
+      entityId: (data as MoneyRound).id,
+      summary: `Money Round created: ${(data as MoneyRound).name}.`,
+      newValue: data,
+    });
     setSelectedRoundId((data as MoneyRound).id);
     await fetchRounds();
     setIsSaving(false);
@@ -663,6 +679,14 @@ export default function AdminMoneyRoundsPage() {
           return false;
         }
 
+        await logAuditEvent({
+          actionType: "money_round_score_edited",
+          entityType: "money_round_score",
+          entityId: existingScore.id,
+          summary: `${team.name} hole ${hole} score cleared.`,
+          oldValue: existingScore,
+          metadata: { money_round_id: round.id, team_id: team.id, hole },
+        });
         setScores((current) => current.filter((score) => score.id !== existingScore.id));
       }
       return true;
@@ -741,6 +765,15 @@ export default function AdminMoneyRoundsPage() {
             ),
         );
         return [...withoutCurrent, savedScore];
+      });
+      await logAuditEvent({
+        actionType: "money_round_score_edited",
+        entityType: "money_round_score",
+        entityId: savedScore.id,
+        summary: `${team.name} hole ${hole} score saved as ${parsedScore}.`,
+        oldValue: existingScore || null,
+        newValue: savedScore,
+        metadata: { money_round_id: round.id, team_id: team.id, hole },
       });
     }
 
@@ -857,6 +890,23 @@ export default function AdminMoneyRoundsPage() {
         message: `${team.name} verified in ${round.name}.`,
       });
     }
+    if (round) {
+      await logAuditEvent({
+        actionType:
+          scoreStatus === "verified"
+            ? "money_round_score_verified"
+            : "money_round_score_unverified",
+        entityType: "money_round_team",
+        entityId: team.id,
+        summary:
+          scoreStatus === "verified"
+            ? `${team.name} scorecard verified in ${round.name}.`
+            : `${team.name} scorecard marked ${scoreStatus} in ${round.name}.`,
+        oldValue: { score_status: team.score_status },
+        newValue: { score_status: scoreStatus },
+        metadata: { money_round_id: round.id },
+      });
+    }
     setMessage(
       scoreStatus === "verified"
         ? `${team.name} verified.`
@@ -954,6 +1004,14 @@ export default function AdminMoneyRoundsPage() {
       sourceId: round.id,
       linkUrl: `/money-rounds/${round.id}`,
       message: `${round.name} finalized.`,
+    });
+    await logAuditEvent({
+      actionType: "money_round_finalized",
+      entityType: "money_round",
+      entityId: round.id,
+      summary: `${round.name} marked final.`,
+      oldValue: { status: round.status },
+      newValue: data,
     });
     setMessage("Round marked final.");
     setIsSaving(false);

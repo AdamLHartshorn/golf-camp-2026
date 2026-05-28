@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import { logActivityFeedItem } from "@/lib/activityFeed";
+import { logAuditEvent } from "@/lib/auditLog";
 import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
 import { supabase } from "@/lib/supabase";
 import { ActivePlayer, useActivePlayers } from "@/lib/useActivePlayers";
@@ -250,6 +251,14 @@ export default function AfternoonRoundsPage() {
       createdByPlayerId: session.id,
       linkUrl: `/afternoon-rounds/${roundData.id}`,
       message: `Afternoon Round created by ${session.display_name}.`,
+    });
+    await logAuditEvent({
+      actionType: "afternoon_round_created",
+      entityType: "afternoon_round",
+      entityId: roundData.id,
+      summary: `${session.display_name} created Afternoon Round: ${trimmedName}.`,
+      newValue: roundData,
+      metadata: { participant_count: selectedPlayers.length },
     });
     setName("Afternoon Round");
     setRoundDate("");
