@@ -283,7 +283,7 @@ export default function HomePage() {
 function CampChatBridge() {
   return (
     <a
-      href="https://groupme.com/join_group/424908312/UEGlef"
+      href="https://groupme.com/join_group/42409831/UEGIef"
       target="_blank"
       rel="noreferrer"
       className="group grid grid-cols-[2.75rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-4 py-3 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
