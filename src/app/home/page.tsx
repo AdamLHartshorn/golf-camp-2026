@@ -6,6 +6,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ActivityFeedItem } from "@/lib/activityFeed";
 import {
   clearPlayerSession,
@@ -24,6 +25,7 @@ const modules = [
     meta: "Roster • Rooms • Info",
     description: "Roster, rooms, arrivals",
     accent: "#f4f1ea",
+    lightAccent: "#17130e",
     tint: "rgba(244,241,234,0.08)",
   },
   {
@@ -95,6 +97,7 @@ const modules = [
   meta: string;
   description: string;
   accent: string;
+  lightAccent?: string;
   tint: string;
   comingSoon?: boolean;
 }[];
@@ -156,7 +159,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(143,166,106,0.18),transparent_34%),radial-gradient(circle_at_95%_12%,rgba(244,241,234,0.08),transparent_26%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-3">
-        <div className="flex justify-center py-2">
+        <div className="relative flex items-center justify-center py-2">
           <Image
             src="/longview-invitational-logo.png"
             alt="Golf Camp"
@@ -165,20 +168,23 @@ export default function HomePage() {
             priority
             className="h-16 w-16 object-contain opacity-95 drop-shadow-[0_16px_34px_rgba(0,0,0,0.42)]"
           />
+          <ThemeToggle className="absolute right-0 top-1/2 -translate-y-1/2" />
         </div>
 
         <CampFeed items={feedItems} isLoading={isLoadingFeed} />
 
         <CampChatBridge />
 
-        <section className="overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_55px_rgba(143,166,106,0.08)] backdrop-blur">
+        <section className="module-card-list overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_55px_rgba(143,166,106,0.08)] backdrop-blur">
           {modules.map((module) => (
             <Link
               key={module.href}
               href={module.href}
-              className="group grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] bg-[linear-gradient(90deg,var(--module-tint),rgba(13,13,11,0.96)_34%,rgba(13,13,11,0.9)_100%)] px-4 py-3.5 shadow-[inset_1px_0_0_var(--module-edge),inset_0_1px_0_rgba(244,241,234,0.025)] transition duration-200 hover:bg-[linear-gradient(90deg,var(--module-tint-strong),rgba(22,21,17,0.98)_36%,rgba(22,21,17,0.94)_100%)] hover:shadow-[inset_2px_0_0_var(--module-edge-strong),inset_0_1px_0_rgba(244,241,234,0.04),0_0_28px_var(--module-glow)] last:border-b-0"
+              className="module-row group grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] bg-[linear-gradient(90deg,var(--module-tint),rgba(13,13,11,0.96)_34%,rgba(13,13,11,0.9)_100%)] px-4 py-3.5 shadow-[inset_1px_0_0_var(--module-edge),inset_0_1px_0_rgba(244,241,234,0.025)] transition duration-200 hover:bg-[linear-gradient(90deg,var(--module-tint-strong),rgba(22,21,17,0.98)_36%,rgba(22,21,17,0.94)_100%)] hover:shadow-[inset_2px_0_0_var(--module-edge-strong),inset_0_1px_0_rgba(244,241,234,0.04),0_0_28px_var(--module-glow)] last:border-b-0"
               style={
                 {
+                  "--module-accent": module.accent,
+                  "--module-light-accent": module.lightAccent || module.accent,
                   "--module-tint": module.tint,
                   "--module-tint-strong": module.tint.replace("0.12", "0.18").replace("0.13", "0.19").replace("0.14", "0.2").replace("0.08", "0.13"),
                   "--module-edge": `${module.accent}30`,
@@ -188,7 +194,7 @@ export default function HomePage() {
               }
             >
               <div
-                className="flex h-11 w-11 items-center justify-center rounded-xl border bg-black/40 shadow-[0_0_28px_var(--module-glow)] transition duration-200 group-hover:border-[var(--module-edge-strong)]"
+                className="module-icon flex h-11 w-11 items-center justify-center rounded-xl border bg-black/40 shadow-[0_0_28px_var(--module-glow)] transition duration-200 group-hover:border-[var(--module-edge-strong)]"
                 style={{
                   color: module.accent,
                   borderColor: `${module.accent}35`,
@@ -218,7 +224,7 @@ export default function HomePage() {
           {session?.is_admin && (
             <Link
               href="/admin"
-              className="group grid grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f3d2b] bg-[linear-gradient(90deg,rgba(143,166,106,0.12),rgba(16,20,15,0.96)_38%,rgba(16,20,15,0.9))] px-4 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.3),inset_1px_0_0_rgba(143,166,106,0.26)] transition duration-200 hover:bg-[linear-gradient(90deg,rgba(143,166,106,0.18),rgba(21,26,19,0.98)_38%,rgba(21,26,19,0.94))] hover:shadow-[0_18px_46px_rgba(0,0,0,0.34),0_0_28px_rgba(143,166,106,0.08),inset_2px_0_0_rgba(143,166,106,0.42)]"
+              className="admin-home-row group grid grid-cols-[3rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f3d2b] bg-[linear-gradient(90deg,rgba(143,166,106,0.12),rgba(16,20,15,0.96)_38%,rgba(16,20,15,0.9))] px-4 py-4 shadow-[0_16px_40px_rgba(0,0,0,0.3),inset_1px_0_0_rgba(143,166,106,0.26)] transition duration-200 hover:bg-[linear-gradient(90deg,rgba(143,166,106,0.18),rgba(21,26,19,0.98)_38%,rgba(21,26,19,0.94))] hover:shadow-[0_18px_46px_rgba(0,0,0,0.34),0_0_28px_rgba(143,166,106,0.08),inset_2px_0_0_rgba(143,166,106,0.42)]"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#8fa66a]/35 bg-black/35 font-mono text-sm font-black text-[#8fa66a]">
                 <GolfCampIcon name="admin" className="h-5 w-5" />
@@ -279,7 +285,7 @@ function CampChatBridge() {
       href="https://groupme.com/join_group/42409831/UEGIef"
       target="_blank"
       rel="noreferrer"
-      className="group grid grid-cols-[2.35rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-3.5 py-2 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
+      className="camp-chat-card group grid grid-cols-[2.35rem_1fr_auto] items-center gap-3 rounded-2xl border border-[#2f4f7a] bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.18),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.12),rgba(13,13,11,0.96)_42%,rgba(13,13,11,0.92))] px-3.5 py-2 shadow-[0_18px_52px_rgba(0,0,0,0.38),0_0_34px_rgba(0,132,255,0.08),inset_1px_0_0_rgba(0,132,255,0.22)] transition duration-200 hover:border-[#4d7fb9] hover:bg-[radial-gradient(circle_at_10%_-20%,rgba(0,132,255,0.22),transparent_46%),linear-gradient(90deg,rgba(0,132,255,0.16),rgba(18,20,23,0.98)_42%,rgba(18,20,23,0.94))] hover:shadow-[0_20px_58px_rgba(0,0,0,0.42),0_0_40px_rgba(0,132,255,0.12),inset_2px_0_0_rgba(0,132,255,0.32)]"
     >
       <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#4d8fd8]/40 bg-black/35 text-[#7bbcff] shadow-[0_0_24px_rgba(0,132,255,0.12)]">
         <svg
@@ -320,7 +326,7 @@ function CampFeed({
   isLoading: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-2xl border border-[#4d232b] bg-[radial-gradient(circle_at_14%_-18%,rgba(106,49,60,0.22),transparent_42%),linear-gradient(180deg,rgba(106,49,60,0.08),rgba(13,13,11,0)_42%),#0d0d0b] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(106,49,60,0.1),inset_0_1px_0_rgba(244,241,234,0.035)] backdrop-blur">
+    <section className="camp-feed-card relative overflow-hidden rounded-2xl border border-[#4d232b] bg-[radial-gradient(circle_at_14%_-18%,rgba(106,49,60,0.22),transparent_42%),linear-gradient(180deg,rgba(106,49,60,0.08),rgba(13,13,11,0)_42%),#0d0d0b] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(106,49,60,0.1),inset_0_1px_0_rgba(244,241,234,0.035)] backdrop-blur">
       <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(106,49,60,0.11),transparent_30%,transparent_72%,rgba(106,49,60,0.05))]" />
       <div className="relative flex items-center justify-between gap-4 border-b border-[#3a2026] bg-[linear-gradient(90deg,rgba(106,49,60,0.14),rgba(20,19,15,0.92)_42%,rgba(20,19,15,0.84))] px-4 py-2.5">
         <div>

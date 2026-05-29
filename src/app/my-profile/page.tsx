@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   clearPlayerSession,
   getPlayerSession,
@@ -462,6 +463,10 @@ export default function MyProfilePage() {
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#34312a] bg-[#151411] font-mono text-xs font-black">
             ID
           </span>
+        </div>
+
+        <div className="flex justify-center">
+          <ThemeToggle />
         </div>
 
         {isLoading && (
