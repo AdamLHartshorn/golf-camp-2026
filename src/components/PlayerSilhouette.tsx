@@ -7,7 +7,7 @@ export function PlayerSilhouette({ className = "", label }: PlayerSilhouetteProp
   return (
     <div
       aria-label={label || "Player profile placeholder"}
-      className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#cfc4b3] bg-[#17130e] text-[#efe9dc] ${className}`}
+      className={`player-silhouette flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#cfc4b3] bg-[#17130e] text-[#efe9dc] ${className}`}
       role="img"
     >
       <svg

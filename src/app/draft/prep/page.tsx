@@ -149,7 +149,7 @@ export default function DraftPrepPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(50,77,112,0.2),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(244,241,234,0.07),transparent_28%),#050505] px-4 py-5 text-[#f5f5f5]">
+    <main className="draft-prep-shell min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(50,77,112,0.2),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(244,241,234,0.07),transparent_28%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-4">
         <header className="flex items-center justify-between gap-4">
           <Link href="/draft" className="text-2xl text-[#a3a3a3]">
@@ -188,6 +188,7 @@ export default function DraftPrepPage() {
 
         {!isLoading && !error && sortedPlayers.length > 0 && (
           <>
+            <div className="draft-prep-stack relative">
             <div
               ref={carouselRef}
               onScroll={handleScroll}
@@ -204,23 +205,23 @@ export default function DraftPrepPage() {
                   <article
                     key={player.id}
                     data-draft-prep-card
-                    className="min-w-full snap-center overflow-hidden rounded-[1.75rem] border border-[#324d70]/55 bg-[linear-gradient(180deg,rgba(50,77,112,0.2),rgba(7,17,35,0.9)_34%,rgba(8,10,15,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.56),0_0_55px_rgba(50,77,112,0.13)]"
+                    className="draft-prep-card min-w-full snap-center overflow-hidden rounded-[1.75rem] border border-[#324d70]/55 bg-[linear-gradient(180deg,rgba(50,77,112,0.2),rgba(7,17,35,0.9)_34%,rgba(8,10,15,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.56),0_0_55px_rgba(50,77,112,0.13)]"
                   >
-                    <div className="relative h-[21rem] overflow-hidden border-b border-[#324d70]/35 bg-[#080d18]">
+                    <div className="draft-prep-photo-panel relative h-[21rem] overflow-hidden border-b border-[#324d70]/35 bg-[#080d18]">
                       {player.photo_url ? (
                         <div
                           className="absolute inset-0 bg-cover bg-center"
                           style={{ backgroundImage: `url(${player.photo_url})` }}
                         />
                       ) : (
-                        <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_16%,rgba(143,166,106,0.12),transparent_38%),#090b0f]">
+                        <div className="draft-prep-photo-empty absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_50%_16%,rgba(143,166,106,0.12),transparent_38%),#090b0f]">
                           <PlayerSilhouette
                             label={player.display_name}
                             className="h-44 w-44 border-[#324d70]/55 bg-[#0c1420] text-[#d7dfeb]"
                           />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.14)_42%,rgba(0,0,0,0.86))]" />
+                      <div className="draft-prep-photo-scrim absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.14)_42%,rgba(0,0,0,0.86))]" />
                       <div className="absolute left-5 right-5 top-5 flex items-center justify-between">
                         <span className="rounded-full border border-[#8fb0d8]/40 bg-black/45 px-3 py-1 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#8fb0d8] backdrop-blur">
                           Card {index + 1}/{sortedPlayers.length}
@@ -245,7 +246,7 @@ export default function DraftPrepPage() {
                       {questionRows.map(([question, answer]) => (
                         <div
                           key={question}
-                          className="rounded-2xl border border-[#24364f]/55 bg-black/24 px-4 py-3"
+                          className="draft-prep-qa-card rounded-2xl border border-[#24364f]/55 bg-black/24 px-4 py-3"
                         >
                           <p className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[#8fb0d8]">
                             {question}
@@ -260,13 +261,35 @@ export default function DraftPrepPage() {
                 );
               })}
             </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-1.5">
+              {sortedPlayers.slice(0, 12).map((player, index) => (
+                <button
+                  key={player.id}
+                  type="button"
+                  onClick={() => goToCard(index)}
+                  aria-label={`Go to draft prep card ${index + 1}`}
+                  className={`h-1.5 rounded-full transition ${
+                    index === activeIndex
+                      ? "w-7 bg-[#8fb0d8]"
+                      : "w-1.5 bg-[#324d70]/70"
+                  }`}
+                />
+              ))}
+              {sortedPlayers.length > 12 && (
+                <span className="ml-1 font-mono text-[9px] font-black text-[#8a94a6]">
+                  +{sortedPlayers.length - 12}
+                </span>
+              )}
+            </div>
 
             <div className="flex items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => goToCard(activeIndex - 1)}
                 disabled={activeIndex === 0}
-                className="rounded-full border border-[#324d70]/60 bg-[#071123]/80 px-5 py-3 text-sm font-black text-[#d7dfeb] transition hover:border-[#8fb0d8]/70 disabled:cursor-not-allowed disabled:opacity-35"
+                className="draft-prep-control rounded-full border border-[#324d70]/60 bg-[#071123]/80 px-5 py-3 text-sm font-black text-[#d7dfeb] transition hover:border-[#8fb0d8]/70 disabled:cursor-not-allowed disabled:opacity-35"
               >
                 ← Previous
               </button>
@@ -277,7 +300,7 @@ export default function DraftPrepPage() {
                 type="button"
                 onClick={() => goToCard(activeIndex + 1)}
                 disabled={activeIndex === sortedPlayers.length - 1}
-                className="rounded-full border border-[#324d70]/60 bg-[#071123]/80 px-5 py-3 text-sm font-black text-[#d7dfeb] transition hover:border-[#8fb0d8]/70 disabled:cursor-not-allowed disabled:opacity-35"
+                className="draft-prep-control rounded-full border border-[#324d70]/60 bg-[#071123]/80 px-5 py-3 text-sm font-black text-[#d7dfeb] transition hover:border-[#8fb0d8]/70 disabled:cursor-not-allowed disabled:opacity-35"
               >
                 Next →
               </button>
@@ -285,7 +308,7 @@ export default function DraftPrepPage() {
 
             <Link
               href="/draft"
-              className="sticky bottom-4 z-10 block rounded-2xl border border-[#324d70]/60 bg-[#071123]/90 px-5 py-4 text-center text-sm font-black uppercase tracking-[0.14em] text-[#d7dfeb] shadow-[0_18px_46px_rgba(0,0,0,0.45),0_0_30px_rgba(50,77,112,0.14)] backdrop-blur transition hover:border-[#8fb0d8]/70"
+              className="draft-prep-back-action sticky bottom-4 z-10 block rounded-2xl border border-[#324d70]/60 bg-[#071123]/90 px-5 py-4 text-center text-sm font-black uppercase tracking-[0.14em] text-[#d7dfeb] shadow-[0_18px_46px_rgba(0,0,0,0.45),0_0_30px_rgba(50,77,112,0.14)] backdrop-blur transition hover:border-[#8fb0d8]/70"
             >
               Back to Draft
             </Link>

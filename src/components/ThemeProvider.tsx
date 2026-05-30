@@ -1,8 +1,8 @@
 "use client";
 
-import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const themeStorageKey = "golfCampTheme";
 const themeEventName = "golfCampThemeChange";
@@ -57,9 +57,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     function applyTheme() {
-      const selectedTheme = isForcedDarkPath(pathname) ? "dark" : getStoredTheme();
-      document.documentElement.dataset.theme = selectedTheme;
-      document.documentElement.style.colorScheme = selectedTheme;
+      const nextTheme = isForcedDarkPath(pathname) ? "dark" : getStoredTheme();
+
+      document.documentElement.dataset.theme = nextTheme;
+      document.documentElement.style.colorScheme = nextTheme;
     }
 
     applyTheme();

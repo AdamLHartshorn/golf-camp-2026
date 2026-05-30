@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import {
@@ -62,29 +63,29 @@ export default function CampOfficeSchedulePage() {
   const groupedDays = groupScheduleItems(items);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/camp-office" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/camp-office" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Daily Schedule
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#3a372f] bg-[#151411] text-[#f4f1ea]">
+          <span className="gc-top-icon">
             <GolfCampIcon name="ledger" className="h-4 w-4" />
           </span>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-[#2f2a22] bg-[#0d0d0b]/95 shadow-[0_28px_80px_rgba(0,0,0,0.48),0_0_48px_rgba(244,241,234,0.05)]">
-          <div className="border-b border-[#2a2925] bg-[#151411] px-5 py-5">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#c8bfae]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Clubhouse Itinerary
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">
+            <h1 className="gc-card-title">
               Camp Week
             </h1>
-            <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+            <p className="gc-card-copy">
               Meals, tee times, drafts, night golf, and whatever else the week
               demands.
             </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -372,16 +373,19 @@ export default function ShenanigansWagersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
+        <div className="gc-section-head">
+          <p className="gc-card-kicker text-[#a45a66]">
             Shenanigans
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">Wagers</h1>
+          <h1 className="gc-card-title">Wagers</h1>
 
-          <p className="text-[#a3a3a3]">Track player-to-player action.</p>
+          <p className="gc-card-copy">Track player-to-player action.</p>
         </div>
 
         <ShenanigansGameBar
@@ -396,7 +400,7 @@ export default function ShenanigansWagersPage() {
 
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Wager Rules
           </p>
@@ -415,7 +419,7 @@ export default function ShenanigansWagersPage() {
         </section>
 
         {selectedGameId && (
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Log New Wager
           </p>
@@ -500,7 +504,7 @@ export default function ShenanigansWagersPage() {
                 isLoadingGame ||
                 selectablePlayers.length === 0
               }
-              className="w-full rounded-2xl border border-[#b91c1c] bg-[#b91c1c] px-5 py-4 text-center text-base font-bold text-[#f5f5f5] transition-colors duration-200 hover:border-[#991b1b] hover:bg-[#991b1b] disabled:cursor-not-allowed disabled:opacity-50"
+              className="gc-primary-button w-full px-5 py-4 text-center text-base font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isCreating ? "Creating..." : "Create Wager"}
             </button>
@@ -528,13 +532,13 @@ export default function ShenanigansWagersPage() {
 
           <div className="space-y-3">
             {isLoadingWagers && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 Loading wagers...
               </div>
             )}
 
             {!isLoadingWagers && activeWagers.length === 0 && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 No active wagers yet.
               </div>
             )}
@@ -563,7 +567,7 @@ export default function ShenanigansWagersPage() {
                         }));
                       }
                     }}
-                    className="cursor-pointer rounded-2xl border border-[#7f1d1d] bg-[#1a0f0f] p-5 shadow-[0_0_0_1px_rgba(106,49,60,0.09)] transition-colors duration-200 hover:border-[#b91c1c]"
+                    className="gc-edge-card cursor-pointer p-5 transition-colors duration-200 hover:border-[#a45a66]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
@@ -678,13 +682,13 @@ export default function ShenanigansWagersPage() {
 
           <div className="space-y-3">
             {isLoadingWagers && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 Loading settled wagers...
               </div>
             )}
 
             {!isLoadingWagers && settledWagers.length === 0 && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 No settled wagers yet.
               </div>
             )}
@@ -693,7 +697,7 @@ export default function ShenanigansWagersPage() {
               settledWagers.map((wager) => (
                 <div
                   key={wager.id}
-                  className="rounded-2xl border border-[#242424] bg-[#0b0b0b] p-5 opacity-85"
+                  className="gc-edge-card p-5 opacity-85"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { ShenanigansCurrentGameNotice } from "@/lib/shenanigansGame";
 
 const bankPoints = [
@@ -53,25 +54,28 @@ function PointRow({
 
 export default function ShenanigansBankPage() {
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
+        <div className="gc-section-head">
+          <p className="gc-card-kicker text-[#a45a66]">
             Shenanigans
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">
+          <h1 className="gc-card-title">
             The Bank
           </h1>
 
-          <p className="text-[#a3a3a3]">
+          <p className="gc-card-copy">
             Structured points and standard prop values.
           </p>
         </div>
 
         <ShenanigansCurrentGameNotice />
 
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -87,7 +91,7 @@ export default function ShenanigansBankPage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-[#242424] bg-black/30 p-4">
+            <div className="rounded-lg border border-[#3a2b2e] bg-black/30 p-4">
               <p className="text-3xl font-bold">5</p>
 
               <p className="mt-1 text-sm text-[#a3a3a3]">
@@ -95,7 +99,7 @@ export default function ShenanigansBankPage() {
               </p>
             </div>
 
-            <div className="rounded-xl border border-[#242424] bg-black/30 p-4">
+            <div className="rounded-lg border border-[#3a2b2e] bg-black/30 p-4">
               <p className="text-3xl font-bold">5</p>
 
               <p className="mt-1 text-sm text-[#a3a3a3]">
@@ -114,7 +118,7 @@ export default function ShenanigansBankPage() {
             <h2 className="mt-2 text-xl font-bold">Standard Scoring</h2>
           </div>
 
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] px-5">
+          <div className="gc-edge-card px-5">
             {bankPoints.map((item) => (
               <PointRow
                 key={`${item.label}-${item.detail}`}
@@ -135,7 +139,7 @@ export default function ShenanigansBankPage() {
             <h2 className="mt-2 text-xl font-bold">Approved Chaos</h2>
           </div>
 
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] px-5">
+          <div className="gc-edge-card px-5">
             {propositionPoints.map((item) => (
               <PointRow
                 key={`${item.label}-${item.detail}`}
@@ -147,7 +151,7 @@ export default function ShenanigansBankPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#b91c1c] bg-[#111111] p-5 shadow-[0_0_0_1px_rgba(106,49,60,0.12)]">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Optional Rule
           </p>

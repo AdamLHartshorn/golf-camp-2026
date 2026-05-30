@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { FormEvent } from "react";
+import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -110,7 +110,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="gc-mobile-shell flex items-center justify-center" style={{ "--page-accent": "#8fa66a" } as CSSProperties}>
       <div className="w-full max-w-sm space-y-7">
         <div className="flex justify-center pt-2">
           <Image
@@ -125,7 +125,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handlePlayerLogin}
-          className="space-y-4 rounded-2xl border border-[#2b2b27] bg-[#10100e]/92 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.32)]"
+          className="gc-edge-card space-y-4 p-5"
         >
           <div className="space-y-4">
             <div>
@@ -176,7 +176,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <label className="flex items-center justify-center gap-3 rounded-xl border border-[#242424] bg-black/20 px-4 py-3 text-sm font-semibold text-[#c8bfae]">
+          <label className="flex items-center justify-center gap-3 rounded-lg border border-[#34312a] bg-black/20 px-4 py-3 text-sm font-semibold text-[#c8bfae]">
             <input
               type="checkbox"
               checked={rememberMe}
@@ -193,7 +193,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full rounded-xl bg-[#efe9dc] py-4 text-base font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+            className="gc-primary-button py-4 text-base disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? "Entering..." : "Enter"}
           </button>
@@ -217,7 +217,7 @@ export default function LoginPage() {
           {showFallbackAccess && (
             <form
               onSubmit={handleEnter}
-              className="space-y-3 rounded-2xl border border-[#242424] bg-black/25 p-4"
+              className="gc-edge-card space-y-3 p-4"
             >
               <input
                 type="text"

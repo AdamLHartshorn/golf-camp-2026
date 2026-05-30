@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -127,16 +128,19 @@ export default function ShenanigansLedgerPage() {
   }, [events]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(106,49,60,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/shenanigans" className="text-2xl text-[#a3a3a3]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-md justify-center space-y-5">
+        <div className="gc-topbar">
+          <Link href="/shenanigans" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Shenanigans
           </p>
-          <span className="text-xl text-[#b91c1c]">◇</span>
+          <span className="gc-top-icon text-[#a45a66]">◇</span>
         </div>
 
         <ShenanigansGameBar
@@ -152,7 +156,7 @@ export default function ShenanigansLedgerPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
-        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_55px_rgba(0,0,0,0.42)]">
+        <section className="gc-edge-card overflow-hidden p-0">
           <div className="grid grid-cols-2 border-b border-[#2a2925] bg-[#151411] text-center font-mono text-[10px] font-semibold uppercase tracking-[0.16em]">
             <span className="border-b-2 border-[#b91c1c] py-3 text-[#f5f5f5]">
               Leaderboard
@@ -210,7 +214,7 @@ export default function ShenanigansLedgerPage() {
         )}
 
         {selectedGameId && (
-        <section className="overflow-hidden rounded-2xl border border-[#7f1d1d]/70 bg-[#120d0d] shadow-[0_0_32px_rgba(106,49,60,0.1)]">
+        <section className="gc-edge-card overflow-hidden p-0">
           <div className="border-b border-[#3a1d1d] bg-[#1a0d0d] px-4 py-3">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">

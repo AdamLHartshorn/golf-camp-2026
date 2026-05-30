@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -257,16 +258,19 @@ export default function ShenanigansSideGamesPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
+        <div className="gc-section-head">
+          <p className="gc-card-kicker text-[#a45a66]">
             Shenanigans
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">Side Games</h1>
+          <h1 className="gc-card-title">Side Games</h1>
 
-          <p className="text-[#a3a3a3]">
+          <p className="gc-card-copy">
             Bocce, basket-golf, and whatever else gets invented.
           </p>
         </div>
@@ -294,7 +298,7 @@ export default function ShenanigansSideGamesPage() {
             {featuredGames.map((game) => (
               <div
                 key={game.title}
-                className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                className="gc-edge-card p-5"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -318,7 +322,7 @@ export default function ShenanigansSideGamesPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#b91c1c] bg-[#111111] p-5 shadow-[0_0_0_1px_rgba(106,49,60,0.12)]">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Custom Games
           </p>
@@ -337,7 +341,7 @@ export default function ShenanigansSideGamesPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Log Side Game
           </p>
@@ -457,13 +461,13 @@ export default function ShenanigansSideGamesPage() {
 
           <div className="space-y-3">
             {isLoadingEvents && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 Loading side games...
               </div>
             )}
 
             {!isLoadingEvents && events.length === 0 && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
                 No side games logged yet.
               </div>
             )}
@@ -472,7 +476,7 @@ export default function ShenanigansSideGamesPage() {
               events.map((event) => (
                 <div
                   key={event.id}
-                  className="rounded-2xl border border-[#242424] bg-[#111111] p-5"
+                  className="gc-edge-card p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">

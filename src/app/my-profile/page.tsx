@@ -3,6 +3,7 @@
 import Cropper, { Area, Point } from "react-easy-crop";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
@@ -451,38 +452,32 @@ export default function MyProfilePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/camp-office" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/camp-office" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             My Profile
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#34312a] bg-[#151411] font-mono text-xs font-black">
-            ID
-          </span>
-        </div>
-
-        <div className="flex justify-center">
-          <ThemeToggle />
+          <ThemeToggle className="px-2.5 py-2" />
         </div>
 
         {isLoading && (
-          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-sm text-[#7a6f60]">
+          <div className="gc-edge-card p-5 text-sm text-[#b8b0a1]">
             Loading profile...
           </div>
         )}
 
         {!isLoading && !session && (
-          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-[#17130e] shadow-[0_18px_45px_rgba(0,0,0,0.3)]">
+          <div className="gc-edge-card p-5">
             <p className="text-sm text-[#7a6f60]">
               Log in with a player PIN to manage your profile.
             </p>
             <Link
               href="/"
-              className="mt-4 block rounded-xl bg-[#17130e] px-4 py-3 text-center font-semibold text-[#efe9dc]"
+              className="gc-primary-button mt-4 block text-center"
             >
               Go to Login
             </Link>
@@ -491,27 +486,27 @@ export default function MyProfilePage() {
 
         {!isLoading && player && (
           <>
-            <section className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
-              <div className="border-b border-[#d8d1c4] px-5 py-5">
+            <section className="player-identity-card gc-edge-card text-[#f4f1ea]">
+              <div className="gc-section-head">
               <div className="mb-4 flex justify-center">
                 {player.photo_url ? (
                   <div
                     aria-label={`${player.display_name} profile`}
-                    className="h-28 w-28 rounded-full border border-[#cfc4b3] bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
+                    className="player-profile-photo h-28 w-28 rounded-full border border-[#cfc4b3] bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
                     role="img"
                     style={{ backgroundImage: `url(${player.photo_url})` }}
                   />
                 ) : (
                   <PlayerSilhouette
-                    className="h-28 w-28"
+                    className="player-profile-photo h-28 w-28"
                     label={`${player.display_name} profile placeholder`}
                   />
                 )}
               </div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
+              <p className="gc-card-kicker">
                 Logged-In Player
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+              <h1 className="gc-card-title">
                 {player.display_name}
               </h1>
               </div>
@@ -531,7 +526,7 @@ export default function MyProfilePage() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-3"
+                    className="player-stat-chip rounded-lg border border-[#34312a] bg-black/30 p-3"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
                       {label}
@@ -542,11 +537,11 @@ export default function MyProfilePage() {
               </div>
             </section>
 
-            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
-              <h2 className="text-xl font-semibold tracking-[-0.02em]">
+            <section className="gc-edge-card space-y-3 p-5">
+              <h2 className="gc-card-title">
                 Camp Identity
               </h2>
-              <p className="text-sm text-[#a3a3a3]">
+              <p className="gc-card-copy">
                 Keep your roster card current with a little earned seniority.
               </p>
 
@@ -570,7 +565,7 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="Years Served"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
 
@@ -578,17 +573,17 @@ export default function MyProfilePage() {
                 type="button"
                 onClick={handleSaveCampIdentity}
                 disabled={isSaving}
-                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+                className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Save Camp Identity"}
               </button>
             </section>
 
-            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
-              <h2 className="text-xl font-semibold tracking-[-0.02em]">
+            <section className="gc-edge-card space-y-3 p-5">
+              <h2 className="gc-card-title">
                 Contact Info
               </h2>
-              <p className="text-sm text-[#a3a3a3]">
+              <p className="gc-card-copy">
                 Optional. This powers your downloadable contact card in the Camp
                 Roster.
               </p>
@@ -610,7 +605,7 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="Phone Number"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
 
@@ -631,7 +626,7 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="Email Address"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
 
@@ -639,18 +634,18 @@ export default function MyProfilePage() {
                 type="button"
                 onClick={handleSaveContactInfo}
                 disabled={isSaving}
-                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f8f2e6] disabled:cursor-not-allowed disabled:opacity-50"
+                className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Save Contact Info"}
               </button>
             </section>
 
-            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
+            <section className="gc-edge-card space-y-3 p-5">
               <div>
-                <h2 className="text-xl font-semibold tracking-[-0.02em]">
+                <h2 className="gc-card-title">
                   Profile Picture
                 </h2>
-                <p className="mt-1 text-sm text-[#a3a3a3]">
+                <p className="gc-card-copy">
                   Upload a photo for roster cards and your public profile.
                 </p>
               </div>
@@ -744,9 +739,9 @@ export default function MyProfilePage() {
               )}
             </section>
 
-            <section className="space-y-3 rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_45px_rgba(0,0,0,0.24)]">
-              <h2 className="text-xl font-semibold tracking-[-0.02em]">Change PIN</h2>
-              <p className="text-sm text-[#a3a3a3]">
+            <section className="gc-edge-card space-y-3 p-5">
+              <h2 className="gc-card-title">Change PIN</h2>
+              <p className="gc-card-copy">
                 Enter your current PIN, then choose a new one.
               </p>
               <div>
@@ -767,7 +762,7 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="Current PIN"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
               <div>
@@ -788,7 +783,7 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="New PIN"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
               <div>
@@ -809,14 +804,14 @@ export default function MyProfilePage() {
                     setError("");
                   }}
                   placeholder="Confirm New PIN"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
+                  className="gc-input"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleChangePin}
                 disabled={isSaving}
-                className="w-full rounded-xl bg-[#efe9dc] px-4 py-3 font-semibold text-[#17130e] transition hover:bg-[#f6f0e3] disabled:cursor-not-allowed disabled:opacity-50"
+                className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSaving ? "Saving..." : "Update PIN"}
               </button>
@@ -830,7 +825,7 @@ export default function MyProfilePage() {
         <div className="grid grid-cols-2 gap-3">
           <Link
             href="/home"
-            className="rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-semibold text-[#a3a3a3]"
+            className="rounded-lg border border-[#34312a] px-4 py-3 text-center text-sm font-semibold text-[#a3a3a3]"
           >
             Back
           </Link>
@@ -838,7 +833,7 @@ export default function MyProfilePage() {
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-xl border border-[#242424] px-4 py-3 text-sm font-semibold text-[#a3a3a3]"
+              className="rounded-lg border border-[#34312a] px-4 py-3 text-sm font-semibold text-[#a3a3a3]"
             >
               Logout
             </button>

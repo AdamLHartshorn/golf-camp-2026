@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import { logActivityFeedItem } from "@/lib/activityFeed";
@@ -271,29 +272,29 @@ export default function AfternoonRoundsPage() {
   const recentRounds = rounds.filter(isRecentRound);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(214,168,79,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#d6a84f" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/home" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Afternoon Rounds
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#6f4d16] bg-[#21180b] text-[#d6a84f]">
+          <span className="gc-top-icon">
             <GolfCampIcon name="p2p" className="h-4 w-4" />
           </span>
         </div>
 
-        <section className="overflow-hidden rounded-2xl border border-[#6f4d16]/70 bg-[#0d0d0b]/95 shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_48px_rgba(214,168,79,0.1)]">
-          <div className="border-b border-[#2a2925] bg-[#21180b] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Create Afternoon Round
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">
+            <h1 className="gc-card-title">
               Optional Round
             </h1>
-            <p className="mt-1 text-sm text-[#b8b0a1]">
+            <p className="gc-card-copy">
               Player-created teams and casual afternoon action.
             </p>
           </div>
@@ -309,14 +310,14 @@ export default function AfternoonRoundsPage() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Round name"
-              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+              className="gc-input"
             />
 
             <input
               type="date"
               value={roundDate}
               onChange={(event) => setRoundDate(event.target.value)}
-              className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+              className="gc-input"
             />
 
             <PlayerChips
@@ -337,7 +338,7 @@ export default function AfternoonRoundsPage() {
                 !session ||
                 selectedPlayerIds.length < 2
               }
-              className="w-full rounded-xl border border-[#d6a84f] bg-[#d6a84f] px-4 py-3 font-bold text-black transition hover:bg-[#b8872d] disabled:cursor-not-allowed disabled:opacity-50"
+              className="gc-primary-button transition disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isCreating ? "Creating..." : "Create Round"}
             </button>
@@ -347,12 +348,12 @@ export default function AfternoonRoundsPage() {
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#f5c56f]">{error}</p>}
 
-        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
-          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Active Afternoon Rounds
             </p>
-            <h2 className="mt-2 text-xl font-black">Open Games</h2>
+            <h2 className="gc-card-title">Open Games</h2>
           </div>
           <RoundList
             rounds={activeRounds}
@@ -361,12 +362,12 @@ export default function AfternoonRoundsPage() {
           />
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
-          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Recent Afternoon Rounds
             </p>
-            <h2 className="mt-2 text-xl font-black">Finalized Games</h2>
+            <h2 className="gc-card-title">Finalized Games</h2>
           </div>
           <RoundList
             rounds={recentRounds}

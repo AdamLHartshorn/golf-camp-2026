@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
@@ -167,40 +168,40 @@ export default function MoneyRoundsPage() {
   const bankPreviewRows = yearlyBankRows.slice(0, 3);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(49,95,72,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#6fa783" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/home" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Money Rounds
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#166534] bg-[#102116] text-[#16a34a]">
+          <span className="gc-top-icon">
             <GolfCampIcon name="money" className="h-4 w-4" />
           </span>
         </div>
 
         <section className="space-y-3">
           {isLoading && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+            <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
               Loading rounds...
             </div>
           )}
 
           {!isLoading && error && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#ff8a8a]">
+            <div className="gc-edge-card p-5 text-sm text-[#ff8a8a]">
               {error}
             </div>
           )}
 
           {!isLoading && !error && rounds.length === 0 && (
-            <div className="rounded-2xl border border-[#315f48]/45 bg-[#0d0d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.3)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
+            <div className="gc-edge-card p-5">
+              <p className="gc-card-kicker">
                 No Rounds Yet
               </p>
-              <h2 className="mt-2 text-2xl font-bold">Waiting on the first card.</h2>
-              <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
+              <h2 className="gc-card-title">Waiting on the first card.</h2>
+              <p className="gc-card-copy">
                 Once a commissioner creates the morning round, this becomes the
                 live scoring hub for teams, skins, and the bank.
               </p>
@@ -208,25 +209,25 @@ export default function MoneyRoundsPage() {
           )}
 
           {!isLoading && !error && rounds.length > 0 && !activeRound && (
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#16a34a]">
+            <div className="gc-edge-card p-5">
+              <p className="gc-card-kicker">
                 No Active Round
               </p>
-              <h2 className="mt-2 text-2xl font-bold">Nothing live right now.</h2>
-              <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
+              <h2 className="gc-card-title">Nothing live right now.</h2>
+              <p className="gc-card-copy">
                 Scored and finalized rounds are available below in Recent Rounds.
               </p>
             </div>
           )}
 
           {!isLoading && !error && activeRound && (
-            <div className="overflow-hidden rounded-2xl border border-[#166534]/70 bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_48px_rgba(49,95,72,0.1)]">
-              <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#166534]/45 bg-[#0f1f16] px-5 py-4">
+            <div className="money-active-board gc-edge-card text-[#f5f5f5]">
+              <div className="gc-section-head grid grid-cols-[1fr_auto] gap-4">
                 <div>
-                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#8ee6a7]">
+                  <p className="gc-card-kicker">
                     Active Money Round
                   </p>
-                  <h1 className="mt-2 text-2xl font-black tracking-tight">
+                  <h1 className="gc-card-title">
                     {activeRound.name}
                   </h1>
                 </div>
@@ -322,7 +323,7 @@ export default function MoneyRoundsPage() {
               <div className="border-t border-[#2a2925] px-5 py-4">
                 <Link
                   href={`/money-rounds/${activeRound.id}`}
-                  className="block rounded-xl border border-[#16a34a] bg-[#0f1f16] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:bg-[#12301f]"
+                  className="money-round-primary-action block rounded-xl border border-[#16a34a] bg-[#0f1f16] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:bg-[#12301f]"
                 >
                   View Round
                 </Link>
@@ -330,14 +331,14 @@ export default function MoneyRoundsPage() {
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   <Link
                     href={`/money-rounds/${activeRound.id}/submit`}
-                    className="rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
+                    className="money-round-secondary-action rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#f4f1ea] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
                   >
                     Enter Scores
                   </Link>
                   {canPresentActiveRound && (
                   <Link
                     href={`/money-rounds/${activeRound.id}/results`}
-                    className="rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
+                    className="money-round-secondary-action rounded-xl border border-[#2a2925] px-4 py-3 text-center text-sm font-black text-[#8ee6a7] transition hover:border-[#315f48] hover:bg-[#0f1f16]"
                   >
                     Presentation
                   </Link>
@@ -348,12 +349,12 @@ export default function MoneyRoundsPage() {
           )}
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
-          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Recent Rounds
             </p>
-            <h2 className="mt-2 text-xl font-black">Round Archive</h2>
+            <h2 className="gc-card-title">Round Archive</h2>
           </div>
 
           <div>
@@ -423,12 +424,12 @@ export default function MoneyRoundsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
-          <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Yearly Bank
             </p>
-            <h2 className="mt-2 text-xl font-black">Money Rounds Bank</h2>
+            <h2 className="gc-card-title">Money Rounds Bank</h2>
           </div>
 
           <div className="text-sm">

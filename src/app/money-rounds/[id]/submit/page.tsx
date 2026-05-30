@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -274,7 +275,7 @@ export default function MoneyRoundSubmitPage() {
     );
 
     return (
-      <div className="rounded-xl border border-[#242424] bg-[#111111] p-3">
+      <div className="scorecard-nine rounded-xl border border-[#242424] bg-[#111111] p-3">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
             {label}
@@ -289,7 +290,7 @@ export default function MoneyRoundSubmitPage() {
             const metadata = scorecardByHole.get(hole);
 
             return (
-              <label key={hole} className="block text-center">
+              <label key={hole} className="scorecard-hole-cell block text-center">
                 <span className="block text-[11px] font-semibold text-[#f5f5f5]">
                   {hole}
                 </span>
@@ -320,7 +321,7 @@ export default function MoneyRoundSubmitPage() {
             <span className="mb-1 block text-[11px] font-semibold text-[#16a34a]">
               {label === "Front 9" ? "OUT" : "IN"}
             </span>
-            <div className="flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
+            <div className="scorecard-total-cell flex h-12 items-center justify-center rounded-lg border border-[#166534]/70 bg-black text-base font-bold text-[#16a34a]">
               {scoreToPar}
             </div>
           </div>
@@ -330,27 +331,30 @@ export default function MoneyRoundSubmitPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto w-full max-w-3xl space-y-6 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#16a34a]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#6fa783" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-3xl justify-start space-y-6">
+        <div className="gc-section-head">
+          <p className="gc-card-kicker text-[#6fa783]">
             Money Rounds
           </p>
-          <h1 className="text-4xl font-bold tracking-tight">Submit Scores</h1>
-          <p className="text-[#a3a3a3]">
+          <h1 className="gc-card-title">Submit Scores</h1>
+          <p className="gc-card-copy">
             {round?.name || "Loading round..."} · live standings are unofficial
             until verified.
           </p>
         </div>
 
         {isLoading && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             Loading scorecard...
           </div>
         )}
 
         {!isLoading && teams.length === 0 && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             <p className="font-semibold text-[#f4f1ea]">
               No team scorecards are ready yet.
             </p>
@@ -363,20 +367,20 @@ export default function MoneyRoundSubmitPage() {
 
         {!isLoading && teams.length > 0 && (
           <>
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+            <section className="gc-edge-card p-5">
+              <p className="gc-card-kicker text-[#6fa783]">
                 Scorecard Flow
               </p>
               <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                <div className="scorecard-flow-step rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
                   <p className="font-black text-[#8ee6a7]">1</p>
                   <p className="mt-1 text-[#a3a3a3]">Select Team</p>
                 </div>
-                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                <div className="scorecard-flow-step rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
                   <p className="font-black text-[#8ee6a7]">2</p>
                   <p className="mt-1 text-[#a3a3a3]">Enter Scores</p>
                 </div>
-                <div className="rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
+                <div className="scorecard-flow-step rounded-xl border border-[#315f48]/60 bg-black/45 px-2 py-3">
                   <p className="font-black text-[#8ee6a7]">3</p>
                   <p className="mt-1 text-[#a3a3a3]">Submit</p>
                 </div>
@@ -384,11 +388,11 @@ export default function MoneyRoundSubmitPage() {
             </section>
 
             <section className="space-y-3">
-              <div>
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker text-[#6fa783]">
                   Select Team
                 </p>
-                <h2 className="mt-2 text-xl font-bold">Choose Your Scorecard</h2>
+                <h2 className="gc-card-title text-2xl">Choose Your Scorecard</h2>
               </div>
             <section className="grid gap-2 sm:grid-cols-2">
               {teams.map((team) => {
@@ -405,10 +409,10 @@ export default function MoneyRoundSubmitPage() {
                       setSelectedTeamId(team.id);
                       setScoreDrafts(draftFromScores(team.id, scores));
                     }}
-                    className={`rounded-xl border p-4 text-left transition ${
+                    className={`money-team-select-card rounded-xl border p-4 text-left transition ${
                       selectedTeamId === team.id
-                        ? "border-[#16a34a] bg-[#0f1f16]"
-                        : "border-[#242424] bg-[#111111] hover:border-[#16a34a]"
+                        ? "border-[#6fa783] bg-[#183224]"
+                        : "gc-edge-card hover:border-[#6fa783]"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -437,7 +441,7 @@ export default function MoneyRoundSubmitPage() {
             </section>
 
             {selectedTeam && (
-              <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
+              <section className="gc-edge-card space-y-4 p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -454,7 +458,7 @@ export default function MoneyRoundSubmitPage() {
                       {selectedTeam.player_names.join(", ") || "No players"}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#16a34a] bg-black px-4 py-2 text-center">
+                  <div className="scorecard-total-summary rounded-xl border border-[#16a34a] bg-black px-4 py-2 text-center">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a3a3a3]">
                       Total
                     </p>
@@ -474,7 +478,7 @@ export default function MoneyRoundSubmitPage() {
                 {renderNine("Front 9", frontNine)}
                 {renderNine("Back 9", backNine)}
 
-                <div className="rounded-xl border border-[#242424] bg-black/45 p-4 text-sm text-[#a3a3a3]">
+                <div className="scorecard-help-card rounded-xl border border-[#242424] bg-black/45 p-4 text-sm text-[#a3a3a3]">
                   {isVerified
                     ? "This scorecard is verified. Nick can still adjust it in admin if needed."
                     : selectedStatus === "submitted"
@@ -486,7 +490,7 @@ export default function MoneyRoundSubmitPage() {
                   type="button"
                   onClick={handleSubmitScores}
                   disabled={isSaving || isVerified}
-                  className="w-full rounded-xl bg-[#16a34a] px-4 py-3 font-bold text-black transition hover:bg-[#15803d] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="gc-primary-button w-full px-4 py-3 font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isVerified
                     ? "Verified by Commissioner"

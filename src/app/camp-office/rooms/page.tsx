@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
@@ -92,35 +93,35 @@ export default function RoomAssignmentsPage() {
   }, [players]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto w-full max-w-md space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/camp-office" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <div className="gc-mobile-stage justify-start">
+        <div className="gc-topbar">
+          <Link href="/camp-office" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Room Assignments
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#34312a] bg-[#151411] font-mono text-xs font-black">
+          <span className="gc-top-icon font-mono text-xs font-black">
             RM
           </span>
         </div>
 
         <div className="space-y-4">
           {isLoading && (
-            <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
+            <div className="gc-edge-card p-5 text-center text-sm text-[#b8b0a1]">
               Loading room assignments...
             </div>
           )}
 
           {!isLoading && error && (
-            <div className="rounded-[1.45rem] border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#ff8a8a]">
+            <div className="gc-edge-card p-5 text-center text-sm text-[#ff8a8a]">
               {error}
             </div>
           )}
 
           {!isLoading && !error && roomAssignments.length === 0 && (
-            <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
+            <div className="gc-edge-card p-5 text-center text-sm text-[#b8b0a1]">
               No active room assignments yet.
             </div>
           )}
@@ -130,15 +131,15 @@ export default function RoomAssignmentsPage() {
             roomAssignments.map((room) => (
               <section
                 key={room.room}
-                className="overflow-hidden rounded-[1.65rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_18px_45px_rgba(0,0,0,0.3)]"
+                className="gc-edge-card text-[#f4f1ea]"
               >
-                <div className="grid grid-cols-[1fr_auto] gap-4 border-b border-[#d8d1c4] px-5 py-4">
+                <div className="gc-section-head grid grid-cols-[1fr_auto] gap-4">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
+                    <p className="gc-card-kicker">
                       Room #
                     </p>
 
-                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">
+                    <h2 className="gc-card-title">
                       {room.room}
                     </h2>
                   </div>
@@ -170,12 +171,12 @@ export default function RoomAssignmentsPage() {
                   ))}
                 </div>
 
-                <div className="border-t border-[#d8d1c4] px-5 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a6f60]">
+                <div className="border-t border-[#34312a] px-5 py-4">
+                  <p className="gc-card-kicker">
                     Arrival Timing
                   </p>
 
-                  <p className="mt-2 text-sm leading-6 text-[#17130e]">
+                  <p className="mt-2 text-sm leading-6 text-[#f4f1ea]">
                     {room.arrivals.join(" / ")}
                   </p>
                 </div>

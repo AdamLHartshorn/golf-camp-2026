@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
@@ -133,30 +134,30 @@ export default function PlayerProfilePage() {
   }, [params.slug]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-6 py-8">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <div className="gc-mobile-stage">
         {isLoading && (
-          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
+          <div className="gc-edge-card p-5 text-center text-sm text-[#b8b0a1]">
             Loading player...
           </div>
         )}
 
         {!isLoading && error && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#ff8a8a]">
+          <div className="gc-edge-card p-5 text-center text-sm text-[#ff8a8a]">
             {error}
           </div>
         )}
 
         {!isLoading && !error && !player && (
-          <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-sm text-[#7a6f60]">
+          <div className="gc-edge-card p-5 text-center text-sm text-[#b8b0a1]">
             Player not found.
           </div>
         )}
 
         {!isLoading && !error && player && (
           <>
-            <div className="overflow-hidden rounded-[1.8rem] border border-[#d8d1c4]/80 bg-[#efe9dc] text-[#17130e] shadow-[0_24px_70px_rgba(0,0,0,0.34)]">
-              <div className="flex justify-center border-b border-[#d8d1c4] px-5 pt-6">
+            <div className="gc-edge-card text-[#f4f1ea]">
+              <div className="gc-section-head flex justify-center px-5 pt-6">
                 {player.photo_url ? (
                   <div
                     aria-label={`${player.display_name} profile`}
@@ -173,15 +174,15 @@ export default function PlayerProfilePage() {
               </div>
 
               <div className="space-y-2 px-5 py-5 text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#7a6f60]">
+                <p className="gc-card-kicker">
                   Camp Roster
                 </p>
 
-                <h1 className="text-4xl font-semibold tracking-[-0.05em]">
+                <h1 className="gc-card-title">
                   {player.display_name}
                 </h1>
 
-                <p className="text-[#7a6f60]">
+                <p className="gc-card-copy">
                   Rank {getPublicDisplayRank(player.display_rank, player.rank)} ·{" "}
                   {typeof player.years_served === "number"
                     ? `${player.years_served} Years Served`
@@ -190,10 +191,10 @@ export default function PlayerProfilePage() {
               </div>
             </div>
 
-            <section className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-[#17130e]">
+            <section className="gc-edge-card p-5 text-[#f4f1ea]">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+                <div className="rounded-lg border border-[#34312a] bg-black/30 p-4">
+                  <p className="gc-card-kicker">
                     Rank
                   </p>
 
@@ -202,8 +203,8 @@ export default function PlayerProfilePage() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+                <div className="rounded-lg border border-[#34312a] bg-black/30 p-4">
+                  <p className="gc-card-kicker">
                     Years Served
                   </p>
 
@@ -215,8 +216,8 @@ export default function PlayerProfilePage() {
                 </div>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+              <div className="mt-4 rounded-lg border border-[#34312a] bg-black/30 p-4">
+                <p className="gc-card-kicker">
                   Room
                 </p>
 
@@ -225,8 +226,8 @@ export default function PlayerProfilePage() {
                 </p>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+              <div className="mt-4 rounded-lg border border-[#34312a] bg-black/30 p-4">
+                <p className="gc-card-kicker">
                   Arrival
                 </p>
 
@@ -235,8 +236,8 @@ export default function PlayerProfilePage() {
                 </p>
               </div>
 
-              <div className="mt-4 rounded-2xl border border-[#d8d1c4] bg-[#f6f0e3] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+              <div className="mt-4 rounded-lg border border-[#34312a] bg-black/30 p-4">
+                <p className="gc-card-kicker">
                   Status
                 </p>
 
@@ -247,18 +248,18 @@ export default function PlayerProfilePage() {
             </section>
 
             {(player.phone_number || player.phone) && (
-              <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5">
-                <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#a3a3a3]">
+              <section className="profile-detail-card gc-edge-card p-5">
+                <p className="gc-card-kicker">
                   Contact
                 </p>
-                <h2 className="mt-2 text-2xl font-bold">Save Contact</h2>
-                <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                <h2 className="gc-card-title">Save Contact</h2>
+                <p className="gc-card-copy">
                   Download this player&apos;s individual contact card.
                 </p>
                 <button
                   type="button"
                   onClick={() => downloadPlayerContact(player)}
-                  className="mt-4 w-full rounded-xl border border-[#d8d1c4]/70 bg-[#efe9dc] px-4 py-3 text-sm font-semibold text-[#17130e] transition hover:bg-[#f6f0e3]"
+                  className="gc-primary-button mt-4 text-sm"
                 >
                   Save Contact
                 </button>
@@ -279,7 +280,7 @@ export default function PlayerProfilePage() {
                 {loreItems(player).map(([label, value]) => (
                   <div
                     key={label}
-                    className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5"
+                    className="profile-detail-card rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5"
                   >
                     <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#a3a3a3]">
                       {label}
@@ -296,7 +297,7 @@ export default function PlayerProfilePage() {
             {!player.phone_number &&
               !player.phone &&
               loreItems(player).length === 0 && (
-              <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 text-sm text-[#a3a3a3]">
+              <section className="profile-detail-card rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 text-sm text-[#a3a3a3]">
                 No profile lore added yet.
               </section>
             )}

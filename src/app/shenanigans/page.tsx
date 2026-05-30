@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -179,16 +180,16 @@ export default function ShenanigansPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(106,49,60,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#a45a66" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/home" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Shenanigans
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#7f1d1d] bg-[#1a0d0d] text-[#ef4444]">
+          <span className="gc-top-icon">
             <GolfCampIcon name="shenanigans" className="h-4 w-4" />
           </span>
         </div>
@@ -203,15 +204,15 @@ export default function ShenanigansPage() {
           onEndGame={endGame}
         />
 
-        <section className="overflow-hidden rounded-2xl border border-[#7f1d1d] bg-[#120d0d] shadow-[0_0_32px_rgba(106,49,60,0.1)]">
-          <div className="border-b border-[#3a1d1d] bg-[#1a0d0d] px-5 py-4">
-            <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ef4444]">
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Current Game
             </p>
-            <h1 className="mt-2 text-3xl font-black tracking-tight">
+            <h1 className="gc-card-title">
               Shenanigans
             </h1>
-            <p className="mt-1 text-sm text-[#a3a3a3]">
+            <p className="gc-card-copy">
               Points, wagers, props, and bad decisions.
             </p>
           </div>
@@ -223,7 +224,7 @@ export default function ShenanigansPage() {
           <input
             value={gameName}
             onChange={(event) => setGameName(event.target.value)}
-            className="mt-4 w-full rounded-xl border border-[#3a1d1d] bg-black/55 px-4 py-3 outline-none focus:border-[#b91c1c]"
+            className="gc-input mt-4"
             placeholder="Game name"
           />
           <div className="mt-4">
@@ -245,7 +246,7 @@ export default function ShenanigansPage() {
               selectedPlayerNames.length < 2 ||
               selectedPlayerNames.length > 4
             }
-            className="mt-4 w-full rounded-xl bg-[#b91c1c] px-4 py-3 font-bold transition hover:bg-[#991b1b] disabled:opacity-50"
+            className="gc-primary-button mt-4 transition disabled:opacity-50"
           >
             {isCreating ? "Starting..." : "Start Game"}
           </button>
@@ -255,27 +256,27 @@ export default function ShenanigansPage() {
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#fca5a5]">{error}</p>}
 
-        <div className="overflow-hidden rounded-2xl border border-[#7f1d1d]/70 bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.5),0_0_42px_rgba(106,49,60,0.1)]">
+        <div className="gc-edge-list">
           {cards.map((card) => (
             <Link
               key={card.name}
               href={card.href}
-              className="grid grid-cols-[3.25rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-4 py-3.5 transition-colors duration-200 hover:bg-[#1a0d0d] last:border-b-0"
+              className="gc-edge-row"
             >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-[#7f1d1d]/70 bg-[#1a0d0d] text-[#ef4444]">
+              <span className="gc-edge-mark">
                 <GolfCampIcon name={card.icon} className="h-6 w-6" />
               </span>
                 <div className="min-w-0">
-                  <h2 className="truncate text-base font-black leading-tight text-[#f4f1ea]">
+                  <h2 className="gc-edge-title">
                     {card.name}
                   </h2>
 
-                  <p className="mt-0.5 truncate text-xs font-semibold text-[#b8b0a1]">
+                  <p className="gc-edge-meta">
                     {card.description}
                   </p>
                 </div>
 
-                <span className="shrink-0 self-center font-mono text-xl font-black leading-none text-[#82786a]">
+                <span className="gc-edge-arrow">
                   →
                 </span>
             </Link>

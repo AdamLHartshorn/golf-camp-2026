@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -228,16 +229,19 @@ export default function ShenanigansSettlementPage() {
   const hasSettlementData = finalTotals.length > 0;
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
+    <main
+      className="gc-mobile-shell text-[#f5f5f5]"
+      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+    >
+      <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
+        <div className="gc-section-head">
+          <p className="gc-card-kicker text-[#a45a66]">
             Shenanigans
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">Settlement</h1>
+          <h1 className="gc-card-title">Settlement</h1>
 
-          <p className="text-[#a3a3a3]">
+          <p className="gc-card-copy">
             Final points, units, and payouts.
           </p>
         </div>
@@ -255,7 +259,7 @@ export default function ShenanigansSettlementPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
@@ -278,7 +282,7 @@ export default function ShenanigansSettlementPage() {
         )}
 
         {selectedGameId && (
-        <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
+        <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Dollar Unit
           </p>
@@ -340,13 +344,13 @@ export default function ShenanigansSettlementPage() {
 
           <div className="space-y-3">
             {isLoading && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-center text-sm text-[#a3a3a3]">
                 Loading settlement...
               </div>
             )}
 
             {!isLoading && !hasSettlementData && (
-              <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-center text-sm text-[#a3a3a3]">
+              <div className="gc-edge-card p-5 text-center text-sm text-[#a3a3a3]">
                 No Shenanigans ledger events yet.
               </div>
             )}
@@ -355,7 +359,7 @@ export default function ShenanigansSettlementPage() {
               finalTotals.map((player, index) => (
                 <div
                   key={player.name}
-                  className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
+                  className="gc-edge-card p-4"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
@@ -394,7 +398,7 @@ export default function ShenanigansSettlementPage() {
               <h2 className="mt-2 text-xl font-bold">After Everyone Pays Up</h2>
             </div>
 
-            <div className="rounded-2xl border border-[#242424] bg-[#111111] px-5">
+            <div className="gc-edge-card px-5">
               {finalTotals.map((player) => {
                 const isPositive = player.netDollars > 0;
 
@@ -437,7 +441,7 @@ export default function ShenanigansSettlementPage() {
 
             <div className="space-y-3">
               {minimizedPaymentRows.length === 0 && (
-                <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
+                <div className="gc-edge-card p-4 text-sm text-[#a3a3a3]">
                   Everyone is square.
                 </div>
               )}
@@ -445,7 +449,7 @@ export default function ShenanigansSettlementPage() {
               {minimizedPaymentRows.map((payment) => (
                 <div
                   key={`min-${payment.payer}-${payment.receiver}-${payment.dollarAmount}`}
-                  className="rounded-2xl border border-[#b91c1c]/70 bg-[#111111] p-4"
+                  className="gc-edge-card p-4"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <p className="min-w-0 text-sm leading-6 text-[#a3a3a3]">
@@ -480,7 +484,7 @@ export default function ShenanigansSettlementPage() {
 
             <div className="space-y-3">
               {paymentRows.length === 0 && (
-                <div className="rounded-2xl border border-[#242424] bg-[#111111] p-4 text-sm text-[#a3a3a3]">
+                <div className="gc-edge-card p-4 text-sm text-[#a3a3a3]">
                   Everyone is square.
                 </div>
               )}
@@ -488,7 +492,7 @@ export default function ShenanigansSettlementPage() {
               {paymentRows.map((payment) => (
                 <div
                   key={`${payment.payer}-${payment.receiver}-${payment.pointDifference}`}
-                  className="rounded-2xl border border-[#242424] bg-[#111111] p-4"
+                  className="gc-edge-card p-4"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <p className="min-w-0 text-sm leading-6 text-[#a3a3a3]">

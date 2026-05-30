@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -107,37 +108,37 @@ export default function MoneyRoundsBankPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
-        <div className="space-y-2">
-          <p className="text-sm uppercase tracking-[0.35em] text-[#16a34a]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#6fa783" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-edge-card p-5">
+          <p className="gc-card-kicker">
             Money Rounds
           </p>
 
-          <h1 className="text-4xl font-bold tracking-tight">
+          <h1 className="gc-card-title">
             Yearly Bank
           </h1>
 
-          <p className="text-[#a3a3a3]">
+          <p className="gc-card-copy">
             Cumulative placement, skins, buy-ins, and net from scored/final
             Money Rounds.
           </p>
         </div>
 
         {isLoading && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             Loading bank...
           </div>
         )}
 
         {!isLoading && error && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#ff8a8a]">
+          <div className="gc-edge-card p-5 text-sm text-[#ff8a8a]">
             {error}
           </div>
         )}
 
         {!isLoading && !error && bankRows.length === 0 && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             {hasScoredRounds
               ? "No Money Rounds bank activity yet."
               : "No finalized/scored Money Rounds yet."}
@@ -145,7 +146,7 @@ export default function MoneyRoundsBankPage() {
         )}
 
         {!isLoading && !error && bankRows.length > 0 && (
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] px-5">
+          <section className="gc-edge-card px-5">
             {bankRows.map((row, index) => (
               <div
                 key={row.playerName}
@@ -171,23 +172,23 @@ export default function MoneyRoundsBankPage() {
                 </div>
 
                 <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl border border-[#242424] bg-black p-3">
+                  <div className="money-bank-stat rounded-xl border border-[#242424] bg-black p-3">
                     <p className="text-xs text-[#a3a3a3]">Placement</p>
                     <p className="mt-1 font-bold">
                       {money(row.placementWinnings)}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#242424] bg-black p-3">
+                  <div className="money-bank-stat rounded-xl border border-[#242424] bg-black p-3">
                     <p className="text-xs text-[#a3a3a3]">Skins</p>
                     <p className="mt-1 font-bold">
                       {money(row.skinsWinnings)}
                     </p>
                   </div>
-                  <div className="rounded-xl border border-[#242424] bg-black p-3">
+                  <div className="money-bank-stat rounded-xl border border-[#242424] bg-black p-3">
                     <p className="text-xs text-[#a3a3a3]">Buy-Ins</p>
                     <p className="mt-1 font-bold">{money(row.buyIns)}</p>
                   </div>
-                  <div className="rounded-xl border border-[#242424] bg-black p-3">
+                  <div className="money-bank-stat rounded-xl border border-[#242424] bg-black p-3">
                     <p className="text-xs text-[#a3a3a3]">Total Net</p>
                     <p className="mt-1 font-bold">{signedMoney(row.net)}</p>
                   </div>

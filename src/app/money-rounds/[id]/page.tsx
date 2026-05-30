@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
@@ -128,31 +129,31 @@ export default function MoneyRoundDetailPage() {
   }, [bankRows.length, error, isLoading, params.id, scores.length, teams.length]);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(49,95,72,0.1),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto w-full max-w-3xl space-y-6 py-6">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#6fa783" } as CSSProperties}>
+      <div className="gc-mobile-stage max-w-3xl justify-start">
         {isLoading && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             Loading round...
           </div>
         )}
 
         {!isLoading && error && (
-          <div className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#ff8a8a]">
+          <div className="gc-edge-card p-5 text-sm text-[#ff8a8a]">
             {error}
           </div>
         )}
 
         {!isLoading && !error && round && (
           <>
-            <div className="overflow-hidden rounded-2xl border border-[#1f6c38] bg-[#0c0f0b] shadow-[0_0_32px_rgba(49,95,72,0.09)]">
-              <div className="border-b border-[#164c2a] bg-[#102116] px-5 py-5">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8ee6a7]">
+            <div className="gc-edge-card">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">
                   Money Rounds
                 </p>
-                <h1 className="mt-2 text-4xl font-black tracking-tight">
+                <h1 className="gc-card-title">
                   {round.name}
                 </h1>
-                <p className="mt-2 text-sm text-[#a3a3a3]">
+                <p className="gc-card-copy">
                   {round.round_date || "Date TBD"} · {round.status}
                 </p>
               </div>
@@ -194,9 +195,10 @@ export default function MoneyRoundDetailPage() {
               </div>
             </div>
 
-            <section className="rounded-2xl border border-[#2b2b27] bg-[#0d0d0b] p-5 shadow-[0_18px_45px_rgba(0,0,0,0.35)]">
-              <h2 className="text-xl font-bold">Standings</h2>
-              <p className="mt-2 text-sm text-[#a3a3a3]">
+            <section className="gc-edge-card p-5">
+              <p className="gc-card-kicker">Leaderboard</p>
+              <h2 className="gc-card-title">Standings</h2>
+              <p className="gc-card-copy">
                 Live standings are unofficial until verified. Tie breaker by
                 hole handicap coming soon.
               </p>
@@ -345,11 +347,11 @@ export default function MoneyRoundDetailPage() {
               })}
             </section>
 
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+            <section className="gc-edge-card p-5">
+              <p className="gc-card-kicker">
                 Skins
               </p>
-              <h2 className="mt-2 text-xl font-bold">Hole Winners</h2>
+              <h2 className="gc-card-title">Hole Winners</h2>
               <div className="mt-4 space-y-2 text-sm text-[#a3a3a3]">
                 {skins.length === 0 && (
                   <div className="rounded-xl border border-[#242424] bg-black p-4">
@@ -378,11 +380,11 @@ export default function MoneyRoundDetailPage() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#16a34a]">
+            <section className="gc-edge-card p-5">
+              <p className="gc-card-kicker">
                 Round Bank
               </p>
-              <h2 className="mt-2 text-xl font-bold">Player Payouts</h2>
+              <h2 className="gc-card-title">Player Payouts</h2>
               <div className="mt-4 space-y-3 text-sm">
                 {bankRows.length === 0 && (
                   <p className="rounded-xl border border-[#242424] bg-black p-4 text-[#a3a3a3]">

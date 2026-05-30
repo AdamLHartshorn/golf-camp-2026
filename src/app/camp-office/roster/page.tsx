@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
@@ -71,21 +72,21 @@ export default function CampRosterPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto w-full max-w-md space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/camp-office" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <div className="gc-mobile-stage justify-start">
+        <div className="gc-topbar">
+          <Link href="/camp-office" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Camp Roster
           </p>
-          <span className="text-xl text-[#a3a3a3]">⌕</span>
+          <span className="gc-top-icon text-xl">⌕</span>
         </div>
 
-        <div className="overflow-hidden rounded-[1.65rem] border border-[#2f2a22] bg-[#0d0d0b]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.48),0_0_48px_rgba(244,241,234,0.05)]">
-          <div className="border-b border-[#2a2925] px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#b8b0a1]">
+        <div className="gc-edge-card text-[#f5f5f5]">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Players, rooms, arrivals
             </p>
           </div>

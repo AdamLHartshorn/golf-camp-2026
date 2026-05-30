@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { DraftSession } from "@/app/draft/_lib/draftUtils";
@@ -76,40 +77,40 @@ export default function DraftPage() {
     session && completedDraftStatuses.includes(String(session.status));
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(50,77,112,0.12),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
-        <div className="flex items-center justify-between gap-4">
-          <Link href="/home" className="text-2xl text-[#a3a3a3]">
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#7bbcff" } as CSSProperties}>
+      <div className="gc-mobile-stage">
+        <div className="gc-topbar">
+          <Link href="/home" className="gc-back-link">
             ‹
           </Link>
-          <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
+          <p className="gc-topbar-title">
             Live Draft
           </p>
-          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1e40af] bg-[#071123] text-[#60a5fa]">
+          <span className="gc-top-icon">
             <GolfCampIcon name="draft" className="h-4 w-4" />
           </span>
         </div>
 
         {isLoading && (
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#a3a3a3]">
+          <section className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
             Loading draft...
           </section>
         )}
 
         {!isLoading && error && (
-          <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5 text-sm text-[#ff8a8a]">
+          <section className="gc-edge-card p-5 text-sm text-[#ff8a8a]">
             {error}
           </section>
         )}
 
         {!isLoading && !error && session && (
-          <section className="overflow-hidden rounded-2xl border border-[#1e40af]/70 bg-[#071123]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_48px_rgba(50,77,112,0.11)]">
+          <section className="draft-public-board-card gc-edge-card">
             <Link
               href="/draft/live"
               className="block transition hover:bg-[#0b1730]"
             >
-              <div className="border-b border-[#1e40af]/60 bg-[#08152d] px-5 py-5">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
+              <div className="draft-public-board-header gc-section-head">
+                <p className="gc-card-kicker">
                   {isCompleteDraft ? "Complete Draft Board" : "On The Clock Board"}
                 </p>
                 <h1 className="mt-4 text-4xl font-black tracking-tight">
@@ -137,7 +138,7 @@ export default function DraftPage() {
 
             <Link
               href="/draft/mobile"
-              className="block border-t border-[#1e40af]/35 px-5 py-4 text-center text-sm font-black text-[#60a5fa] transition hover:bg-[#0b1730]"
+              className="block border-t border-[#1e40af]/35 px-5 py-4 text-center text-sm font-black text-[#7bbcff] transition hover:bg-[#0b1730]"
             >
               Open Mobile Draft View
             </Link>
@@ -145,9 +146,9 @@ export default function DraftPage() {
         )}
 
         {!isLoading && !error && !session && (
-          <section className="overflow-hidden rounded-2xl border border-[#1e40af]/70 bg-[#071123]/95 text-[#f5f5f5] shadow-[0_28px_80px_rgba(0,0,0,0.52),0_0_48px_rgba(50,77,112,0.11)]">
-            <div className="border-b border-[#1e40af]/60 bg-[#08152d] px-5 py-5">
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#1d4ed8]">
+          <section className="draft-public-board-card gc-edge-card">
+            <div className="draft-public-board-header gc-section-head">
+              <p className="gc-card-kicker">
                 No Active Draft
               </p>
 
@@ -165,14 +166,14 @@ export default function DraftPage() {
 
         <Link
           href="/draft/prep"
-          className="block overflow-hidden rounded-2xl border border-[#324d70]/60 bg-[linear-gradient(135deg,rgba(50,77,112,0.18),rgba(7,17,35,0.94)_42%,rgba(8,13,24,0.96))] text-[#f5f5f5] shadow-[0_22px_70px_rgba(0,0,0,0.46),0_0_42px_rgba(50,77,112,0.1)] transition hover:border-[#8fb0d8]/60 hover:bg-[#0b1730]"
+          className="draft-prep-link-card gc-edge-card block transition hover:border-[#8fb0d8]/60 hover:bg-[#0b1730]"
         >
-          <div className="flex items-start justify-between gap-4 border-b border-[#324d70]/35 px-5 py-5">
+          <div className="gc-section-head flex items-start justify-between gap-4">
             <div>
-              <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#8fb0d8]">
+              <p className="gc-card-kicker">
                 Scouting Cards
               </p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight">
+              <h2 className="gc-card-title">
                 Draft Prep
               </h2>
               <p className="mt-2 text-sm leading-6 text-[#b8c3d4]">
@@ -181,7 +182,7 @@ export default function DraftPage() {
               </p>
             </div>
 
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#324d70]/70 bg-black/35 text-[#8fb0d8] shadow-[0_0_24px_rgba(50,77,112,0.16)]">
+            <span className="draft-prep-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#324d70]/70 bg-black/35 text-[#8fb0d8] shadow-[0_0_24px_rgba(50,77,112,0.16)]">
               <GolfCampIcon name="draft" className="h-5 w-5" />
             </span>
           </div>
