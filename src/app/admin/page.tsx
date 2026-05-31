@@ -45,8 +45,8 @@ const sections = [
     title: "Shenanigans Admin",
     href: "/admin/shenanigans",
     description: "Audit ledger events, manage wagers, and reset chaos data when needed.",
-    accent: "#6a313c",
-    tint: "rgba(106,49,60,0.13)",
+    accent: "#EB9C5C",
+    tint: "rgba(235,156,92,0.14)",
   },
   {
     number: "06",
@@ -54,8 +54,8 @@ const sections = [
     title: "Afternoon Rounds",
     href: "/admin/afternoon-rounds",
     description: "Review player-owned optional rounds and override when needed.",
-    accent: "#d6a84f",
-    tint: "rgba(214,168,79,0.11)",
+    accent: "#ffda03",
+    tint: "rgba(255,218,3,0.11)",
   },
   {
     number: "07",

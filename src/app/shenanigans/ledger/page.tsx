@@ -130,7 +130,7 @@ export default function ShenanigansLedgerPage() {
   return (
     <main
       className="gc-mobile-shell text-[#f5f5f5]"
-      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+      style={{ "--page-accent": "#EB9C5C" } as CSSProperties}
     >
       <div className="gc-mobile-stage w-full max-w-md justify-center space-y-5">
         <div className="gc-topbar">
@@ -140,7 +140,7 @@ export default function ShenanigansLedgerPage() {
           <p className="gc-topbar-title">
             Shenanigans
           </p>
-          <span className="gc-top-icon text-[#a45a66]">◇</span>
+          <span className="gc-top-icon text-[#EB9C5C]">◇</span>
         </div>
 
         <ShenanigansGameBar

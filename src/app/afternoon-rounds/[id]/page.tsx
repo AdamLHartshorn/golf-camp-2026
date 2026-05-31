@@ -255,7 +255,7 @@ function PlayerSelector({
         value={searchTerm}
         onChange={(event) => setSearchTerm(event.target.value)}
         placeholder="Search players"
-        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none placeholder:text-[#737373] focus:border-[#d6a84f]"
+        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none placeholder:text-[#737373] focus:border-[#ffda03]"
       />
       <div className="flex max-h-44 flex-wrap gap-2 overflow-y-auto rounded-xl border border-[#242424] bg-black/35 p-2">
         {filteredPlayers.map((player) => {
@@ -268,8 +268,8 @@ function PlayerSelector({
               onClick={() => togglePlayer(player.id)}
               className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
                 isSelected
-                  ? "border-[#d6a84f] bg-[#d6a84f] text-black"
-                  : "border-[#242424] bg-[#111111] text-[#d4d4d4] hover:border-[#d6a84f]"
+                  ? "border-[#ffda03] bg-[#ffda03] text-black"
+                  : "border-[#242424] bg-[#111111] text-[#d4d4d4] hover:border-[#ffda03]"
               }`}
             >
               {player.display_name}
@@ -927,7 +927,7 @@ export default function AfternoonRoundDetailPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
               {label}
             </p>
-            <p className="text-sm font-bold text-[#d6a84f]">
+            <p className="text-sm font-bold text-[#ffda03]">
               {label === "Front 9" ? "OUT" : "IN"} {scoreToPar}
             </p>
           </div>
@@ -957,7 +957,7 @@ export default function AfternoonRoundDetailPage() {
                         },
                       }))
                     }
-                    className="mt-1 h-11 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#d6a84f] disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    className="mt-1 h-11 w-full rounded-lg border border-[#242424] bg-black px-1 text-center text-base font-semibold [appearance:textfield] outline-none focus:border-[#ffda03] disabled:cursor-not-allowed disabled:opacity-50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     aria-label={`${team.name} hole ${hole} score`}
                   />
                 </label>
@@ -972,7 +972,7 @@ export default function AfternoonRoundDetailPage() {
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3 rounded-xl border border-[#3a2a12] bg-black/35 px-4 py-3">
           <p className="text-sm font-bold text-[#f5f5f5]">Total</p>
-          <p className="font-mono text-sm font-black text-[#d6a84f]">
+          <p className="font-mono text-sm font-black text-[#ffda03]">
             {formatScoreToCompletedPar(total, draftedScoresByHole)}
           </p>
         </div>
@@ -983,7 +983,7 @@ export default function AfternoonRoundDetailPage() {
             type="button"
             onClick={() => handleSaveTeamScores(team)}
             disabled={isSaving}
-            className="w-full rounded-xl border border-[#d6a84f] px-4 py-3 text-sm font-bold text-[#d6a84f] transition hover:bg-[#21180b] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl border border-[#ffda03] px-4 py-3 text-sm font-bold text-[#ffda03] transition hover:bg-[#1f1a05] disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save Scores
           </button>
@@ -993,7 +993,7 @@ export default function AfternoonRoundDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(214,168,79,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,218,3,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
           <Link href="/afternoon-rounds" className="text-2xl text-[#a3a3a3]">
@@ -1002,7 +1002,7 @@ export default function AfternoonRoundDetailPage() {
           <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
             Afternoon Round
           </p>
-          <span className="rounded-full border border-[#6f4d16] bg-[#21180b] px-3 py-1 text-xs font-black text-[#d6a84f]">
+          <span className="rounded-full border border-[#9a8500] bg-[#1f1a05] px-3 py-1 text-xs font-black text-[#ffda03]">
             {round?.status || "open"}
           </span>
         </div>
@@ -1021,9 +1021,9 @@ export default function AfternoonRoundDetailPage() {
 
         {!isLoading && round && (
           <>
-            <section className="overflow-hidden rounded-2xl border border-[#6f4d16]/70 bg-[#0d0d0b]/95 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
-              <div className="border-b border-[#2a2925] bg-[#21180b] px-5 py-5">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+            <section className="overflow-hidden rounded-2xl border border-[#9a8500]/70 bg-[#0d0d0b]/95 shadow-[0_28px_80px_rgba(0,0,0,0.45)]">
+              <div className="border-b border-[#2a2925] bg-[#1f1a05] px-5 py-5">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                   {round.owner_name || "Player-created round"}
                 </p>
                 <h1 className="mt-2 text-3xl font-black tracking-tight">
@@ -1039,7 +1039,7 @@ export default function AfternoonRoundDetailPage() {
                   <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
                     Buy-In Pot
                   </p>
-                  <p className="mt-1 text-lg font-black text-[#d6a84f]">
+                  <p className="mt-1 text-lg font-black text-[#ffda03]">
                     {money(totalBuyIn)}
                   </p>
                 </div>
@@ -1079,7 +1079,7 @@ export default function AfternoonRoundDetailPage() {
                   key={step.label}
                   className={`rounded-2xl border px-4 py-3 ${
                     step.done
-                      ? "border-[#6f4d16] bg-[#21180b]/70"
+                      ? "border-[#9a8500] bg-[#1f1a05]/70"
                       : "border-[#242424] bg-[#111111]"
                   }`}
                 >
@@ -1096,7 +1096,7 @@ export default function AfternoonRoundDetailPage() {
             {canManage && roundForm && (
               <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
                 <div>
-                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                     Round Setup
                   </p>
                   <h2 className="mt-2 text-xl font-bold">Edit Round</h2>
@@ -1105,13 +1105,13 @@ export default function AfternoonRoundDetailPage() {
                   value={roundForm.name}
                   onChange={(event) => updateRoundForm("name", event.target.value)}
                   placeholder="Round name"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                 />
                 <input
                   type="date"
                   value={roundForm.round_date}
                   onChange={(event) => updateRoundForm("round_date", event.target.value)}
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                 />
                 <div className="grid grid-cols-2 gap-3">
                   {[
@@ -1133,7 +1133,7 @@ export default function AfternoonRoundDetailPage() {
                           updateRoundForm(field as keyof RoundForm, event.target.value)
                         }
                         placeholder="$0 optional"
-                        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+                        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                       />
                     </label>
                   ))}
@@ -1143,13 +1143,13 @@ export default function AfternoonRoundDetailPage() {
                   onChange={(event) => updateRoundForm("payout_notes", event.target.value)}
                   placeholder="Optional payout notes"
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+                  className="w-full resize-none rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                 />
                 <button
                   type="button"
                   onClick={handleSaveRoundSettings}
                   disabled={isSaving}
-                  className="w-full rounded-xl border border-[#d6a84f] px-4 py-3 font-bold text-[#d6a84f] transition hover:bg-[#21180b] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-xl border border-[#ffda03] px-4 py-3 font-bold text-[#ffda03] transition hover:bg-[#1f1a05] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Save Round Settings
                 </button>
@@ -1159,7 +1159,7 @@ export default function AfternoonRoundDetailPage() {
             {canManage && (
               <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
                 <div>
-                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                     Participants
                   </p>
                   <h2 className="mt-2 text-xl font-bold">Add / Remove Players</h2>
@@ -1175,7 +1175,7 @@ export default function AfternoonRoundDetailPage() {
                   type="button"
                   onClick={handleAddParticipants}
                   disabled={isSaving || selectedParticipantIds.length === 0}
-                  className="w-full rounded-xl border border-[#d6a84f] px-4 py-3 font-bold text-[#d6a84f] transition hover:bg-[#21180b] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="w-full rounded-xl border border-[#ffda03] px-4 py-3 font-bold text-[#ffda03] transition hover:bg-[#1f1a05] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Add Participants
                 </button>
@@ -1190,7 +1190,7 @@ export default function AfternoonRoundDetailPage() {
 
             <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
               <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                   Leaderboard
                 </p>
               </div>
@@ -1202,7 +1202,7 @@ export default function AfternoonRoundDetailPage() {
                     key={standing.team.id}
                     className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-5 py-4 last:border-b-0"
                   >
-                    <span className="font-mono text-sm font-black text-[#d6a84f]">
+                    <span className="font-mono text-sm font-black text-[#ffda03]">
                       {index + 1}
                     </span>
                     <div className="min-w-0">
@@ -1224,7 +1224,7 @@ export default function AfternoonRoundDetailPage() {
             {canManage && (
               <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
                 <div>
-                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                     Team Builder
                   </p>
                   <h2 className="mt-2 text-xl font-bold">
@@ -1235,7 +1235,7 @@ export default function AfternoonRoundDetailPage() {
                   value={teamName}
                   onChange={(event) => setTeamName(event.target.value)}
                   placeholder="Team name"
-                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#d6a84f]"
+                  className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                 />
                 <PlayerSelector
                   players={participants.map((participant) => ({
@@ -1259,7 +1259,7 @@ export default function AfternoonRoundDetailPage() {
                     type="button"
                     onClick={handleSaveTeam}
                     disabled={isSaving || selectedTeamPlayerIds.length === 0}
-                    className="rounded-xl border border-[#d6a84f] px-4 py-3 text-sm font-bold text-[#d6a84f] transition hover:bg-[#21180b] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-xl border border-[#ffda03] px-4 py-3 text-sm font-bold text-[#ffda03] transition hover:bg-[#1f1a05] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {editingTeamId ? "Update Team" : "Add Team"}
                   </button>
@@ -1269,7 +1269,7 @@ export default function AfternoonRoundDetailPage() {
 
             <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
               <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                   Teams / Scores
                 </p>
                 <h2 className="mt-2 text-xl font-black">Round Groups</h2>
@@ -1292,7 +1292,7 @@ export default function AfternoonRoundDetailPage() {
                           <button
                             type="button"
                             onClick={() => handleEditTeam(team)}
-                            className="text-xs font-bold text-[#d6a84f]"
+                            className="text-xs font-bold text-[#ffda03]"
                           >
                             Edit
                           </button>
@@ -1315,7 +1315,7 @@ export default function AfternoonRoundDetailPage() {
 
             <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
               <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                   Participants
                 </p>
               </div>
@@ -1334,7 +1334,7 @@ export default function AfternoonRoundDetailPage() {
                         type="button"
                         onClick={() => handleRemoveParticipant(player)}
                         disabled={isSaving}
-                        className="text-xs font-bold text-[#d6a84f] disabled:opacity-50"
+                        className="text-xs font-bold text-[#ffda03] disabled:opacity-50"
                       >
                         Remove
                       </button>
@@ -1349,7 +1349,7 @@ export default function AfternoonRoundDetailPage() {
               round.third_place_payout ||
               round.payout_notes) && (
               <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#d6a84f]">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
                   Payouts
                 </p>
                 <div className="mt-4 grid grid-cols-3 gap-2 text-center text-sm">
@@ -1383,7 +1383,7 @@ export default function AfternoonRoundDetailPage() {
                   type="button"
                   onClick={() => handleFinalizeRound(isFinal ? "active" : "final")}
                   disabled={isSaving}
-                  className="rounded-2xl border border-[#d6a84f] bg-[#d6a84f] px-5 py-4 font-bold text-black transition hover:bg-[#b8872d] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="rounded-2xl border border-[#ffda03] bg-[#ffda03] px-5 py-4 font-bold text-black transition hover:bg-[#d8b900] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isFinal ? "Reopen Afternoon Round" : "Finalize Afternoon Round"}
                 </button>

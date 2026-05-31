@@ -56,11 +56,11 @@ export default function ShenanigansBankPage() {
   return (
     <main
       className="gc-mobile-shell text-[#f5f5f5]"
-      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+      style={{ "--page-accent": "#EB9C5C" } as CSSProperties}
     >
       <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
         <div className="gc-section-head">
-          <p className="gc-card-kicker text-[#a45a66]">
+          <p className="gc-card-kicker text-[#EB9C5C]">
             Shenanigans
           </p>
 

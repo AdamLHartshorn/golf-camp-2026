@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
 import { supabase } from "@/lib/supabase";
@@ -22,6 +22,21 @@ type EveningBet = {
 };
 
 type EveningView = "hub" | "wagers" | "ledger";
+
+type DraftSessionOption = {
+  id: string;
+  name: string;
+  status: string | null;
+  completed_at: string | null;
+  created_at: string | null;
+};
+
+type DraftTeamOption = {
+  id: string;
+  draft_session_id: string;
+  name: string;
+  draft_position: number | null;
+};
 
 const rulesSeenKey = "eveningParimutuelRulesSeen";
 
@@ -43,6 +58,7 @@ const markets = [
 ];
 
 const holeMarkets = new Set(["Hardest Hole", "Easiest Hole"]);
+const quickBetAmounts = [5, 10, 15, 20];
 
 const moneyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -115,7 +131,7 @@ function RulesModal({ onClose }: { onClose: () => void }) {
       <section className="gc-edge-card max-h-[86vh] w-full max-w-md overflow-y-auto" style={{ "--page-accent": "#9c91ba" } as CSSProperties}>
         <div className="gc-section-head">
           <p className="gc-card-kicker">House Rules</p>
-          <h2 className="gc-card-title">Evening Parimutuel</h2>
+          <h2 className="gc-card-title">Parimutuel Bets</h2>
           <p className="gc-card-copy">
             A simple ledger for next-day Money Round pools. No banker, no pot,
             no sportsbook energy.
@@ -202,13 +218,26 @@ export default function EveningParimutuelPage() {
     useActivePlayers();
   const [session] = useState<PlayerSession | null>(() => getPlayerSession());
   const [bets, setBets] = useState<EveningBet[]>([]);
+  const [draftSession, setDraftSession] = useState<DraftSessionOption | null>(
+    null,
+  );
+  const [draftTeams, setDraftTeams] = useState<DraftTeamOption[]>([]);
+  const [isLoadingDraftTeams, setIsLoadingDraftTeams] = useState(true);
+  const [draftTeamsError, setDraftTeamsError] = useState("");
   const [selectedNight, setSelectedNight] = useState(nights[0].value);
-  const [selectedMarket, setSelectedMarket] = useState(markets[0]);
   const [selectedPlayerId, setSelectedPlayerId] = useState(
     () => getPlayerSession()?.id || "",
   );
-  const [selection, setSelection] = useState("");
-  const [amount, setAmount] = useState("5");
+  const [marketSelections, setMarketSelections] = useState<Record<string, string>>(
+    {},
+  );
+  const [marketAmounts, setMarketAmounts] = useState<Record<string, number>>(
+    () =>
+      markets.reduce<Record<string, number>>((accumulator, market) => {
+        accumulator[market] = 5;
+        return accumulator;
+      }, {}),
+  );
   const [isLoadingBets, setIsLoadingBets] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -244,8 +273,8 @@ export default function EveningParimutuelPage() {
         setBets([]);
         setError(
           fetchError.code === "42P01"
-            ? "Evening Parimutuel needs the Supabase setup SQL before bets can be saved."
-            : fetchError.message || "Could not load Evening Parimutuel bets.",
+            ? "Parimutuel Bets needs the Supabase setup SQL before bets can be saved."
+            : fetchError.message || "Could not load Parimutuel Bets.",
         );
         setIsLoadingBets(false);
         return;
@@ -264,6 +293,75 @@ export default function EveningParimutuelPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function fetchDraftTeams() {
+      setIsLoadingDraftTeams(true);
+      setDraftTeamsError("");
+
+      const { data: sessionData, error: sessionError } = await supabase
+        .from("draft_sessions")
+        .select("id, name, status, completed_at, created_at")
+        .in("status", ["complete", "completed", "final", "finalized"])
+        .order("completed_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (sessionError) {
+        setDraftSession(null);
+        setDraftTeams([]);
+        setDraftTeamsError(
+          sessionError.message || "Could not load completed draft teams.",
+        );
+        setIsLoadingDraftTeams(false);
+        return;
+      }
+
+      const latestSession = ((sessionData as DraftSessionOption[]) || [])[0];
+
+      if (!latestSession) {
+        setDraftSession(null);
+        setDraftTeams([]);
+        setDraftTeamsError("No completed draft available yet.");
+        setIsLoadingDraftTeams(false);
+        return;
+      }
+
+      const { data: teamData, error: teamError } = await supabase
+        .from("draft_teams")
+        .select("id, draft_session_id, name, draft_position")
+        .eq("draft_session_id", latestSession.id)
+        .order("draft_position", { ascending: true });
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (teamError) {
+        setDraftSession(latestSession);
+        setDraftTeams([]);
+        setDraftTeamsError(teamError.message || "Could not load draft teams.");
+        setIsLoadingDraftTeams(false);
+        return;
+      }
+
+      setDraftSession(latestSession);
+      setDraftTeams((teamData as DraftTeamOption[]) || []);
+      setIsLoadingDraftTeams(false);
+    }
+
+    fetchDraftTeams();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
   const selectedNightMeta = getNightMeta(selectedNight);
   const selectedPlayer =
     players.find((player) => player.id === selectedPlayerId) ||
@@ -275,19 +373,19 @@ export default function EveningParimutuelPage() {
           display_name: session.display_name,
         }
       : null);
-  const marketBetsForPlayer = bets.filter(
-    (bet) =>
-      bet.bettor_player_id === selectedPlayerId &&
-      bet.betting_night === selectedNight &&
-      bet.market === selectedMarket,
-  );
-  const currentMarketTotal = marketBetsForPlayer.reduce(
-    (total, bet) => total + normalizeAmount(bet.amount),
-    0,
-  );
-  const remainingForMarket = Math.max(0, 20 - currentMarketTotal);
 
   const visibleBets = bets.filter((bet) => bet.betting_night === selectedNight);
+  const teamOptions = useMemo(
+    () =>
+      draftTeams
+        .map((team) => team.name)
+        .filter((teamName, index, teamNames) => teamNames.indexOf(teamName) === index),
+    [draftTeams],
+  );
+  const holeOptions = useMemo(
+    () => Array.from({ length: 18 }, (_, index) => `Hole ${index + 1}`),
+    [],
+  );
   const cumulativeBetTotal = bets.reduce(
     (total, bet) => total + normalizeAmount(bet.amount),
     0,
@@ -364,6 +462,63 @@ export default function EveningParimutuelPage() {
     }, {}),
   ).sort((a, b) => b.total - a.total || a.player.localeCompare(b.player));
 
+  function getMarketOptions(market: string) {
+    return holeMarkets.has(market) ? holeOptions : teamOptions;
+  }
+
+  function getMarketPlayerTotal(market: string) {
+    if (!selectedPlayerId) {
+      return 0;
+    }
+
+    return visibleBets
+      .filter(
+        (bet) =>
+          bet.bettor_player_id === selectedPlayerId && bet.market === market,
+      )
+      .reduce((total, bet) => total + normalizeAmount(bet.amount), 0);
+  }
+
+  function getMarketPoolRows(market: string) {
+    return Object.values(
+      visibleBets
+        .filter((bet) => bet.market === market)
+        .reduce<
+          Record<string, { selection: string; total: number; count: number }>
+        >((accumulator, bet) => {
+          if (!accumulator[bet.selection]) {
+            accumulator[bet.selection] = {
+              selection: bet.selection,
+              total: 0,
+              count: 0,
+            };
+          }
+
+          accumulator[bet.selection].total += normalizeAmount(bet.amount);
+          accumulator[bet.selection].count += 1;
+          return accumulator;
+        }, {}),
+    ).sort((a, b) => b.total - a.total || a.selection.localeCompare(b.selection));
+  }
+
+  function setMarketSelection(market: string, nextSelection: string) {
+    setMarketSelections((currentSelections) => ({
+      ...currentSelections,
+      [market]: nextSelection,
+    }));
+    setMessage("");
+    setError("");
+  }
+
+  function setMarketAmount(market: string, nextAmount: number) {
+    setMarketAmounts((currentAmounts) => ({
+      ...currentAmounts,
+      [market]: nextAmount,
+    }));
+    setMessage("");
+    setError("");
+  }
+
   function closeRules() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(rulesSeenKey, "true");
@@ -371,9 +526,10 @@ export default function EveningParimutuelPage() {
     setShowRules(false);
   }
 
-  async function handleSubmitBet() {
-    const parsedAmount = Number(amount);
-    const trimmedSelection = selection.trim();
+  async function handleSubmitBet(market: string) {
+    const parsedAmount = Number(marketAmounts[market] || 0);
+    const trimmedSelection = (marketSelections[market] || "").trim();
+    const currentMarketTotal = getMarketPlayerTotal(market);
 
     setMessage("");
     setError("");
@@ -384,7 +540,7 @@ export default function EveningParimutuelPage() {
     }
 
     if (!trimmedSelection) {
-      setError("Enter a pick for this market.");
+      setError("Select an option for this market.");
       return;
     }
 
@@ -393,8 +549,8 @@ export default function EveningParimutuelPage() {
       return;
     }
 
-    if (parsedAmount > remainingForMarket) {
-      setError(`This player has ${formatMoney(remainingForMarket)} left for this market tonight.`);
+    if (currentMarketTotal + parsedAmount > 20) {
+      setError("Max $20 per market.");
       return;
     }
 
@@ -405,7 +561,7 @@ export default function EveningParimutuelPage() {
       .insert({
         betting_night: selectedNight,
         money_round_day: selectedNightMeta.roundDay,
-        market: selectedMarket,
+        market,
         selection: trimmedSelection,
         amount: parsedAmount,
         bettor_player_id: selectedPlayer.id,
@@ -422,9 +578,7 @@ export default function EveningParimutuelPage() {
     }
 
     setBets((currentBets) => [data as EveningBet, ...currentBets]);
-    setSelection("");
-    setAmount("5");
-    setMessage("Bet logged.");
+    setMessage(`${formatMoney(parsedAmount)} bet placed on ${trimmedSelection}.`);
   }
 
   return (
@@ -436,7 +590,7 @@ export default function EveningParimutuelPage() {
           <Link href="/home" className="gc-back-link">
             ‹
           </Link>
-          <p className="gc-topbar-title">Evening Parimutuel</p>
+          <p className="gc-topbar-title">Parimutuel Bets</p>
           <span className="gc-top-icon">
             <GolfCampIcon name="calcutta" className="h-4 w-4" />
           </span>
@@ -466,12 +620,13 @@ export default function EveningParimutuelPage() {
 
         {activeView === "wagers" && (
           <>
-        <section className="gc-edge-card">
+        <section className="gc-edge-card overflow-hidden">
           <div className="gc-section-head">
-            <p className="gc-card-kicker">Place Bet</p>
-            <h2 className="gc-card-title">Market Card</h2>
+            <p className="gc-card-kicker">Market Board</p>
+            <h2 className="gc-card-title">Place Wagers</h2>
             <p className="gc-card-copy">
-              Max {formatMoney(20)} per player, per market, per night.
+              Pick from drafted teams or hole numbers. Max {formatMoney(20)} per
+              player, per market, per night.
             </p>
           </div>
 
@@ -504,85 +659,22 @@ export default function EveningParimutuelPage() {
               session={session}
             />
 
-            <label className="block">
-              <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
-                Market
-              </span>
-              <select
-                value={selectedMarket}
-                onChange={(event) => {
-                  setSelectedMarket(event.target.value);
-                  setSelection("");
-                  setMessage("");
-                  setError("");
-                }}
-                className="gc-input"
-              >
-                {markets.map((market) => (
-                  <option key={market} value={market}>
-                    {market}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {holeMarkets.has(selectedMarket) ? (
-              <label className="block">
-                <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
-                  Hole
-                </span>
-                <select
-                  value={selection}
-                  onChange={(event) => setSelection(event.target.value)}
-                  className="gc-input"
-                >
-                  <option value="">Select hole</option>
-                  {Array.from({ length: 18 }, (_, index) => index + 1).map(
-                    (hole) => (
-                      <option key={hole} value={`Hole ${hole}`}>
-                        Hole {hole}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </label>
-            ) : (
-              <label className="block">
-                <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
-                  Pick
-                </span>
-                <input
-                  value={selection}
-                  onChange={(event) => setSelection(event.target.value)}
-                  placeholder="Team Hartshorn, Hole 14, etc."
-                  className="gc-input"
-                />
-              </label>
-            )}
-
-            <div className="grid grid-cols-[1fr_auto] gap-3">
-              <label className="block">
-                <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
-                  Amount
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  max={remainingForMarket || 20}
-                  step={1}
-                  value={amount}
-                  onChange={(event) => setAmount(event.target.value)}
-                  className="gc-input"
-                />
-              </label>
-              <div className="self-end rounded-lg border border-[#34312a] bg-black/30 px-4 py-3 text-right">
-                <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#9c91ba]">
-                  Left
+            <div className="rounded-xl border border-[#746a91]/40 bg-[#746a91]/10 px-4 py-3">
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                Draft Source
+              </p>
+              <p className="mt-1 text-sm font-semibold text-[#f4f1ea]">
+                {isLoadingDraftTeams
+                  ? "Loading completed draft..."
+                  : draftSession
+                    ? draftSession.name
+                    : "No completed draft yet"}
+              </p>
+              {draftTeamsError && (
+                <p className="mt-1 text-xs font-semibold text-[#fca5a5]">
+                  {draftTeamsError}
                 </p>
-                <p className="mt-1 font-mono text-lg font-black text-[#f4f1ea]">
-                  {formatMoney(remainingForMarket)}
-                </p>
-              </div>
+              )}
             </div>
 
             {playersError && (
@@ -597,16 +689,171 @@ export default function EveningParimutuelPage() {
             )}
             {message && <p className="text-sm font-semibold text-[#d8d0ea]">{message}</p>}
             {error && <p className="text-sm font-semibold text-[#fca5a5]">{error}</p>}
-
-            <button
-              type="button"
-              onClick={handleSubmitBet}
-              disabled={isSaving || isLoadingPlayers || !selectedPlayerId}
-              className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSaving ? "Logging Bet..." : "Log Bet"}
-            </button>
           </div>
+        </section>
+
+        <section className="space-y-4">
+          {markets.map((market) => {
+            const options = getMarketOptions(market);
+            const selectedOption = marketSelections[market] || "";
+            const selectedAmount = marketAmounts[market] || 5;
+            const playerTotal = getMarketPlayerTotal(market);
+            const marketPoolRows = getMarketPoolRows(market);
+            const totalPool = marketPoolRows.reduce(
+              (total, row) => total + row.total,
+              0,
+            );
+            const isHoleMarket = holeMarkets.has(market);
+            const isDisabled =
+              isSaving ||
+              isLoadingPlayers ||
+              isLoadingDraftTeams ||
+              !selectedPlayerId ||
+              !selectedOption ||
+              options.length === 0;
+
+            return (
+              <article
+                key={market}
+                className="gc-edge-card overflow-hidden border-[#746a91]/45"
+              >
+                <div className="border-b border-[#746a91]/25 bg-[radial-gradient(circle_at_0%_0%,rgba(156,145,186,0.22),transparent_12rem)] px-5 py-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                        Market
+                      </p>
+                      <h3 className="mt-1 text-xl font-black tracking-[-0.04em] text-[#f4f1ea]">
+                        {market}
+                      </h3>
+                    </div>
+                    <div className="shrink-0 rounded-xl border border-[#746a91]/45 bg-black/35 px-3 py-2 text-right">
+                      <p className="font-mono text-[9px] font-black uppercase tracking-[0.16em] text-[#9c91ba]">
+                        Pool
+                      </p>
+                      <p className="mt-1 font-mono text-lg font-black text-[#d8d0ea]">
+                        {formatMoney(totalPool)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4 p-5">
+                  {options.length === 0 ? (
+                    <p className="rounded-xl border border-[#34312a] bg-black/30 px-4 py-3 text-sm font-semibold text-[#a3a3a3]">
+                      {isHoleMarket
+                        ? "No holes available."
+                        : "Draft teams will appear here after the draft is complete."}
+                    </p>
+                  ) : isHoleMarket ? (
+                    <div>
+                      <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                        Select Hole
+                      </p>
+                      <div className="grid grid-cols-6 gap-2">
+                        {options.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => setMarketSelection(market, option)}
+                            className={`rounded-lg border px-2 py-2 text-xs font-black transition ${
+                              selectedOption === option
+                                ? "border-[#9c91ba] bg-[#9c91ba] text-[#050505]"
+                                : "border-[#34312a] bg-black/30 text-[#f4f1ea] hover:border-[#9c91ba]"
+                            }`}
+                          >
+                            {option.replace("Hole ", "")}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="block">
+                      <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                        Select Draft Team
+                      </span>
+                      <select
+                        value={selectedOption}
+                        onChange={(event) =>
+                          setMarketSelection(market, event.target.value)
+                        }
+                        className="gc-input"
+                      >
+                        <option value="">Choose team</option>
+                        {options.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+
+                  {marketPoolRows.length > 0 && (
+                    <div className="overflow-hidden rounded-xl border border-[#34312a] bg-black/25">
+                      {marketPoolRows.slice(0, 4).map((row) => (
+                        <div
+                          key={row.selection}
+                          className="grid grid-cols-[1fr_auto] gap-3 border-b border-[#34312a] px-4 py-3 last:border-b-0"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-[#f4f1ea]">
+                              {row.selection}
+                            </p>
+                            <p className="mt-0.5 text-xs text-[#a3a3a3]">
+                              {row.count} bet{row.count === 1 ? "" : "s"}
+                            </p>
+                          </div>
+                          <p className="font-mono text-sm font-black text-[#d8d0ea]">
+                            {formatMoney(row.total)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                      Quick Bet
+                    </p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {quickBetAmounts.map((quickAmount) => (
+                        <button
+                          key={quickAmount}
+                          type="button"
+                          onClick={() => setMarketAmount(market, quickAmount)}
+                          className={`rounded-xl border px-2 py-3 font-mono text-sm font-black transition ${
+                            selectedAmount === quickAmount
+                              ? "border-[#d8d0ea] bg-[#d8d0ea] text-[#050505]"
+                              : "border-[#746a91]/50 bg-black/30 text-[#d8d0ea] hover:border-[#d8d0ea]"
+                          }`}
+                        >
+                          {formatMoney(quickAmount)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-[1fr_auto] items-center gap-3">
+                    <p className="min-w-0 text-xs font-semibold text-[#a3a3a3]">
+                      {selectedOption
+                        ? `${formatMoney(selectedAmount)} on ${selectedOption}`
+                        : "Select an option to place a bet."}
+                      {playerTotal > 0 ? ` ${formatMoney(playerTotal)} already backed.` : ""}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleSubmitBet(market)}
+                      disabled={isDisabled}
+                      className="rounded-xl border border-[#9c91ba] bg-[#9c91ba] px-4 py-3 text-sm font-black text-[#050505] transition hover:border-[#d8d0ea] hover:bg-[#d8d0ea] disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {isSaving ? "Logging..." : "Place Bet"}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </section>
 
         <section className="gc-edge-card">
@@ -728,7 +975,7 @@ export default function EveningParimutuelPage() {
 
               {playerLedgerRows.length === 0 ? (
                 <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
-                  No Evening Parimutuel ledger activity yet.
+                  No Parimutuel Bets ledger activity yet.
                 </p>
               ) : (
                 playerLedgerRows.map((row) => (

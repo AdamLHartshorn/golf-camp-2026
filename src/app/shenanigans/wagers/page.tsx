@@ -375,11 +375,11 @@ export default function ShenanigansWagersPage() {
   return (
     <main
       className="gc-mobile-shell text-[#f5f5f5]"
-      style={{ "--page-accent": "#a45a66" } as CSSProperties}
+      style={{ "--page-accent": "#EB9C5C" } as CSSProperties}
     >
       <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
         <div className="gc-section-head">
-          <p className="gc-card-kicker text-[#a45a66]">
+          <p className="gc-card-kicker text-[#EB9C5C]">
             Shenanigans
           </p>
 
@@ -567,7 +567,7 @@ export default function ShenanigansWagersPage() {
                         }));
                       }
                     }}
-                    className="gc-edge-card cursor-pointer p-5 transition-colors duration-200 hover:border-[#a45a66]"
+                    className="gc-edge-card cursor-pointer p-5 transition-colors duration-200 hover:border-[#EB9C5C]"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">

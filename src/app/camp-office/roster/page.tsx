@@ -118,7 +118,7 @@ export default function CampRosterPage() {
             <Link
               key={player.id}
               href={`/camp-office/roster/${player.id}`}
-              className="grid grid-cols-[5rem_1fr_3rem] items-center border-b border-[#2a2925] px-4 py-4 transition hover:bg-[#161511] last:border-b-0"
+              className="camp-roster-player-row grid grid-cols-[5rem_1fr_3rem] items-center border-b border-[#2a2925] px-4 py-4 transition last:border-b-0"
             >
               {player.photo_url ? (
                 <div
@@ -148,7 +148,7 @@ export default function CampRosterPage() {
               </div>
 
               <div
-                className={`flex h-10 w-10 items-center justify-center justify-self-end rounded-xl border text-lg font-semibold ${
+                className={`camp-roster-rank-badge camp-roster-rank-${player.rank || "unknown"} flex h-10 w-10 items-center justify-center justify-self-end rounded-xl border text-lg font-semibold ${
                   rankStyles[player.rank || ""] ||
                   "border-[#34312a] bg-black/35 text-[#b8b0a1]"
                 }`}

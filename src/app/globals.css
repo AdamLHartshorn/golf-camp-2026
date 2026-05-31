@@ -20,8 +20,8 @@
   --camp-office-accent: #f4f1ea;
   --money-accent: #315f48;
   --draft-accent: #324d70;
-  --shenanigans-accent: #6a313c;
-  --afternoon-accent: #d6a84f;
+  --shenanigans-accent: #EB9C5C;
+  --afternoon-accent: #ffda03;
   --night-accent: #f472b6;
   --calcutta-accent: #746a91;
   --feed-accent: #c93a4d;
@@ -818,18 +818,18 @@ main {
 [class*="text-[#b91c1c]"],
 [class*="text-[#dc2626]"],
 [class*="text-[#ef4444]"] {
-  color: #b48991 !important;
+  color: #EB9C5C !important;
 }
 
 [class*="bg-[#b91c1c]"],
 [class*="bg-[#dc2626]"],
 [class*="bg-[#ef4444]"] {
-  background-color: #6a313c !important;
+  background-color: #EB9C5C !important;
 }
 
 [class*="bg-[#1a0d0d]"],
 [class*="bg-[#1a0f0f]"] {
-  background-color: #171012 !important;
+  background-color: #1f140d !important;
 }
 
 [class*="border-[#b91c1c]"],
@@ -837,17 +837,17 @@ main {
 [class*="border-[#ef4444]"],
 [class*="border-[#7f1d1d]"],
 [class*="border-[#3a1d1d]"] {
-  border-color: #6a313c !important;
+  border-color: #EB9C5C !important;
 }
 
 [class*="hover:bg-[#991b1b]"]:hover,
 [class*="hover:bg-[#7f1d1d]"]:hover {
-  background-color: #5a2b33 !important;
+  background-color: #c9783c !important;
 }
 
 [class*="hover:border-[#991b1b]"]:hover,
 [class*="hover:border-[#b91c1c]"]:hover {
-  border-color: #6a313c !important;
+  border-color: #EB9C5C !important;
 }
 
 [class*="shadow-"][class*="rgba(185,28,28"],
@@ -855,7 +855,7 @@ main {
   box-shadow:
     inset 0 1px 0 rgba(244, 241, 234, 0.055),
     0 24px 70px rgba(0, 0, 0, 0.34),
-    0 0 38px rgba(106, 49, 60, 0.08) !important;
+    0 0 38px rgba(235, 156, 92, 0.12) !important;
 }
 
 h1 {
@@ -1113,27 +1113,27 @@ table,
 }
 
 html[data-theme="light"] {
-  --background: #f5f2ec;
-  --foreground: #17130e;
-  --gc-bg: #f5f2ec;
+  --background: #fbfcf8;
+  --foreground: #12100c;
+  --gc-bg: #fbfcf8;
   --gc-panel: #ffffff;
-  --gc-panel-soft: #f2eee6;
-  --gc-panel-warm: #eee8dd;
-  --gc-panel-glass: rgba(255, 255, 255, 0.9);
-  --gc-border: #d8d1c4;
-  --gc-line: #c9c0b1;
-  --gc-muted: #5f574b;
-  --gc-faint: #8a8173;
-  --gc-text: #17130e;
-  --gc-paper: #3f382e;
-  --gc-rule-soft: rgba(23, 19, 14, 0.06);
-  --gc-rule-strong: rgba(23, 19, 14, 0.13);
-  --gc-glow: rgba(23, 19, 14, 0.06);
+  --gc-panel-soft: #f7faf5;
+  --gc-panel-warm: #f0f5ef;
+  --gc-panel-glass: rgba(255, 255, 255, 0.94);
+  --gc-border: #c7beb0;
+  --gc-line: #b6aa99;
+  --gc-muted: #3f382e;
+  --gc-faint: #6a6256;
+  --gc-text: #12100c;
+  --gc-paper: #30291f;
+  --gc-rule-soft: rgba(18, 16, 12, 0.075);
+  --gc-rule-strong: rgba(18, 16, 12, 0.18);
+  --gc-glow: rgba(23, 19, 14, 0.08);
   --camp-office-accent: #17130e;
   --money-accent: #315f48;
   --draft-accent: #324d70;
-  --shenanigans-accent: #6a313c;
-  --afternoon-accent: #9a722b;
+  --shenanigans-accent: #EB9C5C;
+  --afternoon-accent: #ffda03;
   --calcutta-accent: #625778;
   --feed-accent: #9a1f2e;
   --groupme-accent: #0074d9;
@@ -1147,9 +1147,10 @@ html[data-theme="light"] body {
 
 html[data-theme="light"] main {
   background:
-    radial-gradient(circle at 50% -8rem, rgba(143, 166, 106, 0.12), transparent 23rem),
-    radial-gradient(circle at 92% 7%, rgba(216, 208, 191, 0.42), transparent 18rem),
-    linear-gradient(180deg, #fbf8f1, #f1ece3 58%, #ebe5dc) !important;
+    radial-gradient(circle at 50% -8rem, rgba(255, 255, 255, 0.98), transparent 23rem),
+    radial-gradient(circle at 10% 18%, color-mix(in srgb, var(--page-accent, #315f48) 18%, transparent), transparent 19rem),
+    radial-gradient(circle at 92% 9%, rgba(116, 148, 190, 0.14), transparent 18rem),
+    linear-gradient(180deg, #ffffff 0%, #f8fbf5 52%, #edf5ee 100%) !important;
   color: var(--gc-text) !important;
 }
 
@@ -1186,7 +1187,7 @@ html[data-theme="light"] [class*="bg-black/45"],
 html[data-theme="light"] [class*="bg-black/50"],
 html[data-theme="light"] [class*="bg-black/55"],
 html[data-theme="light"] [class*="bg-black/70"] {
-  background-color: #f8f5ef !important;
+  background-color: #ffffff !important;
 }
 
 html[data-theme="light"] [class*="border-[#242424]"],
@@ -1215,6 +1216,7 @@ html[data-theme="light"] [class*="text-white"] {
 html[data-theme="light"] [class*="text-[#a3a3a3]"],
 html[data-theme="light"] [class*="text-[#b8b0a1]"],
 html[data-theme="light"] [class*="text-[#c8bfae]"],
+html[data-theme="light"] [class*="text-[#d4d4d4]"],
 html[data-theme="light"] [class*="text-[#82786a]"],
 html[data-theme="light"] [class*="text-[#756f66]"],
 html[data-theme="light"] [class*="text-[#737373]"],
@@ -1227,9 +1229,9 @@ html[data-theme="light"] [class*="text-[#4b5563]"] {
 
 html[data-theme="light"] [class*="shadow-"] {
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.72),
-    0 18px 46px rgba(31, 27, 22, 0.12),
-    0 0 30px rgba(31, 27, 22, 0.04) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.86),
+    0 20px 48px rgba(31, 27, 22, 0.13),
+    0 0 36px rgba(31, 27, 22, 0.055) !important;
 }
 
 html[data-theme="light"] section[class*="rounded-2xl"]::before,
@@ -1303,18 +1305,19 @@ html[data-theme="light"] [class*="rgba(29,78,216"] {
 }
 
 html[data-theme="light"] [class*="rgba(106,49,60"],
+html[data-theme="light"] [class*="rgba(235,156,92"],
 html[data-theme="light"] [class*="rgba(185,28,28"],
 html[data-theme="light"] [class*="rgba(239,68,68"],
 html[data-theme="light"] [class*="rgba(90,43,51"] {
   background:
-    radial-gradient(circle at 12% -10%, rgba(106, 49, 60, 0.18), transparent 14rem),
-    linear-gradient(135deg, rgba(106, 49, 60, 0.1), rgba(255, 255, 255, 0.92) 42%, rgba(252, 247, 248, 0.94)) !important;
+    radial-gradient(circle at 12% -10%, rgba(235, 156, 92, 0.22), transparent 14rem),
+    linear-gradient(135deg, rgba(235, 156, 92, 0.13), rgba(255, 255, 255, 0.92) 42%, rgba(255, 250, 244, 0.94)) !important;
 }
 
-html[data-theme="light"] [class*="rgba(214,168,79"] {
+html[data-theme="light"] [class*="rgba(255,218,3"] {
   background:
-    radial-gradient(circle at 12% -10%, rgba(214, 168, 79, 0.2), transparent 14rem),
-    linear-gradient(135deg, rgba(214, 168, 79, 0.12), rgba(255, 255, 255, 0.92) 42%, rgba(253, 249, 239, 0.94)) !important;
+    radial-gradient(circle at 12% -10%, rgba(255, 218, 3, 0.2), transparent 14rem),
+    linear-gradient(135deg, rgba(255, 218, 3, 0.12), rgba(255, 255, 255, 0.92) 42%, rgba(253, 249, 239, 0.94)) !important;
 }
 
 html[data-theme="light"] [class*="rgba(116,106,145"] {
@@ -1455,6 +1458,12 @@ html[data-theme="light"] [class*="rgba(116,106,145"] {
     linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(244, 241, 234, 0.72)) !important;
 }
 
+.camp-roster-player-row:hover {
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(244, 241, 234, 0.05), transparent 10rem),
+    rgba(22, 21, 17, 0.82);
+}
+
 .draft-prep-shell {
   isolation: isolate;
 }
@@ -1507,18 +1516,21 @@ html[data-theme="light"] [class*="rgba(116,106,145"] {
 }
 
 /* Richer shared accents, restrained enough for the clubhouse tone. */
-[class*="text-[#d6a84f]"] {
-  color: #d8b15e !important;
+[class*="text-[#ffda03]"] {
+  color: #ffda03 !important;
 }
 
-[class*="border-[#d6a84f]"],
-[class*="border-[#6f4d16]"] {
-  border-color: #a5792d !important;
+[class*="border-[#ffda03]"],
+[class*="border-[#9a8500]"] {
+  border-color: #ffda03 !important;
 }
 
-[class*="bg-[#d6a84f]"],
-[class*="bg-[#21180b]"] {
-  background-color: #9a722b !important;
+[class*="bg-[#ffda03]"] {
+  background-color: #ffda03 !important;
+}
+
+[class*="bg-[#1f1a05]"] {
+  background-color: #1f1a05 !important;
 }
 
 [class*="text-[#746a91]"] {
@@ -1790,11 +1802,11 @@ html[data-theme="light"] [class*="text-[#93c5fd]"] {
 html[data-theme="light"] [class*="text-[#b91c1c]"],
 html[data-theme="light"] [class*="text-[#dc2626]"],
 html[data-theme="light"] [class*="text-[#ef4444]"] {
-  color: #6a313c !important;
+  color: #EB9C5C !important;
 }
 
-html[data-theme="light"] [class*="text-[#d6a84f]"] {
-  color: #8a6424 !important;
+html[data-theme="light"] [class*="text-[#ffda03]"] {
+  color: #8f7800 !important;
 }
 
 html[data-theme="light"] [class*="text-[#746a91]"] {
@@ -1804,10 +1816,11 @@ html[data-theme="light"] [class*="text-[#746a91]"] {
 html[data-theme="light"] .cinematic-home-shell {
   color: var(--gc-text);
   background:
-    radial-gradient(circle at 50% -10rem, rgba(255, 255, 255, 0.96), transparent 20rem),
-    radial-gradient(circle at 13% 18%, rgba(154, 31, 46, 0.06), transparent 16rem),
-    radial-gradient(circle at 88% 14%, rgba(50, 77, 112, 0.08), transparent 17rem),
-    linear-gradient(180deg, #fbf8f1 0%, #f4eee4 52%, #ebe5dc 100%) !important;
+    radial-gradient(circle at 50% -10rem, rgba(255, 255, 255, 0.98), transparent 20rem),
+    radial-gradient(circle at 13% 18%, rgba(154, 31, 46, 0.1), transparent 17rem),
+    radial-gradient(circle at 88% 14%, rgba(50, 77, 112, 0.13), transparent 18rem),
+    radial-gradient(circle at 50% 112%, rgba(49, 95, 72, 0.11), transparent 18rem),
+    linear-gradient(180deg, #ffffff 0%, #f8fbf6 52%, #eef6ef 100%) !important;
 }
 
 html[data-theme="light"] .cinematic-home-shell::before {
@@ -1830,17 +1843,17 @@ html[data-theme="light"] .home-brand-seal {
 }
 
 html[data-theme="light"] .home-module-row {
-  border-color: color-mix(in srgb, var(--module-accent) 34%, rgba(23, 19, 14, 0.12)) !important;
+  border-color: color-mix(in srgb, var(--module-accent) 48%, rgba(18, 16, 12, 0.14)) !important;
   background:
-    radial-gradient(ellipse at 0% 50%, color-mix(in srgb, var(--module-accent) 18%, transparent), transparent 8rem),
-    radial-gradient(ellipse at 100% 50%, color-mix(in srgb, var(--module-accent) 8%, transparent), transparent 9rem),
-    linear-gradient(180deg, color-mix(in srgb, var(--module-accent) 7%, transparent), color-mix(in srgb, var(--module-accent) 3%, transparent)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 245, 238, 0.9)) !important;
+    radial-gradient(ellipse at 0% 50%, color-mix(in srgb, var(--module-accent) 27%, transparent), transparent 8.5rem),
+    radial-gradient(ellipse at 100% 50%, color-mix(in srgb, var(--module-accent) 13%, transparent), transparent 9rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--module-accent) 10%, transparent), color-mix(in srgb, var(--module-accent) 5%, transparent)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 253, 248, 0.94)) !important;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--module-accent) 14%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
-    0 14px 32px rgba(31, 27, 22, 0.1),
-    0 0 24px color-mix(in srgb, var(--module-accent) 11%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--module-accent) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 16px 36px rgba(31, 27, 22, 0.11),
+    0 0 34px color-mix(in srgb, var(--module-accent) 18%, transparent) !important;
 }
 
 html[data-theme="light"] .home-module-row::before {
@@ -1856,12 +1869,12 @@ html[data-theme="light"] .home-module-row::after {
 }
 
 html[data-theme="light"] .home-module-row:hover {
-  border-color: color-mix(in srgb, var(--module-accent) 48%, rgba(23, 19, 14, 0.14)) !important;
+  border-color: color-mix(in srgb, var(--module-accent) 62%, rgba(18, 16, 12, 0.14)) !important;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--module-accent) 18%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88),
-    0 16px 38px rgba(31, 27, 22, 0.13),
-    0 0 34px color-mix(in srgb, var(--module-accent) 16%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--module-accent) 28%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 18px 42px rgba(31, 27, 22, 0.14),
+    0 0 44px color-mix(in srgb, var(--module-accent) 23%, transparent) !important;
 }
 
 html[data-theme="light"] .home-module-mark {
@@ -1967,10 +1980,10 @@ html[data-theme="light"] .home-session-strip span {
 
 html[data-theme="light"] .gc-mobile-shell {
   background:
-    radial-gradient(circle at 50% -10rem, rgba(255, 255, 255, 0.94), transparent 21rem),
-    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--page-accent, #17130e) 14%, transparent), transparent 17rem),
-    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--page-accent, #17130e) 8%, transparent), transparent 18rem),
-    linear-gradient(180deg, #fbf8f1 0%, #f4eee4 52%, #ebe5dc 100%) !important;
+    radial-gradient(circle at 50% -10rem, rgba(255, 255, 255, 0.98), transparent 21rem),
+    radial-gradient(circle at 12% 18%, color-mix(in srgb, var(--page-accent, #17130e) 20%, transparent), transparent 18rem),
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--page-accent, #17130e) 12%, transparent), transparent 18rem),
+    linear-gradient(180deg, #ffffff 0%, #f8fbf5 52%, #edf5ee 100%) !important;
 }
 
 html[data-theme="light"] .gc-mobile-shell::before {
@@ -1994,17 +2007,17 @@ html[data-theme="light"] .gc-top-icon {
 
 html[data-theme="light"] .gc-edge-card,
 html[data-theme="light"] .gc-edge-list {
-  border-color: color-mix(in srgb, var(--page-accent, #17130e) 32%, rgba(23, 19, 14, 0.12)) !important;
+  border-color: color-mix(in srgb, var(--page-accent, #17130e) 48%, rgba(18, 16, 12, 0.14)) !important;
   background:
-    radial-gradient(ellipse at 0% 50%, color-mix(in srgb, var(--page-accent, #17130e) 16%, transparent), transparent 8rem),
-    radial-gradient(ellipse at 100% 50%, color-mix(in srgb, var(--page-accent, #17130e) 7%, transparent), transparent 9rem),
-    linear-gradient(180deg, color-mix(in srgb, var(--page-accent, #17130e) 6%, transparent), color-mix(in srgb, var(--page-accent, #17130e) 3%, transparent)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 245, 238, 0.9)) !important;
+    radial-gradient(ellipse at 0% 50%, color-mix(in srgb, var(--page-accent, #17130e) 24%, transparent), transparent 8.5rem),
+    radial-gradient(ellipse at 100% 50%, color-mix(in srgb, var(--page-accent, #17130e) 12%, transparent), transparent 9rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--page-accent, #17130e) 9%, transparent), color-mix(in srgb, var(--page-accent, #17130e) 4%, transparent)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(250, 253, 248, 0.94)) !important;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--page-accent, #17130e) 11%, transparent),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82),
-    0 14px 32px rgba(31, 27, 22, 0.09),
-    0 0 24px color-mix(in srgb, var(--page-accent, #17130e) 10%, transparent) !important;
+    inset 0 0 0 1px color-mix(in srgb, var(--page-accent, #17130e) 20%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    0 16px 36px rgba(31, 27, 22, 0.11),
+    0 0 34px color-mix(in srgb, var(--page-accent, #17130e) 17%, transparent) !important;
 }
 
 html[data-theme="light"] .gc-section-head {
@@ -2112,7 +2125,101 @@ html[data-theme="light"] [class*="text-[#93a3bb]"] {
 }
 
 html[data-theme="light"] .player-identity-card {
+  border-color: rgba(18, 16, 12, 0.2) !important;
+  background:
+    radial-gradient(circle at 50% -16%, rgba(18, 16, 12, 0.07), transparent 14rem),
+    radial-gradient(circle at 12% 10%, color-mix(in srgb, var(--page-accent, #17130e) 13%, transparent), transparent 12rem),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 251, 246, 0.96)) !important;
   color: var(--gc-text) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(18, 16, 12, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    0 20px 48px rgba(31, 27, 22, 0.12),
+    0 0 34px color-mix(in srgb, var(--page-accent, #17130e) 12%, transparent) !important;
+}
+
+html[data-theme="light"] .player-stat-chip,
+html[data-theme="light"] .profile-detail-card,
+html[data-theme="light"] .player-identity-card .rounded-lg[class*="bg-black"] {
+  border-color: rgba(18, 16, 12, 0.16) !important;
+  background:
+    radial-gradient(circle at 10% -12%, color-mix(in srgb, var(--page-accent, #17130e) 10%, transparent), transparent 8rem),
+    linear-gradient(180deg, #ffffff, #f9fbf7) !important;
+  color: #12100c !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    0 10px 22px rgba(31, 27, 22, 0.075) !important;
+}
+
+html[data-theme="light"] .player-stat-chip p:first-child,
+html[data-theme="light"] .profile-detail-card p:first-child,
+html[data-theme="light"] .player-identity-card .rounded-lg[class*="bg-black"] p:first-child {
+  color: color-mix(in srgb, var(--page-accent, #17130e) 58%, #3f382e 42%) !important;
+}
+
+html[data-theme="light"] .player-stat-chip p:last-child,
+html[data-theme="light"] .profile-detail-card p:not(:first-child),
+html[data-theme="light"] .player-identity-card .rounded-lg[class*="bg-black"] p:not(:first-child) {
+  color: #12100c !important;
+}
+
+html[data-theme="light"] .profile-detail-card .gc-card-copy,
+html[data-theme="light"] .profile-detail-card [class*="text-[#a3a3a3]"],
+html[data-theme="light"] .profile-detail-card [class*="text-[#b8b0a1]"] {
+  color: #3f382e !important;
+}
+
+html[data-theme="light"] .player-profile-photo,
+html[data-theme="light"] .player-silhouette {
+  border-color: rgba(18, 16, 12, 0.2) !important;
+  box-shadow:
+    0 18px 42px rgba(31, 27, 22, 0.16),
+    0 0 28px color-mix(in srgb, var(--page-accent, #17130e) 13%, transparent) !important;
+}
+
+html[data-theme="light"] .camp-roster-player-row:hover {
+  background:
+    radial-gradient(ellipse at 0% 50%, rgba(18, 16, 12, 0.06), transparent 10rem),
+    linear-gradient(90deg, rgba(18, 16, 12, 0.035), rgba(255, 255, 255, 0.72) 42%, rgba(250, 253, 248, 0.88)) !important;
+}
+
+html[data-theme="light"] .camp-roster-rank-badge {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.72),
+    0 8px 18px rgba(31, 27, 22, 0.1) !important;
+}
+
+html[data-theme="light"] .camp-roster-rank-A {
+  border-color: rgba(178, 138, 46, 0.58) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(230, 181, 65, 0.2), transparent 75%),
+    linear-gradient(180deg, #f6edcc, #e7d69f) !important;
+  color: #5f4210 !important;
+}
+
+html[data-theme="light"] .camp-roster-rank-B {
+  border-color: rgba(125, 130, 140, 0.58) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(127, 135, 148, 0.16), transparent 75%),
+    linear-gradient(180deg, #f2f3f4, #dde1e6) !important;
+  color: #30343a !important;
+}
+
+html[data-theme="light"] .camp-roster-rank-C {
+  border-color: rgba(176, 113, 67, 0.58) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(194, 125, 74, 0.19), transparent 75%),
+    linear-gradient(180deg, #f3e1d0, #dec0a7) !important;
+  color: #5f341c !important;
+}
+
+html[data-theme="light"] .camp-roster-rank-D,
+html[data-theme="light"] .camp-roster-rank-unknown {
+  border-color: rgba(103, 116, 135, 0.58) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(102, 119, 143, 0.18), transparent 75%),
+    linear-gradient(180deg, #ecf1f6, #d3dce7) !important;
+  color: #263142 !important;
 }
 
 a,

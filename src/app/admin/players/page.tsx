@@ -77,6 +77,16 @@ type PlayerFormState = {
   active: boolean;
 };
 
+type QuickEditState = {
+  display_rank: string;
+  years_served: string;
+  room: string;
+  active: boolean;
+  is_admin: boolean;
+  phone_number: string;
+  email_address: string;
+};
+
 const emptyForm: PlayerFormState = {
   first_name: "",
   last_name: "",
@@ -194,10 +204,28 @@ function formToPayload(form: PlayerFormState) {
   };
 }
 
+function playerToQuickEdit(player: PlayerRow): QuickEditState {
+  return {
+    display_rank: player.display_rank || "",
+    years_served:
+      typeof player.years_served === "number" ? String(player.years_served) : "",
+    room: player.room || "",
+    active: player.active ?? true,
+    is_admin: player.is_admin ?? false,
+    phone_number: player.phone_number || "",
+    email_address: player.email_address || "",
+  };
+}
+
 export default function PlayersAdminPage() {
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [form, setForm] = useState<PlayerFormState>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [expandedQuickEditIds, setExpandedQuickEditIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [quickEditRows, setQuickEditRows] = useState<Record<string, QuickEditState>>({});
+  const [savingQuickEditId, setSavingQuickEditId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -374,6 +402,136 @@ export default function PlayersAdminPage() {
     setMessage("");
     setError("");
     formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function toggleQuickEdit(player: PlayerRow) {
+    setQuickEditRows((currentRows) => ({
+      ...currentRows,
+      [player.id]: currentRows[player.id] || playerToQuickEdit(player),
+    }));
+
+    setExpandedQuickEditIds((currentIds) => {
+      const nextIds = new Set(currentIds);
+
+      if (nextIds.has(player.id)) {
+        nextIds.delete(player.id);
+      } else {
+        nextIds.add(player.id);
+      }
+
+      return nextIds;
+    });
+  }
+
+  function updateQuickEdit(
+    playerId: string,
+    field: keyof QuickEditState,
+    value: string | boolean,
+  ) {
+    setQuickEditRows((currentRows) => {
+      const player = players.find((currentPlayer) => currentPlayer.id === playerId);
+
+      if (!currentRows[playerId] && !player) {
+        return currentRows;
+      }
+
+      return {
+        ...currentRows,
+        [playerId]: {
+          ...(currentRows[playerId] || playerToQuickEdit(player as PlayerRow)),
+          [field]: value,
+        },
+      };
+    });
+  }
+
+  async function handleQuickSave(player: PlayerRow) {
+    const quickEdit = quickEditRows[player.id] || playerToQuickEdit(player);
+    const yearsServed = quickEdit.years_served.trim()
+      ? Number(quickEdit.years_served.trim())
+      : null;
+
+    setMessage("");
+    setError("");
+
+    if (
+      quickEdit.display_rank &&
+      !displayRanks.includes(quickEdit.display_rank as typeof displayRanks[number])
+    ) {
+      setError("Display rank must be A+, A, A-, B+, B, B-, C+, C, C-, D+, D, or D-.");
+      return;
+    }
+
+    if (
+      yearsServed !== null &&
+      (!Number.isInteger(yearsServed) || yearsServed < 0)
+    ) {
+      setError("Years served must be a positive whole number.");
+      return;
+    }
+
+    const payload = {
+      display_rank: quickEdit.display_rank || null,
+      years_served: yearsServed,
+      room: quickEdit.room.trim() || null,
+      active: quickEdit.active,
+      is_admin: quickEdit.is_admin,
+      phone_number: quickEdit.phone_number.trim() || null,
+      email_address: quickEdit.email_address.trim() || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    setSavingQuickEditId(player.id);
+
+    const { data, error: updateError } = await supabase
+      .from("players")
+      .update(payload)
+      .eq("id", player.id)
+      .select("*")
+      .single();
+
+    console.log("Admin players quick edit update:", {
+      id: player.id,
+      payload,
+      data,
+      error: updateError,
+    });
+
+    setSavingQuickEditId(null);
+
+    if (updateError) {
+      setError(updateError.message || "Could not save quick edit.");
+      return;
+    }
+
+    const updatedPlayer = data as PlayerRow;
+
+    setPlayers((currentPlayers) =>
+      currentPlayers.map((currentPlayer) =>
+        currentPlayer.id === player.id ? updatedPlayer : currentPlayer,
+      ),
+    );
+    setQuickEditRows((currentRows) => ({
+      ...currentRows,
+      [player.id]: playerToQuickEdit(updatedPlayer),
+    }));
+    setMessage(`Quick edit saved for ${updatedPlayer.display_name}.`);
+    await logAuditEvent({
+      actionType: "admin_player_quick_updated",
+      entityType: "player",
+      entityId: player.id,
+      summary: `Admin quick edited ${updatedPlayer.display_name}.`,
+      oldValue: {
+        display_rank: player.display_rank,
+        years_served: player.years_served,
+        room: player.room,
+        active: player.active,
+        is_admin: player.is_admin,
+        phone_number: player.phone_number,
+        email_address: player.email_address,
+      },
+      newValue: payload,
+    });
   }
 
   async function handlePhotoUpload(file: File | null) {
@@ -639,6 +797,10 @@ export default function PlayersAdminPage() {
   }
 
   function renderPlayerCard(player: PlayerRow) {
+    const isQuickEditing = expandedQuickEditIds.has(player.id);
+    const quickEdit = quickEditRows[player.id] || playerToQuickEdit(player);
+    const isSavingQuickEdit = savingQuickEditId === player.id;
+
     return (
       <div
         key={player.id}
@@ -708,14 +870,158 @@ export default function PlayersAdminPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => handleEdit(player)}
-            className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
-          >
-            Edit
-          </button>
+          <div className="flex shrink-0 flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => toggleQuickEdit(player)}
+              className="rounded-xl border border-[#f5f5f5] bg-[#f5f5f5] px-3 py-2 text-xs font-bold text-black transition hover:bg-[#d4d4d4]"
+            >
+              {isQuickEditing ? "Close" : "Quick Edit"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleEdit(player)}
+              className="rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
+            >
+              Advanced
+            </button>
+          </div>
         </div>
+
+        {isQuickEditing && (
+          <div className="mt-4 space-y-4 rounded-2xl border border-[#2f2f2f] bg-black/60 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
+                Quick Edit
+              </p>
+              <p className="mt-1 text-xs text-[#737373]">
+                Fast fields for rooming, rank display, access, and contact maintenance.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+                Display Rank
+                <select
+                  value={quickEdit.display_rank}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "display_rank", event.target.value)
+                  }
+                  className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+                >
+                  <option value="">None</option>
+                  {displayRanks.map((rank) => (
+                    <option key={rank} value={rank}>
+                      {rank}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+                Years
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={quickEdit.years_served}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "years_served", event.target.value)
+                  }
+                  placeholder="Years"
+                  className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+                />
+              </label>
+            </div>
+
+            <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+              Room
+              <input
+                type="text"
+                value={quickEdit.room}
+                onChange={(event) =>
+                  updateQuickEdit(player.id, "room", event.target.value)
+                }
+                placeholder="Room"
+                className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+              />
+            </label>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+                Phone
+                <input
+                  type="tel"
+                  value={quickEdit.phone_number}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "phone_number", event.target.value)
+                  }
+                  placeholder="Phone number"
+                  className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+                />
+              </label>
+
+              <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+                Email
+                <input
+                  type="email"
+                  value={quickEdit.email_address}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "email_address", event.target.value)
+                  }
+                  placeholder="Email address"
+                  className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+                />
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center gap-3 rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold text-[#f5f5f5]">
+                <input
+                  type="checkbox"
+                  checked={quickEdit.active}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "active", event.target.checked)
+                  }
+                  className="h-4 w-4"
+                />
+                Active
+              </label>
+
+              <label className="flex items-center gap-3 rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold text-[#f5f5f5]">
+                <input
+                  type="checkbox"
+                  checked={quickEdit.is_admin}
+                  onChange={(event) =>
+                    updateQuickEdit(player.id, "is_admin", event.target.checked)
+                  }
+                  className="h-4 w-4"
+                />
+                Admin
+              </label>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleQuickSave(player)}
+                disabled={isSavingQuickEdit}
+                className="rounded-xl bg-[#f5f5f5] px-3 py-3 text-sm font-bold text-black transition hover:bg-[#d4d4d4] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSavingQuickEdit ? "Saving..." : "Save Row"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleEdit(player)}
+                className="rounded-xl border border-[#242424] px-3 py-3 text-sm font-bold text-[#f5f5f5] transition hover:border-[#f5f5f5]"
+              >
+                Open Full Profile
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="mt-4 border-t border-[#242424] pt-4">
           <button
@@ -1136,11 +1442,20 @@ export default function PlayersAdminPage() {
             <h2 className="text-xl font-bold">Player Records</h2>
 
             <p className="mt-1 text-sm text-[#a3a3a3]">
-              Search, filter, edit, deactivate, and reactivate records.
+              Search, filter, quick edit, deactivate, and reactivate records.
             </p>
           </div>
 
           <div className="space-y-3 rounded-2xl border border-[#242424] bg-[#111111] p-4">
+            <div className="rounded-xl border border-[#2f2f2f] bg-black px-4 py-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#f5f5f5]">
+                Quick Edit Mode
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#a3a3a3]">
+                Expand any player card to update common fields without leaving the list.
+              </p>
+            </div>
+
             <input
               type="search"
               value={searchTerm}

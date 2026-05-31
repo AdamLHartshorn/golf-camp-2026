@@ -90,7 +90,7 @@ function PlayerChips({
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Search players"
-            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none placeholder:text-[#737373] focus:border-[#d6a84f]"
+            className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 text-sm outline-none placeholder:text-[#737373] focus:border-[#ffda03]"
           />
           <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto rounded-xl border border-[#242424] bg-black/35 p-2">
             {filteredPlayers.map((player) => {
@@ -103,8 +103,8 @@ function PlayerChips({
                   onClick={() => togglePlayer(player.id)}
                   className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
                     isSelected
-                      ? "border-[#d6a84f] bg-[#d6a84f] text-black"
-                      : "border-[#242424] bg-[#111111] text-[#d4d4d4] hover:border-[#d6a84f]"
+                      ? "border-[#ffda03] bg-[#ffda03] text-black"
+                      : "border-[#242424] bg-[#111111] text-[#d4d4d4] hover:border-[#ffda03]"
                   }`}
                 >
                   {player.display_name}
@@ -272,7 +272,7 @@ export default function AfternoonRoundsPage() {
   const recentRounds = rounds.filter(isRecentRound);
 
   return (
-    <main className="gc-mobile-shell" style={{ "--page-accent": "#d6a84f" } as CSSProperties}>
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#ffda03" } as CSSProperties}>
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/home" className="gc-back-link">
@@ -411,7 +411,7 @@ function RoundList({
         >
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#d6a84f]">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#ffda03]">
                 {round.status || "active"}
               </p>
               <h3 className="mt-1 truncate text-lg font-black">{round.name}</h3>

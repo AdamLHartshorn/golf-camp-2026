@@ -190,10 +190,10 @@ export function ShenanigansGameBar({
   onEndGame: () => void;
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#242424] bg-[linear-gradient(90deg,rgba(90,43,51,0.18),rgba(17,17,17,0.98)_42%,rgba(17,17,17,0.92))] shadow-[0_0_28px_rgba(90,43,51,0.08)]">
+    <section className="overflow-hidden rounded-2xl border border-[#242424] bg-[linear-gradient(90deg,rgba(235,156,92,0.18),rgba(17,17,17,0.98)_42%,rgba(17,17,17,0.92))] shadow-[0_0_28px_rgba(235,156,92,0.1)]">
       <div className="flex items-center justify-between gap-3 border-b border-[#242424] px-4 py-3">
         <div className="min-w-0">
-          <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#b98590]">
+          <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#EB9C5C]">
             Current Game
           </p>
           <p className="mt-1 truncate text-sm font-black text-[#f5f5f5]">
@@ -203,13 +203,13 @@ export function ShenanigansGameBar({
 
         <div className="flex shrink-0 items-center gap-2">
           {selectedGame && (
-            <span className="rounded-full border border-[#5a2b33] bg-black/35 px-2.5 py-1 font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#b98590]">
+            <span className="rounded-full border border-[#EB9C5C]/70 bg-black/35 px-2.5 py-1 font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#EB9C5C]">
               {selectedGame.status || "active"}
             </span>
           )}
           <Link
             href="/shenanigans"
-            className="rounded-full border border-[#5a2b33] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4d4d4] transition hover:border-[#b98590] hover:text-[#f5f5f5]"
+            className="rounded-full border border-[#EB9C5C]/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4d4d4] transition hover:border-[#EB9C5C] hover:text-[#f5f5f5]"
           >
             New
           </Link>
@@ -244,7 +244,7 @@ export function ShenanigansGameBar({
             value={selectedGameId}
             onChange={(event) => onSwitchGame(event.target.value)}
             aria-label="Switch Shenanigans game"
-            className="min-w-0 rounded-xl border border-[#242424] bg-black/70 px-3 py-2 text-sm outline-none focus:border-[#b98590]"
+            className="min-w-0 rounded-xl border border-[#242424] bg-black/70 px-3 py-2 text-sm outline-none focus:border-[#EB9C5C]"
           >
             {games.map((game) => (
               <option key={game.id} value={game.id}>
@@ -258,7 +258,7 @@ export function ShenanigansGameBar({
               <button
                 type="button"
                 onClick={onEndGame}
-                className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#b98590]"
+                className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#EB9C5C]"
               >
                 End Game
               </button>
@@ -316,7 +316,7 @@ export function CompactPlayerSelect({
 
           {selectedName && (
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-[#5a2b33] bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]">
+              <span className="rounded-full border border-[#EB9C5C]/70 bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]">
                 {selectedName}
               </span>
             </div>
@@ -432,7 +432,7 @@ export function CompactPlayerMultiSelect({
                   key={name}
                   type="button"
                   onClick={() => togglePlayer(name)}
-                  className="rounded-full border border-[#5a2b33] bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]"
+                  className="rounded-full border border-[#EB9C5C]/70 bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]"
                 >
                   {name} ×
                 </button>

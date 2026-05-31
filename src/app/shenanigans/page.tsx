@@ -180,7 +180,7 @@ export default function ShenanigansPage() {
   }
 
   return (
-    <main className="gc-mobile-shell" style={{ "--page-accent": "#a45a66" } as CSSProperties}>
+    <main className="gc-mobile-shell" style={{ "--page-accent": "#EB9C5C" } as CSSProperties}>
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/home" className="gc-back-link">

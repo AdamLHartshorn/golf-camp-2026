@@ -47,7 +47,7 @@ const modules = [
   {
     icon: "calcutta",
     initial: "C",
-    name: "Evening Parimutuel",
+    name: "Parimutuel Bets",
     href: "/evening-parimutuel",
     meta: "Markets • Ledger • Settlement",
     description: "Nightly pools and settlement",
@@ -71,8 +71,8 @@ const modules = [
     href: "/afternoon-rounds",
     meta: "Optional Rounds • Teams",
     description: "Player-created rounds",
-    accent: "#d6a84f",
-    tint: "rgba(214,168,79,0.12)",
+    accent: "#ffda03",
+    tint: "rgba(255,218,3,0.12)",
   },
   {
     icon: "shenanigans",
@@ -81,8 +81,8 @@ const modules = [
     href: "/shenanigans",
     meta: "Points • Games • Events",
     description: "Points, games, chaos",
-    accent: "#a45a66",
-    tint: "rgba(164,90,102,0.19)",
+    accent: "#EB9C5C",
+    tint: "rgba(235,156,92,0.18)",
   },
   {
     icon: "night",
@@ -197,9 +197,9 @@ function getFeedAccent(source: string | null) {
     case "live draft":
       return "#324d70";
     case "shenanigans":
-      return "#6a313c";
+      return "#EB9C5C";
     case "afternoon rounds":
-      return "#d6a84f";
+      return "#ffda03";
     default:
       return "#c93a4d";
   }
