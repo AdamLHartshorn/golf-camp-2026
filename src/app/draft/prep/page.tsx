@@ -149,7 +149,7 @@ export default function DraftPrepPage() {
 
       if (fetchError) {
         setPlayers([]);
-        setError(fetchError.message || "Could not load draft prep.");
+        setError(fetchError.message || "Could not load scouting cards.");
         setIsLoading(false);
         return;
       }
@@ -192,17 +192,49 @@ export default function DraftPrepPage() {
       return;
     }
 
-    const cardWidth = carousel.clientWidth;
-    const nextIndex = Math.round(carousel.scrollLeft / cardWidth);
-    setActiveIndex(Math.min(Math.max(nextIndex, 0), sortedPlayers.length - 1));
+    const cards = Array.from(
+      carousel.querySelectorAll<HTMLElement>("[data-draft-prep-card]"),
+    );
+    const carouselCenter =
+      carousel.getBoundingClientRect().left + carousel.clientWidth / 2;
+    const nearestIndex = cards.reduce(
+      (nearest, card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const distance = Math.abs(
+          cardRect.left + cardRect.width / 2 - carouselCenter,
+        );
+
+        return distance < nearest.distance ? { distance, index } : nearest;
+      },
+      { distance: Number.POSITIVE_INFINITY, index: 0 },
+    ).index;
+
+    setActiveIndex(Math.min(Math.max(nearestIndex, 0), sortedPlayers.length - 1));
   }
 
   async function saveCurrentCard() {
-    const activePlayer = sortedPlayers[activeIndex];
-    const cardElement =
-      carouselRef.current?.querySelectorAll<HTMLElement>(
-        "[data-draft-prep-card]",
-      )[activeIndex];
+    const carousel = carouselRef.current;
+    const cards = carousel
+      ? Array.from(
+          carousel.querySelectorAll<HTMLElement>("[data-draft-prep-card]"),
+        )
+      : [];
+    const carouselCenter = carousel
+      ? carousel.getBoundingClientRect().left + carousel.clientWidth / 2
+      : 0;
+    const centeredIndex = cards.reduce(
+      (nearest, card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const distance = Math.abs(
+          cardRect.left + cardRect.width / 2 - carouselCenter,
+        );
+
+        return distance < nearest.distance ? { distance, index } : nearest;
+      },
+      { distance: Number.POSITIVE_INFINITY, index: activeIndex },
+    ).index;
+    const activePlayer = sortedPlayers[centeredIndex];
+    const cardElement = cards[centeredIndex];
 
     if (!activePlayer || !cardElement) {
       setSaveMessage("Card not ready yet.");
@@ -240,7 +272,7 @@ export default function DraftPrepPage() {
           </Link>
           <div className="text-center">
             <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8fb0d8]">
-              Draft Prep
+              Golf Camp
             </p>
             <h1 className="mt-1 text-xl font-black tracking-tight">
               Scouting Cards
@@ -323,7 +355,7 @@ export default function DraftPrepPage() {
                             Longview
                           </p>
                           <p className="font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#f6d34b]">
-                            Draft Prep
+                            Scouting Cards
                           </p>
                         </div>
 
@@ -458,7 +490,7 @@ export default function DraftPrepPage() {
                   key={player.id}
                   type="button"
                   onClick={() => goToCard(index)}
-                  aria-label={`Go to draft prep card ${index + 1}`}
+                  aria-label={`Go to scouting card ${index + 1}`}
                   className={`h-1.5 rounded-full transition ${
                     index === activeIndex
                       ? "w-7 bg-[#8fb0d8]"

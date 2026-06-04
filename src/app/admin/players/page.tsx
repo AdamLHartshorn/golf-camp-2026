@@ -1334,7 +1334,7 @@ export default function PlayersAdminPage() {
                 2025 Scouting Bridge
               </p>
               <p className="mt-1 text-xs leading-5 text-[#737373]">
-                Temporary scouting fields for Draft Prep until the historical
+                Temporary scouting fields for Scouting Cards until the historical
                 data system is built.
               </p>
             </div>

@@ -171,10 +171,10 @@ export default function DraftPage() {
           <div className="gc-section-head flex items-start justify-between gap-4">
             <div>
               <p className="gc-card-kicker">
-                Scouting Cards
+                Player Dossiers
               </p>
               <h2 className="gc-card-title">
-                Draft Prep
+                Scouting Cards
               </h2>
               <p className="mt-2 text-sm leading-6 text-[#b8c3d4]">
                 Scouting Reports · Rankings · Camp Lore · Sleeper Picks ·
@@ -188,7 +188,7 @@ export default function DraftPage() {
           </div>
 
           <p className="px-5 py-4 text-sm leading-6 text-[#93a3bb]">
-            Browse the player pool before the board goes live. Open Prep →
+            Browse the player pool before the board goes live. Open Cards →
           </p>
         </Link>
       </div>

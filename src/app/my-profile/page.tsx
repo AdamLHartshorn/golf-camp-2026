@@ -486,29 +486,29 @@ export default function MyProfilePage() {
 
         {!isLoading && player && (
           <>
-            <section className="player-identity-card gc-edge-card text-[#f4f1ea]">
-              <div className="gc-section-head">
-              <div className="mb-4 flex justify-center">
-                {player.photo_url ? (
-                  <div
-                    aria-label={`${player.display_name} profile`}
-                    className="player-profile-photo h-28 w-28 rounded-full border border-[#cfc4b3] bg-cover bg-center shadow-[0_18px_40px_rgba(0,0,0,0.22)]"
-                    role="img"
-                    style={{ backgroundImage: `url(${player.photo_url})` }}
-                  />
-                ) : (
-                  <PlayerSilhouette
-                    className="player-profile-photo h-28 w-28"
-                    label={`${player.display_name} profile placeholder`}
-                  />
-                )}
-              </div>
-              <p className="gc-card-kicker">
-                Logged-In Player
-              </p>
-              <h1 className="gc-card-title">
-                {player.display_name}
-              </h1>
+            <section className="player-identity-card overflow-hidden rounded-[0.65rem] border border-[#d7c9ad]/28 bg-[radial-gradient(circle_at_50%_-20%,rgba(244,241,234,0.16),transparent_15rem),linear-gradient(180deg,rgba(24,22,18,0.98),rgba(8,8,8,0.96))] text-[#f4f1ea] shadow-[0_22px_70px_rgba(0,0,0,0.42)]">
+              <div className="border-b border-[#d7c9ad]/18 px-5 py-6 text-center">
+                <div className="mb-4 flex justify-center">
+                  {player.photo_url ? (
+                    <div
+                      aria-label={`${player.display_name} profile`}
+                      className="player-profile-photo h-28 w-28 rounded-full border-2 border-[#d7c9ad]/60 bg-cover bg-center shadow-[0_18px_46px_rgba(0,0,0,0.38)]"
+                      role="img"
+                      style={{ backgroundImage: `url(${player.photo_url})` }}
+                    />
+                  ) : (
+                    <PlayerSilhouette
+                      className="player-profile-photo h-28 w-28 border-2 border-[#d7c9ad]/45 bg-[#11100e] text-[#f4f1ea]"
+                      label={`${player.display_name} profile placeholder`}
+                    />
+                  )}
+                </div>
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.22em] text-[#d7c9ad]">
+                  Logged-In Player
+                </p>
+                <h1 className="mt-2 text-3xl font-black uppercase leading-none tracking-[-0.04em] text-[#f4f1ea]">
+                  {player.display_name}
+                </h1>
               </div>
               <div className="grid grid-cols-2 gap-3 p-5 text-sm">
                 {[
@@ -526,12 +526,14 @@ export default function MyProfilePage() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="player-stat-chip rounded-lg border border-[#34312a] bg-black/30 p-3"
+                    className="player-stat-chip rounded-[0.5rem] border border-[#d7c9ad]/22 bg-[#f4f1ea]/8 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                   >
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
+                    <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#d7c9ad]">
                       {label}
                     </p>
-                    <p className="mt-1 font-semibold">{value}</p>
+                    <p className="mt-1 break-words text-sm font-black leading-5 text-[#f4f1ea]">
+                      {value}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -819,21 +821,23 @@ export default function MyProfilePage() {
           </>
         )}
 
-        {message && <p className="text-center text-sm">{message}</p>}
-        {error && <p className="text-center text-sm text-[#ff8a8a]">{error}</p>}
+        {message && (
+          <p className="rounded-[0.55rem] border border-[#d7c9ad]/20 bg-[#f4f1ea]/8 px-4 py-3 text-center text-sm font-semibold text-[#f4f1ea]">
+            {message}
+          </p>
+        )}
+        {error && (
+          <p className="rounded-[0.55rem] border border-[#ff8a8a]/35 bg-[#3a1010]/55 px-4 py-3 text-center text-sm font-semibold text-[#ffb4b4]">
+            {error}
+          </p>
+        )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <Link
-            href="/home"
-            className="rounded-lg border border-[#34312a] px-4 py-3 text-center text-sm font-semibold text-[#a3a3a3]"
-          >
-            Back
-          </Link>
+        <div className="grid gap-3">
           {session && (
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-lg border border-[#34312a] px-4 py-3 text-sm font-semibold text-[#a3a3a3]"
+              className="rounded-[0.55rem] border border-[#34312a] px-4 py-3 text-sm font-semibold text-[#a3a3a3] transition hover:border-[#d7c9ad]/45 hover:text-[#f4f1ea]"
             >
               Logout
             </button>

@@ -1484,24 +1484,11 @@ html[data-theme="light"] [class*="rgba(116,106,145"] {
 
 .draft-prep-stack::before,
 .draft-prep-stack::after {
-  content: "";
-  position: absolute;
-  left: 1.4rem;
-  right: 1.4rem;
-  bottom: -0.55rem;
-  height: 1.8rem;
-  border: 2px solid rgba(246, 211, 75, 0.42);
-  border-radius: 0.55rem;
-  background: rgba(192, 43, 39, 0.3);
-  filter: blur(0.1px);
-  z-index: -1;
+  content: none;
 }
 
 .draft-prep-stack::after {
-  left: 2.4rem;
-  right: 2.4rem;
-  bottom: -1.05rem;
-  opacity: 0.55;
+  content: none;
 }
 
 .draft-prep-card {
