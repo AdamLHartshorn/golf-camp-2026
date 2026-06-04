@@ -67,7 +67,7 @@ export default function CampOfficeSchedulePage() {
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/camp-office" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Daily Schedule
@@ -150,13 +150,6 @@ export default function CampOfficeSchedulePage() {
               </section>
             ))}
         </section>
-
-        <Link
-          href="/camp-office"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Camp Office
-        </Link>
       </div>
     </main>
   );

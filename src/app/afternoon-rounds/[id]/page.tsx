@@ -996,8 +996,8 @@ export default function AfternoonRoundDetailPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,218,3,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/afternoon-rounds" className="text-2xl text-[#a3a3a3]">
-            ‹
+          <Link href="/afternoon-rounds" className="gc-back-link">
+            ← BACK
           </Link>
           <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
             Afternoon Round
@@ -1399,10 +1399,6 @@ export default function AfternoonRoundDetailPage() {
             )}
           </>
         )}
-
-        <Link href="/afternoon-rounds" className="block text-center text-sm text-[#a3a3a3]">
-          ← Back to Afternoon Rounds
-        </Link>
       </div>
     </main>
   );

@@ -119,12 +119,11 @@ export default function AdminCampFeedPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <Link href="/admin" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-6 py-8">
         <header className="space-y-3">
-          <Link href="/admin" className="text-2xl text-[#a3a3a3]">
-            ‹
-          </Link>
-
           <div>
             <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8fa66a]">
               Admin
@@ -215,10 +214,6 @@ export default function AdminCampFeedPage() {
               </div>
             ))}
         </section>
-
-        <Link href="/admin" className="block text-center text-sm text-[#a3a3a3]">
-          ← Back to Admin
-        </Link>
       </div>
     </main>
   );

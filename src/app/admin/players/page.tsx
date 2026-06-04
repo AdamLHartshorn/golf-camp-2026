@@ -7,6 +7,21 @@ import { supabase } from "@/lib/supabase";
 import { displayRanks } from "@/lib/playerRanks";
 
 const ranks = ["A", "B", "C", "D"];
+const scoutingGrades = [
+  "A+",
+  "A",
+  "A-",
+  "B+",
+  "B",
+  "B-",
+  "C+",
+  "C",
+  "C-",
+  "D+",
+  "D",
+  "D-",
+  "F",
+];
 
 type QuestionnaireAnswers = {
   favorite_golf_camp_memory?: string;
@@ -14,6 +29,7 @@ type QuestionnaireAnswers = {
   walk_up_song?: string;
   personal_scouting_report?: string;
   other_funny_notes?: string;
+  [key: string]: unknown;
 };
 
 type PlayerRow = {
@@ -40,6 +56,11 @@ type PlayerRow = {
   last_login_at: string | null;
   player_notes: string | null;
   questionnaire_answers: QuestionnaireAnswers | null;
+  scouting_2025_draft_value_grade: string | null;
+  scouting_2025_draft_value_index: string | null;
+  scouting_2025_avg_draft_position: number | null;
+  scouting_2025_total_earnings: number | null;
+  scouting_2025_best_finish: string | null;
   deposit_paid: boolean | null;
   gambling_paid: boolean | null;
   active: boolean | null;
@@ -67,6 +88,12 @@ type PlayerFormState = {
   pin_code: string;
   is_admin: boolean;
   player_notes: string;
+  imported_questionnaire_answers: QuestionnaireAnswers;
+  scouting_2025_draft_value_grade: string;
+  scouting_2025_draft_value_index: string;
+  scouting_2025_avg_draft_position: string;
+  scouting_2025_total_earnings: string;
+  scouting_2025_best_finish: string;
   favorite_golf_camp_memory: string;
   most_likely_to: string;
   walk_up_song: string;
@@ -85,6 +112,8 @@ type QuickEditState = {
   is_admin: boolean;
   phone_number: string;
   email_address: string;
+  scouting_2025_draft_value_grade: string;
+  scouting_2025_draft_value_index: string;
 };
 
 const emptyForm: PlayerFormState = {
@@ -107,6 +136,12 @@ const emptyForm: PlayerFormState = {
   pin_code: "",
   is_admin: false,
   player_notes: "",
+  imported_questionnaire_answers: {},
+  scouting_2025_draft_value_grade: "",
+  scouting_2025_draft_value_index: "",
+  scouting_2025_avg_draft_position: "",
+  scouting_2025_total_earnings: "",
+  scouting_2025_best_finish: "",
   favorite_golf_camp_memory: "",
   most_likely_to: "",
   walk_up_song: "",
@@ -123,6 +158,16 @@ function createPlayerKey(displayName: string) {
 
 function playerToForm(player: PlayerRow): PlayerFormState {
   const answers = player.questionnaire_answers || {};
+  const editableQuestionnaireKeys = new Set([
+    "favorite_golf_camp_memory",
+    "most_likely_to",
+    "walk_up_song",
+    "personal_scouting_report",
+    "other_funny_notes",
+  ]);
+  const importedQuestionnaireAnswers = Object.fromEntries(
+    Object.entries(answers).filter(([key]) => !editableQuestionnaireKeys.has(key)),
+  ) as QuestionnaireAnswers;
 
   return {
     first_name: player.first_name || "",
@@ -145,6 +190,20 @@ function playerToForm(player: PlayerRow): PlayerFormState {
     pin_code: player.pin_code || "",
     is_admin: player.is_admin ?? false,
     player_notes: player.player_notes || "",
+    imported_questionnaire_answers: importedQuestionnaireAnswers,
+    scouting_2025_draft_value_grade:
+      player.scouting_2025_draft_value_grade || "",
+    scouting_2025_draft_value_index:
+      player.scouting_2025_draft_value_index || "",
+    scouting_2025_avg_draft_position:
+      typeof player.scouting_2025_avg_draft_position === "number"
+        ? String(player.scouting_2025_avg_draft_position)
+        : "",
+    scouting_2025_total_earnings:
+      typeof player.scouting_2025_total_earnings === "number"
+        ? String(player.scouting_2025_total_earnings)
+        : "",
+    scouting_2025_best_finish: player.scouting_2025_best_finish || "",
     favorite_golf_camp_memory: answers.favorite_golf_camp_memory || "",
     most_likely_to: answers.most_likely_to || "",
     walk_up_song: answers.walk_up_song || "",
@@ -159,6 +218,13 @@ function playerToForm(player: PlayerRow): PlayerFormState {
 function formToPayload(form: PlayerFormState) {
   const displayName = form.display_name.trim();
   const internalRankOrder = form.internal_rank_order.trim().toUpperCase();
+  const scoutingAvgDraftPosition =
+    form.scouting_2025_avg_draft_position.trim()
+      ? Number(form.scouting_2025_avg_draft_position.trim())
+      : null;
+  const scoutingTotalEarnings = form.scouting_2025_total_earnings.trim()
+    ? Number(form.scouting_2025_total_earnings.trim())
+    : null;
   const questionnaireAnswers: QuestionnaireAnswers = {
     favorite_golf_camp_memory: form.favorite_golf_camp_memory.trim(),
     most_likely_to: form.most_likely_to.trim(),
@@ -169,6 +235,10 @@ function formToPayload(form: PlayerFormState) {
   const cleanQuestionnaireAnswers = Object.fromEntries(
     Object.entries(questionnaireAnswers).filter(([, value]) => value),
   );
+  const mergedQuestionnaireAnswers = {
+    ...form.imported_questionnaire_answers,
+    ...cleanQuestionnaireAnswers,
+  };
 
   return {
     first_name: form.first_name.trim(),
@@ -193,9 +263,17 @@ function formToPayload(form: PlayerFormState) {
     pin_code: form.pin_code.trim() || null,
     is_admin: form.is_admin,
     player_notes: form.player_notes.trim() || null,
+    scouting_2025_draft_value_grade:
+      form.scouting_2025_draft_value_grade || null,
+    scouting_2025_draft_value_index:
+      form.scouting_2025_draft_value_index.trim() || null,
+    scouting_2025_avg_draft_position: scoutingAvgDraftPosition,
+    scouting_2025_total_earnings: scoutingTotalEarnings,
+    scouting_2025_best_finish:
+      form.scouting_2025_best_finish.trim() || null,
     questionnaire_answers:
-      Object.keys(cleanQuestionnaireAnswers).length > 0
-        ? cleanQuestionnaireAnswers
+      Object.keys(mergedQuestionnaireAnswers).length > 0
+        ? mergedQuestionnaireAnswers
         : null,
     deposit_paid: form.deposit_paid,
     gambling_paid: form.gambling_paid,
@@ -214,6 +292,10 @@ function playerToQuickEdit(player: PlayerRow): QuickEditState {
     is_admin: player.is_admin ?? false,
     phone_number: player.phone_number || "",
     email_address: player.email_address || "",
+    scouting_2025_draft_value_grade:
+      player.scouting_2025_draft_value_grade || "",
+    scouting_2025_draft_value_index:
+      player.scouting_2025_draft_value_index || "",
   };
 }
 
@@ -463,6 +545,14 @@ export default function PlayersAdminPage() {
     }
 
     if (
+      quickEdit.scouting_2025_draft_value_grade &&
+      !scoutingGrades.includes(quickEdit.scouting_2025_draft_value_grade)
+    ) {
+      setError("2025 draft value grade must be A+ through D- or F.");
+      return;
+    }
+
+    if (
       yearsServed !== null &&
       (!Number.isInteger(yearsServed) || yearsServed < 0)
     ) {
@@ -478,6 +568,10 @@ export default function PlayersAdminPage() {
       is_admin: quickEdit.is_admin,
       phone_number: quickEdit.phone_number.trim() || null,
       email_address: quickEdit.email_address.trim() || null,
+      scouting_2025_draft_value_grade:
+        quickEdit.scouting_2025_draft_value_grade || null,
+      scouting_2025_draft_value_index:
+        quickEdit.scouting_2025_draft_value_index.trim() || null,
       updated_at: new Date().toISOString(),
     };
 
@@ -529,6 +623,10 @@ export default function PlayersAdminPage() {
         is_admin: player.is_admin,
         phone_number: player.phone_number,
         email_address: player.email_address,
+        scouting_2025_draft_value_grade:
+          player.scouting_2025_draft_value_grade,
+        scouting_2025_draft_value_index:
+          player.scouting_2025_draft_value_index,
       },
       newValue: payload,
     });
@@ -637,6 +735,32 @@ export default function PlayersAdminPage() {
 
     if (payload.display_rank && !displayRanks.includes(payload.display_rank as typeof displayRanks[number])) {
       setError("Display rank must be A+, A, A-, B+, B, B-, C+, C, C-, D+, D, or D-.");
+      return;
+    }
+
+    if (
+      payload.scouting_2025_draft_value_grade &&
+      !scoutingGrades.includes(payload.scouting_2025_draft_value_grade)
+    ) {
+      setError("2025 draft value grade must be A+ through D- or F.");
+      return;
+    }
+
+    if (
+      payload.scouting_2025_avg_draft_position !== null &&
+      (!Number.isFinite(payload.scouting_2025_avg_draft_position) ||
+        payload.scouting_2025_avg_draft_position < 0)
+    ) {
+      setError("2025 average draft position must be a positive number.");
+      return;
+    }
+
+    if (
+      payload.scouting_2025_total_earnings !== null &&
+      (!Number.isFinite(payload.scouting_2025_total_earnings) ||
+        payload.scouting_2025_total_earnings < 0)
+    ) {
+      setError("2025 total earnings must be a positive number.");
       return;
     }
 
@@ -936,6 +1060,45 @@ export default function PlayersAdminPage() {
             </div>
 
             <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+              2025 Draft Value Grade
+              <select
+                value={quickEdit.scouting_2025_draft_value_grade}
+                onChange={(event) =>
+                  updateQuickEdit(
+                    player.id,
+                    "scouting_2025_draft_value_grade",
+                    event.target.value,
+                  )
+                }
+                className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+              >
+                <option value="">No 2025 grade</option>
+                {scoutingGrades.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
+              Draft Value Index
+              <input
+                type="text"
+                value={quickEdit.scouting_2025_draft_value_index}
+                onChange={(event) =>
+                  updateQuickEdit(
+                    player.id,
+                    "scouting_2025_draft_value_index",
+                    event.target.value,
+                  )
+                }
+                placeholder="Index"
+                className="mt-1 w-full rounded-xl border border-[#242424] bg-[#111111] px-3 py-3 text-sm font-bold normal-case tracking-normal text-[#f5f5f5] outline-none focus:border-[#f5f5f5]"
+              />
+            </label>
+
+            <label className="space-y-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#737373]">
               Room
               <input
                 type="text"
@@ -1038,6 +1201,9 @@ export default function PlayersAdminPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <Link href="/admin" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-10">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
@@ -1161,6 +1327,88 @@ export default function PlayersAdminPage() {
             placeholder="Years Served"
             className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#f5f5f5]"
           />
+
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                2025 Scouting Bridge
+              </p>
+              <p className="mt-1 text-xs leading-5 text-[#737373]">
+                Temporary scouting fields for Draft Prep until the historical
+                data system is built.
+              </p>
+            </div>
+
+            <select
+              value={form.scouting_2025_draft_value_grade}
+              onChange={(event) =>
+                updateForm(
+                  "scouting_2025_draft_value_grade",
+                  event.target.value,
+                )
+              }
+              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            >
+              <option value="">Draft Value Grade</option>
+              {scoutingGrades.map((grade) => (
+                <option key={grade} value={grade}>
+                  {grade}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              value={form.scouting_2025_draft_value_index}
+              onChange={(event) =>
+                updateForm("scouting_2025_draft_value_index", event.target.value)
+              }
+              placeholder="Draft Value Index"
+              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                value={form.scouting_2025_avg_draft_position}
+                onChange={(event) =>
+                  updateForm(
+                    "scouting_2025_avg_draft_position",
+                    event.target.value,
+                  )
+                }
+                placeholder="Avg Draft Position"
+                className="rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              />
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.scouting_2025_total_earnings}
+                onChange={(event) =>
+                  updateForm(
+                    "scouting_2025_total_earnings",
+                    event.target.value,
+                  )
+                }
+                placeholder="Total Earnings"
+                className="rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+              />
+            </div>
+
+            <input
+              type="text"
+              value={form.scouting_2025_best_finish}
+              onChange={(event) =>
+                updateForm("scouting_2025_best_finish", event.target.value)
+              }
+              placeholder="Best Finish"
+              className="w-full rounded-xl border border-[#242424] bg-[#111111] px-4 py-3 outline-none focus:border-[#f5f5f5]"
+            />
+          </div>
 
           <div className="border-t border-[#242424] pt-4">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#a3a3a3]">
@@ -1521,13 +1769,6 @@ export default function PlayersAdminPage() {
 
           {!isLoading && filteredPlayers.map(renderPlayerCard)}
         </section>
-
-        <Link
-          href="/admin"
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Admin
-        </Link>
       </div>
     </main>
   );

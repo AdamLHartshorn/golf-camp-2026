@@ -70,6 +70,9 @@ export function NightGolfLeaderboardPage({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <Link href={backHref} className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-7 py-8">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.28em] text-[#a3a3a3]">
@@ -140,13 +143,6 @@ export function NightGolfLeaderboardPage({
               </div>
             ))}
         </div>
-
-        <Link
-          href={backHref}
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to {nightLabel} Night Golf
-        </Link>
       </div>
     </main>
   );

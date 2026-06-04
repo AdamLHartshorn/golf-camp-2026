@@ -41,7 +41,7 @@ export default function NightGolfPage() {
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/home" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Night Golf
@@ -87,13 +87,6 @@ export default function NightGolfPage() {
             </Link>
           ))}
         </section>
-
-        <Link
-          href="/home"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Camp Dashboard
-        </Link>
       </div>
     </main>
   );

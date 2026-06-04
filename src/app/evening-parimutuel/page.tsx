@@ -4,6 +4,13 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
+import {
+  autoLockParimutuelMarketIfNeeded,
+  linkParimutuelMarketToMoneyRoundIfPossible,
+  lockParimutuelMarket,
+  ParimutuelMarket,
+  setParimutuelTeeTime,
+} from "@/lib/parimutuelAutomation";
 import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
 import { supabase } from "@/lib/supabase";
 import { ActivePlayer, useActivePlayers } from "@/lib/useActivePlayers";
@@ -19,6 +26,9 @@ type EveningBet = {
   bettor_name: string;
   status: string | null;
   created_at: string | null;
+  parimutuel_market_id?: string | null;
+  draft_session_id?: string | null;
+  money_round_id?: string | null;
 };
 
 type EveningView = "hub" | "wagers" | "ledger";
@@ -86,6 +96,21 @@ function formatDateTime(value: string | null) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function formatDateTimeLocalInput(value: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const timezoneOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16);
 }
 
 function getNightMeta(nightValue: string) {
@@ -222,8 +247,11 @@ export default function EveningParimutuelPage() {
     null,
   );
   const [draftTeams, setDraftTeams] = useState<DraftTeamOption[]>([]);
+  const [parimutuelMarket, setParimutuelMarket] =
+    useState<ParimutuelMarket | null>(null);
   const [isLoadingDraftTeams, setIsLoadingDraftTeams] = useState(true);
   const [draftTeamsError, setDraftTeamsError] = useState("");
+  const [teeTimeInput, setTeeTimeInput] = useState("");
   const [selectedNight, setSelectedNight] = useState(nights[0].value);
   const [selectedPlayerId, setSelectedPlayerId] = useState(
     () => getPlayerSession()?.id || "",
@@ -259,11 +287,17 @@ export default function EveningParimutuelPage() {
     async function fetchBets() {
       setIsLoadingBets(true);
 
-      const { data, error: fetchError } = await supabase
+      let query = supabase
         .from("evening_parimutuel_bets")
         .select("*")
         .eq("status", "active")
         .order("created_at", { ascending: false });
+
+      if (parimutuelMarket?.id) {
+        query = query.eq("parimutuel_market_id", parimutuelMarket.id);
+      }
+
+      const { data, error: fetchError } = await query;
 
       if (!isCurrent) {
         return;
@@ -291,7 +325,7 @@ export default function EveningParimutuelPage() {
       isCurrent = false;
       window.clearInterval(intervalId);
     };
-  }, []);
+  }, [parimutuelMarket?.id]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -299,12 +333,13 @@ export default function EveningParimutuelPage() {
     async function fetchDraftTeams() {
       setIsLoadingDraftTeams(true);
       setDraftTeamsError("");
+      setParimutuelMarket(null);
 
-      const { data: sessionData, error: sessionError } = await supabase
-        .from("draft_sessions")
-        .select("id, name, status, completed_at, created_at")
-        .in("status", ["complete", "completed", "final", "finalized"])
-        .order("completed_at", { ascending: false, nullsFirst: false })
+      const { data: marketData, error: marketError } = await supabase
+        .from("evening_parimutuel_markets")
+        .select("*")
+        .in("status", ["open", "pending", "locked"])
+        .order("opened_at", { ascending: false, nullsFirst: false })
         .order("created_at", { ascending: false })
         .limit(1);
 
@@ -312,17 +347,84 @@ export default function EveningParimutuelPage() {
         return;
       }
 
-      if (sessionError) {
-        setDraftSession(null);
-        setDraftTeams([]);
-        setDraftTeamsError(
-          sessionError.message || "Could not load completed draft teams.",
-        );
-        setIsLoadingDraftTeams(false);
-        return;
-      }
+      const latestMarket = ((marketData as ParimutuelMarket[]) || [])[0];
+      const hasMarketSchema =
+        !marketError ||
+        (!["42P01", "42703"].includes(marketError.code || "") &&
+          !marketError.message?.includes("evening_parimutuel_markets"));
+      let latestSession: DraftSessionOption | null = null;
+      let activeMarket: ParimutuelMarket | null = null;
 
-      const latestSession = ((sessionData as DraftSessionOption[]) || [])[0];
+      if (latestMarket) {
+        const autoLockResult = await autoLockParimutuelMarketIfNeeded(latestMarket);
+        activeMarket = autoLockResult.market || latestMarket;
+        setParimutuelMarket(activeMarket);
+        setTeeTimeInput(formatDateTimeLocalInput(activeMarket.tee_time));
+
+        if (activeMarket.betting_night) {
+          setSelectedNight(activeMarket.betting_night);
+        }
+
+        const { data: sessionRow, error: sessionRowError } = await supabase
+          .from("draft_sessions")
+          .select("id, name, status, completed_at, created_at")
+          .eq("id", activeMarket.draft_session_id)
+          .single();
+
+        if (sessionRowError) {
+          setDraftSession(null);
+          setDraftTeams([]);
+          setDraftTeamsError(
+            sessionRowError.message || "Could not load linked draft session.",
+          );
+          setIsLoadingDraftTeams(false);
+          return;
+        }
+
+        latestSession = sessionRow as DraftSessionOption;
+
+        if (activeMarket && !activeMarket.money_round_id) {
+          const linkResult = await linkParimutuelMarketToMoneyRoundIfPossible(
+            activeMarket,
+            latestSession,
+          );
+
+          if (linkResult.market) {
+            activeMarket = linkResult.market;
+            setParimutuelMarket(activeMarket);
+          }
+        }
+      } else {
+        if (marketError && hasMarketSchema) {
+          setDraftTeamsError(
+            marketError.message || "Could not load Parimutuel market.",
+          );
+        }
+
+        const { data: sessionData, error: sessionError } = await supabase
+          .from("draft_sessions")
+          .select("id, name, status, completed_at, created_at")
+          .in("status", ["complete", "completed", "final", "finalized"])
+          .order("completed_at", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        if (!isCurrent) {
+          return;
+        }
+
+        if (sessionError) {
+          setDraftSession(null);
+          setDraftTeams([]);
+          setDraftTeamsError(
+            sessionError.message || "Could not load completed draft teams.",
+          );
+          setIsLoadingDraftTeams(false);
+          return;
+        }
+
+        latestSession = ((sessionData as DraftSessionOption[]) || [])[0] || null;
+      }
 
       if (!latestSession) {
         setDraftSession(null);
@@ -373,6 +475,17 @@ export default function EveningParimutuelPage() {
           display_name: session.display_name,
         }
       : null);
+  const isAdmin = Boolean(session?.is_admin);
+  const isMarketPending = parimutuelMarket?.status === "pending";
+  const isMarketLocked = parimutuelMarket?.status === "locked";
+  const isMarketOpen = parimutuelMarket?.status === "open";
+  const marketStatusLabel = parimutuelMarket
+    ? `${parimutuelMarket.status || "pending"}`
+    : "draft-linked";
+  const marketLinkNotice =
+    parimutuelMarket && !parimutuelMarket.money_round_id
+      ? "Money Round link needed"
+      : "Linked to Money Round";
 
   const visibleBets = bets.filter((bet) => bet.betting_night === selectedNight);
   const teamOptions = useMemo(
@@ -526,6 +639,55 @@ export default function EveningParimutuelPage() {
     setShowRules(false);
   }
 
+  async function handleSetTeeTime() {
+    if (!parimutuelMarket || !isAdmin) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    const teeTime = teeTimeInput
+      ? new Date(teeTimeInput).toISOString()
+      : null;
+    const result = await setParimutuelTeeTime(parimutuelMarket, teeTime);
+
+    if (result.error || !result.market) {
+      setError(result.error?.message || "Could not set tee time.");
+      return;
+    }
+
+    setParimutuelMarket(result.market);
+    setMessage(teeTime ? "Tee time set." : "Tee time cleared.");
+  }
+
+  async function handleLockBetting() {
+    if (!parimutuelMarket || !isAdmin) {
+      return;
+    }
+
+    const shouldLock = window.confirm(
+      "Lock betting for this market? No more wagers will be accepted.",
+    );
+
+    if (!shouldLock) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    const result = await lockParimutuelMarket(parimutuelMarket);
+
+    if (result.error || !result.market) {
+      setError(result.error?.message || "Could not lock betting.");
+      return;
+    }
+
+    setParimutuelMarket(result.market);
+    setMessage("Betting locked.");
+  }
+
   async function handleSubmitBet(market: string) {
     const parsedAmount = Number(marketAmounts[market] || 0);
     const trimmedSelection = (marketSelections[market] || "").trim();
@@ -554,19 +716,37 @@ export default function EveningParimutuelPage() {
       return;
     }
 
+    if (isMarketPending) {
+      setError("Parimutuel Bets are not open yet.");
+      return;
+    }
+
+    if (isMarketLocked) {
+      setError("Parimutuel Bets are locked for this Money Round.");
+      return;
+    }
+
     setIsSaving(true);
+
+    const betPayload: Record<string, string | number | null> = {
+      betting_night: selectedNight,
+      money_round_day: selectedNightMeta.roundDay,
+      market,
+      selection: trimmedSelection,
+      amount: parsedAmount,
+      bettor_player_id: selectedPlayer.id,
+      bettor_name: selectedPlayer.display_name,
+    };
+
+    if (parimutuelMarket) {
+      betPayload.parimutuel_market_id = parimutuelMarket.id;
+      betPayload.draft_session_id = parimutuelMarket.draft_session_id;
+      betPayload.money_round_id = parimutuelMarket.money_round_id;
+    }
 
     const { data, error: insertError } = await supabase
       .from("evening_parimutuel_bets")
-      .insert({
-        betting_night: selectedNight,
-        money_round_day: selectedNightMeta.roundDay,
-        market,
-        selection: trimmedSelection,
-        amount: parsedAmount,
-        bettor_player_id: selectedPlayer.id,
-        bettor_name: selectedPlayer.display_name,
-      })
+      .insert(betPayload)
       .select("*")
       .single();
 
@@ -588,7 +768,7 @@ export default function EveningParimutuelPage() {
       <div className="gc-mobile-stage justify-start">
         <header className="gc-topbar">
           <Link href="/home" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">Parimutuel Bets</p>
           <span className="gc-top-icon">
@@ -663,19 +843,78 @@ export default function EveningParimutuelPage() {
               <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
                 Draft Source
               </p>
-              <p className="mt-1 text-sm font-semibold text-[#f4f1ea]">
-                {isLoadingDraftTeams
-                  ? "Loading completed draft..."
-                  : draftSession
-                    ? draftSession.name
-                    : "No completed draft yet"}
-              </p>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-sm font-semibold text-[#f4f1ea]">
+                  {isLoadingDraftTeams
+                    ? "Loading completed draft..."
+                    : draftSession
+                      ? draftSession.name
+                      : "No completed draft yet"}
+                </p>
+                <span
+                  className={`rounded-full border px-3 py-1 font-mono text-[9px] font-black uppercase tracking-[0.16em] ${
+                    isMarketLocked
+                      ? "border-[#fca5a5]/50 bg-[#fca5a5]/10 text-[#fca5a5]"
+                      : isMarketOpen
+                        ? "border-[#d8d0ea]/55 bg-[#d8d0ea]/10 text-[#d8d0ea]"
+                        : "border-[#746a91]/50 bg-black/25 text-[#9c91ba]"
+                  }`}
+                >
+                  {marketStatusLabel}
+                </span>
+              </div>
+              {parimutuelMarket && (
+                <p className="mt-2 text-xs font-semibold text-[#a3a3a3]">
+                  {marketLinkNotice}
+                  {parimutuelMarket.tee_time
+                    ? ` · Tee time ${formatDateTime(parimutuelMarket.tee_time)}`
+                    : " · Tee time not set"}
+                </p>
+              )}
               {draftTeamsError && (
                 <p className="mt-1 text-xs font-semibold text-[#fca5a5]">
                   {draftTeamsError}
                 </p>
               )}
             </div>
+
+            {isAdmin && parimutuelMarket && (
+              <div className="rounded-xl border border-[#746a91]/35 bg-black/25 p-4">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                  Admin Betting Control
+                </p>
+                <div className="mt-3 grid gap-3">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold text-[#a3a3a3]">
+                      Tee Time / Lock Time
+                    </span>
+                    <input
+                      type="datetime-local"
+                      value={teeTimeInput}
+                      onChange={(event) => setTeeTimeInput(event.target.value)}
+                      className="gc-input"
+                    />
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={handleSetTeeTime}
+                      className="rounded-xl border border-[#746a91]/50 px-3 py-3 text-sm font-black text-[#d8d0ea] transition hover:border-[#d8d0ea]"
+                    >
+                      Set Tee Time
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleLockBetting}
+                      disabled={isMarketLocked}
+                      className="rounded-xl border border-[#fca5a5]/50 px-3 py-3 text-sm font-black text-[#fca5a5] transition hover:border-[#fca5a5] disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {isMarketLocked ? "Locked" : "Lock Betting"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {playersError && (
               <p className="text-sm font-semibold text-[#fca5a5]">
@@ -708,6 +947,8 @@ export default function EveningParimutuelPage() {
               isSaving ||
               isLoadingPlayers ||
               isLoadingDraftTeams ||
+              isMarketPending ||
+              isMarketLocked ||
               !selectedPlayerId ||
               !selectedOption ||
               options.length === 0;
@@ -847,7 +1088,13 @@ export default function EveningParimutuelPage() {
                       disabled={isDisabled}
                       className="rounded-xl border border-[#9c91ba] bg-[#9c91ba] px-4 py-3 text-sm font-black text-[#050505] transition hover:border-[#d8d0ea] hover:bg-[#d8d0ea] disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      {isSaving ? "Logging..." : "Place Bet"}
+                      {isSaving
+                        ? "Logging..."
+                        : isMarketLocked
+                          ? "Locked"
+                          : isMarketPending
+                            ? "Not Open"
+                            : "Place Bet"}
                     </button>
                   </div>
                 </div>
@@ -1039,10 +1286,6 @@ export default function EveningParimutuelPage() {
             </section>
           </>
         )}
-
-        <Link href="/home" className="text-center text-sm text-[#a3a3a3]">
-          ← Back to Home
-        </Link>
       </div>
     </main>
   );

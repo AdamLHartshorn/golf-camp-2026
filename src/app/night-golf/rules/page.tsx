@@ -3,6 +3,9 @@ import Link from "next/link";
 export default function RulesPage() {
   return (
     <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
+      <Link href="/night-golf" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-10">
         <div className="space-y-2">
           <p className="font-mono text-[17px] font-black uppercase leading-none tracking-[0.26em] text-[#f5f5f5] drop-shadow-[0_0_18px_rgba(244,241,234,0.14)]">
@@ -144,13 +147,6 @@ export default function RulesPage() {
             </div>
           </section>
         </div>
-
-        <Link
-          href="/night-golf"
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Night Golf
-        </Link>
       </div>
     </main>
   );

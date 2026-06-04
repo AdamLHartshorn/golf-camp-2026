@@ -31,6 +31,9 @@ const sections = [
 export default function ShenanigansRulesPage() {
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <Link href="/shenanigans" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.35em] text-[#b91c1c]">
@@ -66,13 +69,6 @@ export default function ShenanigansRulesPage() {
             </section>
           ))}
         </div>
-
-        <Link
-          href="/shenanigans"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Shenanigans
-        </Link>
       </div>
     </main>
   );

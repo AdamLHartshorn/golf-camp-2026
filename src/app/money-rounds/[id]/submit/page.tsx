@@ -335,6 +335,9 @@ export default function MoneyRoundSubmitPage() {
       className="gc-mobile-shell text-[#f5f5f5]"
       style={{ "--page-accent": "#6fa783" } as CSSProperties}
     >
+      <Link href={`/money-rounds/${params.id}`} className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="gc-mobile-stage w-full max-w-3xl justify-start space-y-6">
         <div className="gc-section-head">
           <p className="gc-card-kicker text-[#6fa783]">
@@ -505,13 +508,6 @@ export default function MoneyRoundSubmitPage() {
 
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#ff8a8a]">{error}</p>}
-
-        <Link
-          href={`/money-rounds/${params.id}`}
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Money Round
-        </Link>
       </div>
     </main>
   );

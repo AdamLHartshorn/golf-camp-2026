@@ -172,6 +172,9 @@ export default function NightGolfAdminPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <Link href="/admin" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-10">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
@@ -315,13 +318,6 @@ export default function NightGolfAdminPage() {
               ))}
           </div>
         </section>
-
-        <Link
-          href="/admin"
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Admin
-        </Link>
       </div>
     </main>
   );

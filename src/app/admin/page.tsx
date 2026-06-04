@@ -86,6 +86,15 @@ const sections = [
   },
   {
     number: "10",
+    label: "Closing",
+    title: "Closing Presentation",
+    href: "/closing-presentation",
+    description: "Preview the final Golf Camp 2026 year-in-review deck.",
+    accent: "#d7c8a4",
+    tint: "rgba(215,200,164,0.1)",
+  },
+  {
+    number: "11",
     label: "System",
     title: "System Tools",
     href: "/admin/system",
@@ -98,6 +107,9 @@ const sections = [
 export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <Link href="/home" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="space-y-4">
           <p className="font-mono text-[17px] font-black uppercase leading-none tracking-[0.26em] text-[#f5f5f5] drop-shadow-[0_0_18px_rgba(244,241,234,0.14)]">
@@ -217,10 +229,6 @@ export default function AdminPage() {
             </Link>
           ))}
         </div>
-
-        <Link href="/home" className="text-center text-sm text-[#a3a3a3]">
-          ← Back to Camp Dashboard
-        </Link>
       </div>
     </main>
   );

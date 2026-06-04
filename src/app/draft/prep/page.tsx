@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
-import { displayRanks, getPublicDisplayRank } from "@/lib/playerRanks";
+import { getPublicDisplayRank } from "@/lib/playerRanks";
 import { supabase } from "@/lib/supabase";
 
 type DraftPrepPlayer = {
@@ -17,47 +17,90 @@ type DraftPrepPlayer = {
   internal_rank_order: string | null;
   years_served: number | null;
   photo_url: string | null;
-  questionnaire_answers: Record<string, string> | null;
+  questionnaire_answers: Record<string, QuestionnaireAnswerValue> | null;
+  scouting_2025_draft_value_grade: string | null;
+  scouting_2025_draft_value_index: string | null;
+  scouting_2025_avg_draft_position: number | null;
+  scouting_2025_total_earnings: number | null;
+  scouting_2025_best_finish: string | null;
 };
 
-const fallbackQuestions = [
-  ["Question 1", "Answer 1"],
-  ["Question 2", "Answer 2"],
-  ["Question 3", "Answer 3"],
-];
+type QuestionnaireAnswerValue =
+  | string
+  | {
+      question?: string;
+      answer?: string;
+    };
 
-function rankWorstToBestValue(player: DraftPrepPlayer) {
-  const publicRank = getPublicDisplayRank(player.display_rank, player.rank);
-  const index = displayRanks.indexOf(publicRank as (typeof displayRanks)[number]);
-
-  if (index === -1) {
-    return Number.POSITIVE_INFINITY;
+function getAnswerText(value: QuestionnaireAnswerValue | undefined) {
+  if (typeof value === "string") {
+    return value.trim();
   }
 
-  return displayRanks.length - 1 - index;
-}
-
-function internalRankValue(value: string | null) {
-  const match = String(value || "")
-    .trim()
-    .toUpperCase()
-    .match(/^([A-D])(\d+)$/);
-
-  if (!match) {
-    return Number.POSITIVE_INFINITY;
+  if (value && typeof value === "object") {
+    return String(value.answer || "").trim();
   }
 
-  const rankOffset = "ABCD".indexOf(match[1]) * 1000;
-  return rankOffset + Number(match[2]);
+  return "";
 }
 
-function getQuestionRows(player: DraftPrepPlayer) {
+function getQuestionRows(player: DraftPrepPlayer): Array<readonly [string, string]> {
   const answers = player.questionnaire_answers || {};
-  const rows = Object.entries(answers)
-    .filter(([, answer]) => String(answer || "").trim().length > 0)
-    .slice(0, 3);
+  const importedRows = Object.entries(answers)
+    .map(([key, value]) => {
+      if (!key.match(/^q\d+$/i) || typeof value !== "object" || !value) {
+        return null;
+      }
 
-  return rows.length > 0 ? rows : fallbackQuestions;
+      return [
+        String(value.question || key.toUpperCase()),
+        String(value.answer || "").trim(),
+        Number(key.replace(/\D/g, "")) || Number.POSITIVE_INFINITY,
+      ] as const;
+    })
+    .filter((row): row is readonly [string, string, number] =>
+      Boolean(row && row[1]),
+    )
+    .sort((a, b) => a[2] - b[2])
+    .map(([question, answer]) => [question, answer] as const);
+
+  if (importedRows.length > 0) {
+    return importedRows;
+  }
+
+  const legacyRows: Array<[string, QuestionnaireAnswerValue | undefined]> = [
+    ["Strength", answers.strength || answers.personal_scouting_report],
+    ["Weakness", answers.weakness || answers.most_likely_to],
+    ["Other", answers.other || answers.other_funny_notes],
+  ];
+  const rows = legacyRows
+    .map(([question, answer]) => [
+      question,
+      getAnswerText(answer),
+    ] as const)
+    .filter(([, answer]) => answer.length > 0);
+
+  return rows;
+}
+
+function formatMoney(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return value.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+  });
+}
+
+function formatScoutingNumber(value: number | null) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return "N/A";
+  }
+
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }
 
 export default function DraftPrepPage() {
@@ -74,7 +117,7 @@ export default function DraftPrepPage() {
       const { data, error: fetchError } = await supabase
         .from("players")
         .select(
-          "id, first_name, last_name, display_name, rank, display_rank, internal_rank_order, years_served, photo_url, questionnaire_answers",
+          "id, first_name, last_name, display_name, rank, display_rank, internal_rank_order, years_served, photo_url, questionnaire_answers, scouting_2025_draft_value_grade, scouting_2025_draft_value_index, scouting_2025_avg_draft_position, scouting_2025_total_earnings, scouting_2025_best_finish",
         )
         .eq("active", true);
 
@@ -104,16 +147,9 @@ export default function DraftPrepPage() {
   const sortedPlayers = useMemo(
     () =>
       players.slice().sort((a, b) => {
-        const rankDifference = rankWorstToBestValue(a) - rankWorstToBestValue(b);
-
-        if (rankDifference !== 0) {
-          return rankDifference;
-        }
-
         return (
-          internalRankValue(a.internal_rank_order) -
-            internalRankValue(b.internal_rank_order) ||
           String(a.last_name || "").localeCompare(String(b.last_name || "")) ||
+          String(a.first_name || "").localeCompare(String(b.first_name || "")) ||
           a.display_name.localeCompare(b.display_name)
         );
       }),
@@ -152,8 +188,8 @@ export default function DraftPrepPage() {
     <main className="draft-prep-shell min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(50,77,112,0.2),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(244,241,234,0.07),transparent_28%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-4">
         <header className="flex items-center justify-between gap-4">
-          <Link href="/draft" className="text-2xl text-[#a3a3a3]">
-            ‹
+          <Link href="/draft" className="gc-back-link">
+            ← BACK
           </Link>
           <div className="text-center">
             <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#8fb0d8]">
@@ -192,22 +228,71 @@ export default function DraftPrepPage() {
             <div
               ref={carouselRef}
               onScroll={handleScroll}
-              className="-mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="-mx-4 flex snap-x snap-mandatory items-start gap-4 overflow-x-auto px-4 pb-2 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {sortedPlayers.map((player, index) => {
                 const publicRank = getPublicDisplayRank(
                   player.display_rank,
                   player.rank,
                 );
+                const seasonsLabel =
+                  typeof player.years_served === "number"
+                    ? `season ${player.years_served}`
+                    : "season ?";
                 const questionRows = getQuestionRows(player);
+                const performanceRows = [
+                  [
+                    "Draft Value Index",
+                    player.scouting_2025_draft_value_index ||
+                      player.scouting_2025_draft_value_grade ||
+                      "N/A",
+                  ],
+                  [
+                    "Avg Draft Position",
+                    formatScoutingNumber(
+                      player.scouting_2025_avg_draft_position,
+                    ),
+                  ],
+                  [
+                    "Total Earnings",
+                    formatMoney(player.scouting_2025_total_earnings),
+                  ],
+                  [
+                    "Best Finish",
+                    player.scouting_2025_best_finish || "N/A",
+                  ],
+                ];
 
                 return (
                   <article
                     key={player.id}
                     data-draft-prep-card
-                    className="draft-prep-card min-w-full snap-center overflow-hidden rounded-[1.75rem] border border-[#324d70]/55 bg-[linear-gradient(180deg,rgba(50,77,112,0.2),rgba(7,17,35,0.9)_34%,rgba(8,10,15,0.98))] shadow-[0_30px_90px_rgba(0,0,0,0.56),0_0_55px_rgba(50,77,112,0.13)]"
+                    className="draft-prep-card draft-prep-trading-card min-w-full snap-center overflow-hidden rounded-[1.05rem] border border-[#7da6d6]/62 bg-[#07101f] shadow-[0_30px_90px_rgba(0,0,0,0.56),0_0_55px_rgba(50,77,112,0.18)]"
                   >
-                    <div className="draft-prep-photo-panel relative h-[21rem] overflow-hidden border-b border-[#324d70]/35 bg-[#080d18]">
+                    <div className="border-b border-[#7da6d6]/40 bg-[linear-gradient(90deg,rgba(125,166,214,0.18),rgba(7,17,35,0.92)_34%,rgba(125,166,214,0.1))] px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="font-mono text-[8px] font-black uppercase tracking-[0.22em] text-[#8fb0d8]">
+                            Golf Camp Draft Prep
+                          </p>
+                          <p className="mt-1 font-mono text-[9px] font-black uppercase tracking-[0.16em] text-[#d7dfeb]">
+                            Card {String(index + 1).padStart(2, "0")} /{" "}
+                            {String(sortedPlayers.length).padStart(2, "0")}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center overflow-hidden rounded-[0.7rem] border border-[#8fb0d8]/55 bg-[#d7dfeb] text-[#071123] shadow-[0_0_24px_rgba(125,166,214,0.26)]">
+                          <span className="px-4 py-2 text-2xl font-black leading-none">
+                            {publicRank}
+                          </span>
+                          <span className="border-l border-[#071123]/18 px-3.5 py-2 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#24364f]">
+                            {seasonsLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="draft-prep-photo-panel relative h-[20rem] overflow-hidden border-b border-[#324d70]/35 bg-[#080d18]">
                       {player.photo_url ? (
                         <div
                           className="absolute inset-0 bg-cover bg-center"
@@ -222,40 +307,68 @@ export default function DraftPrepPage() {
                         </div>
                       )}
                       <div className="draft-prep-photo-scrim absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.14)_42%,rgba(0,0,0,0.86))]" />
-                      <div className="absolute left-5 right-5 top-5 flex items-center justify-between">
-                        <span className="rounded-full border border-[#8fb0d8]/40 bg-black/45 px-3 py-1 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#8fb0d8] backdrop-blur">
-                          Card {index + 1}/{sortedPlayers.length}
-                        </span>
-                        <span className="rounded-full border border-[#8fb0d8]/45 bg-[#071123]/75 px-4 py-2 text-xl font-black text-[#f4f1ea] shadow-[0_0_24px_rgba(50,77,112,0.2)]">
-                          {publicRank}
-                        </span>
-                      </div>
                       <div className="absolute bottom-0 left-0 right-0 p-5">
-                        <h2 className="text-4xl font-black leading-none tracking-tight text-[#f4f1ea] drop-shadow-[0_12px_28px_rgba(0,0,0,0.7)]">
+                        <h2 className="text-[2.65rem] font-black uppercase leading-[0.9] tracking-[-0.05em] text-[#f4f1ea] drop-shadow-[0_12px_28px_rgba(0,0,0,0.7)]">
                           {player.display_name}
                         </h2>
-                        <p className="mt-3 font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#b8c3d4]">
-                          {typeof player.years_served === "number"
-                            ? `${player.years_served} Years Served`
-                            : "Years Served TBD"}
-                        </p>
                       </div>
                     </div>
 
-                    <div className="space-y-3 p-5">
-                      {questionRows.map(([question, answer]) => (
-                        <div
-                          key={question}
-                          className="draft-prep-qa-card rounded-2xl border border-[#24364f]/55 bg-black/24 px-4 py-3"
-                        >
-                          <p className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[#8fb0d8]">
-                            {question}
+                    <div className="space-y-4 p-5">
+                      <section className="rounded-2xl border border-[#8fb0d8]/25 bg-[#071123]/72 p-4 shadow-[inset_0_0_24px_rgba(50,77,112,0.16)]">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <p className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-[#8fb0d8]">
+                            2025 Performance
                           </p>
-                          <p className="mt-1 text-sm font-semibold leading-5 text-[#f4f1ea]">
-                            {answer}
-                          </p>
+                          <span className="rounded-full border border-[#324d70]/65 px-2.5 py-1 font-mono text-[8px] font-black uppercase tracking-[0.16em] text-[#b8c3d4]">
+                            Scouting
+                          </span>
                         </div>
-                      ))}
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {performanceRows.map(([label, value]) => (
+                            <div
+                              key={label}
+                              className="rounded-[0.75rem] border border-[#7da6d6]/30 bg-black/26 px-3 py-2"
+                            >
+                              <p className="font-mono text-[9px] font-black uppercase tracking-[0.13em] text-[#a7b7ce]">
+                                {label}
+                              </p>
+                              <p className="mt-1 text-lg font-black leading-5 text-[#f4f1ea]">
+                                {value}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+
+                      <section className="space-y-3">
+                        <p className="font-mono text-[11px] font-black uppercase tracking-[0.2em] text-[#8fb0d8]">
+                          Full Questionnaire Responses
+                        </p>
+
+                        {questionRows.length === 0 && (
+                          <div className="draft-prep-qa-card rounded-2xl border border-[#24364f]/55 bg-black/24 px-4 py-3">
+                            <p className="text-sm font-semibold leading-5 text-[#b8c3d4]">
+                              Questionnaire responses pending.
+                            </p>
+                          </div>
+                        )}
+
+                        {questionRows.map(([question, answer]) => (
+                          <div
+                            key={question}
+                            className="draft-prep-qa-card rounded-[0.8rem] border border-[#24364f]/55 bg-black/24 px-4 py-3"
+                          >
+                            <p className="font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#8fb0d8]">
+                              {question}
+                            </p>
+                            <p className="mt-2 whitespace-pre-line text-sm font-semibold leading-5 text-[#f4f1ea]">
+                              {answer}
+                            </p>
+                          </div>
+                        ))}
+                      </section>
                     </div>
                   </article>
                 );
@@ -305,13 +418,6 @@ export default function DraftPrepPage() {
                 Next →
               </button>
             </div>
-
-            <Link
-              href="/draft"
-              className="draft-prep-back-action sticky bottom-4 z-10 block rounded-2xl border border-[#324d70]/60 bg-[#071123]/90 px-5 py-4 text-center text-sm font-black uppercase tracking-[0.14em] text-[#d7dfeb] shadow-[0_18px_46px_rgba(0,0,0,0.45),0_0_30px_rgba(50,77,112,0.14)] backdrop-blur transition hover:border-[#8fb0d8]/70"
-            >
-              Back to Draft
-            </Link>
           </>
         )}
       </div>

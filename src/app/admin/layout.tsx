@@ -32,6 +32,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   if (!session?.is_admin) {
     return (
       <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+        <Link href="/home" className="gc-back-link gc-floating-back">
+          ← BACK
+        </Link>
         <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5">
           <section className="rounded-2xl border border-[#242424] bg-[#111111] p-6 text-center">
             <p className="text-sm uppercase tracking-[0.28em] text-[#a3a3a3]">
@@ -46,12 +49,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </p>
           </section>
 
-          <Link
-            href="/home"
-            className="block rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-semibold text-[#f5f5f5]"
-          >
-            Back to Home
-          </Link>
         </div>
       </main>
     );

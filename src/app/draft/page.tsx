@@ -81,7 +81,7 @@ export default function DraftPage() {
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/home" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Live Draft
@@ -190,10 +190,6 @@ export default function DraftPage() {
           <p className="px-5 py-4 text-sm leading-6 text-[#93a3bb]">
             Browse the player pool before the board goes live. Open Prep →
           </p>
-        </Link>
-
-        <Link href="/home" className="text-center text-sm text-[#a3a3a3]">
-          ← Back to Dashboard
         </Link>
       </div>
     </main>

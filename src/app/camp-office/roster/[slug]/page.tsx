@@ -135,6 +135,9 @@ export default function PlayerProfilePage() {
 
   return (
     <main className="gc-mobile-shell" style={{ "--page-accent": "#f4f1ea" } as CSSProperties}>
+      <Link href="/camp-office/roster" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="gc-mobile-stage">
         {isLoading && (
           <div className="gc-edge-card p-5 text-center text-sm text-[#b8b0a1]">
@@ -303,13 +306,6 @@ export default function PlayerProfilePage() {
             )}
           </>
         )}
-
-        <Link
-          href="/camp-office/roster"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Camp Roster
-        </Link>
       </div>
     </main>
   );

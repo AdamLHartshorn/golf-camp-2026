@@ -1,0 +1,1550 @@
+{
+  "questions": [
+    {
+      "number": 1,
+      "question": "What is your average individual score?"
+    },
+    {
+      "number": 2,
+      "question": "Strengths/weaknesses of golf game"
+    },
+    {
+      "number": 3,
+      "question": "How much silver do you own?"
+    },
+    {
+      "number": 4,
+      "question": "Describe your wiener using golf terms."
+    },
+    {
+      "number": 5,
+      "question": "Why do you come on this trip?"
+    },
+    {
+      "number": 6,
+      "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)"
+    }
+  ],
+  "matches": [
+    {
+      "player": {
+        "id": "f1c98c4a-1dcd-4894-9a65-2fe5326c2e1d",
+        "display_name": "Jesse Praeuner",
+        "first_name": "Jesse",
+        "last_name": "Praeuner",
+        "player_key": "jessepraeuner",
+        "active": true
+      },
+      "workbook_name": "Jesse Prauener",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "81.1"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths: driver, woods, wedges; Weaknesses: putter, consistency"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "The only silver I own is in my beard and my pubes."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "I call my wiener Old Tom Morris."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on this trip because it’s the most fun golf environment to play in, no question, along with being able to do it with lifelong friends. I’ve been on 20+ trips, and there’s never been a bad one."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "No specific plans yet, but I intend to be there to participate in the Tuesday round."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "c2dc47db-1eea-4879-851d-3381e8071602",
+        "display_name": "Jacob Koch",
+        "first_name": "Jacob",
+        "last_name": "Koch",
+        "player_key": "jacobkoch",
+        "active": true
+      },
+      "workbook_name": "Jacob Koch",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "75-82"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths are my ability to rape at any moment.  Weakness can be my ability to rape at any moment."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I own two silver dollars. Or are they half dollars? No clue."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "My cock always ends up in the hole. #teamrape"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on this trip for questions like number 4. Also because the amount of fun had is unlike anything you can experience outside of this trip."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Hoping I can hitch a ride again with someone Tuesday morning."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "b90ab409-55eb-4e60-9211-94779bca4bdf",
+        "display_name": "Adam Hartshorn",
+        "first_name": "Adam",
+        "last_name": "Hartshorn",
+        "player_key": "adamhartshorn",
+        "active": true
+      },
+      "workbook_name": "Adam Hartshorn",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "76"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Putting / Driving"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Clearly not enough"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Outdated but proven"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "This trip is as good of a golf environment as Augusta"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday afternoon"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "efbf6ee5-dd1b-4216-8d8b-6a3415072cd5",
+        "display_name": "Jim Smith",
+        "first_name": "Jim",
+        "last_name": "Smith",
+        "player_key": "jimsmith",
+        "active": true
+      },
+      "workbook_name": "Jim Smith",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Average individual score for 18 is approximately 82."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths - I am fairly consistent and usually (but not always) don't blow up on holes, so I can keep my individual scores the same most of the time.  Biggest weakness is lack of distance (based on age), which makes me a bad A player as I can't come anywhere close to the BIG hitters."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Not sure what silver we are referring to, but I don't invest in silver, gold or bitcoin."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Short and hooking left."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Enjoy the golf and the young (yes, except for Fulk, Max and Rob, I am the old guy) friends I have made.  I love people who just have fun golfing no matter how they play and this group is that.  Plus this is a very welcoming group, so even though I am a fairly new edition to Camp, I never felt like an outsider."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "My plan is to get their early Wednesday.  Not sure if I can make the warm up round on that day (will try), but will be there for the official Wednesday afternoon round, and will stay through the Saturday morning round.  I wish I could add on to the trip, but have two other golf trips this year."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "20aee9a1-bf1c-45d1-b9c3-abe2527c4c56",
+        "display_name": "Jared Knight",
+        "first_name": "Jared",
+        "last_name": "Knight",
+        "player_key": "jaredknight",
+        "active": true
+      },
+      "workbook_name": "Jared Knight",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Average Individual score? 84-87"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths: Distance and Putting. If I can get the driver working, we’re going to make some cash. Eagles should be in play. I’m pretty good at reading greens and finding the line. I’m a great pair with someone who can chip and find the fairway off the tee, so I can send it. \nWeakness: Chipping and Consistency: Chipping is hard, but I’m working on it. I’m learning a new driver and irons, so consistency is a bit off."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I own 69 x 0 troy oz of Ag"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "It's like a short par 5. The ladies can't resist going for it, but after 8 strokes it's just embarrassing and they just pick up and go home"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "This is year 2 for me. I stumbled into this trip because my screen name is RumpleSmoothSkin. Nick couldn’t resist. I still fell like a rookie and I’m humbled to be invited back and made to feel like a welcome part of Golf Camp. We all work so hard to get through life. Trips like Golf Camp make it all worth to be alive and inspire us to enjoy the time we have. Much Love"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I plan to arrive Monday night, I’m going to work a half day and then book it tot KY. Should be in 7-8pm. I’ll leave Saturday after the money round."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "e9e81c66-460a-41c7-a3d3-ffdd8e27336b",
+        "display_name": "Todd Anderson",
+        "first_name": "Todd",
+        "last_name": "Anderson",
+        "player_key": "toddanderson",
+        "active": true
+      },
+      "workbook_name": "Todd Anderson",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "84"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Irons and chipping"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Not sure on the answer, but actually about $4k worth!"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Well my drive on a good day-like a missile and on a bad day- pulls to the right!"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Playing golf with this group is like no other golf experience! The good, the crazy, the funny, outrageous and a great escape!"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Wednesday afternoon round!"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "7423b0a5-e17a-4f25-b30f-53b461e54d09",
+        "display_name": "Austin Hartshorn",
+        "first_name": "Austin",
+        "last_name": "Hartshorn",
+        "player_key": "austinhartshorn",
+        "active": true
+      },
+      "workbook_name": "Austin Hartshorn",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Average score is 82 I’d say"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths: wedge play/short game - I chip in once a round. Easier to do if you miss a lot of greens. Weakness: off the tee - this is where most of my penalties come"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I own 6 1oz American Eagle coins"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Reachable par 4 with a slightly elevated green"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I have never been before, but am very eager to start this journey of debauchery. I love the game, I love gambling, and I love bro-ing out. I’ve been told this is a great group of guys and I very much want to be a part of it."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I will be arriving with Adam Tuesday morning"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "a9d92ba4-bdb8-4ff1-813e-485e392ec1d3",
+        "display_name": "Tyler Schrohe",
+        "first_name": "Tyler",
+        "last_name": "Schrohe",
+        "player_key": "tylerschrohe",
+        "active": true
+      },
+      "workbook_name": "Tyler Schrohe",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "83"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strength: Putting\n     Weakness: Fairway woods"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I’m swimming in silver like Scrooge McDuck swimming in a pool of coins"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Girthy dogleg right"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Mental health and to smoke with Joe Fulk"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Monday night"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "f8e93c40-d7b4-45a7-8bf6-c9f3d067a645",
+        "display_name": "Kevin Schofield",
+        "first_name": "Kevin",
+        "last_name": "Schofield",
+        "player_key": "kevinschofield",
+        "active": true
+      },
+      "workbook_name": "Kevin Schofield",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "80-85"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "S-Tee accuracy W- Wedge game/putting \n3  $0"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": ""
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Off the tee my dick is looking to take home a 10 from the bar. By the time I reach the green he is in my hand asleep."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "To fill the hole in my summer schedule"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday night"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "c2a1a748-4c44-4cfe-ac7a-36a69de66df0",
+        "display_name": "Tyler Hofmann",
+        "first_name": "Tyler",
+        "last_name": "Hofmann",
+        "player_key": "tylerhofmann",
+        "active": true
+      },
+      "workbook_name": "Tyler Hofmann",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "My average score is around 80"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths:Good distance off the tee when it goes straight and above average around/on the green\nWeakness: consistence off the tee(sometimes slice) + long irons don’t leave my bag out of fear"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Not a ton of silver but willing to bet more than I should😈"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Not built for a long drive contest but always shoots straight when needed most"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Got the invite from Adam so this will be my first year. Very excited to play some golf, gamble some coin and have some fun!!"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Planning on arriving Tuesday morning"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "138a3a55-25db-4f2c-aa5d-c85b2473246b",
+        "display_name": "Dustin Hudson",
+        "first_name": "Dustin",
+        "last_name": "Hudson",
+        "player_key": "dustinhudson",
+        "active": true
+      },
+      "workbook_name": "Dustin Hudson",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Average would be 90. I can shoot an 85 and a 95 in the same day."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths wedges/mid irons/caring too much Weakness: caring too much/booze/paying attention"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I keep a 1860s silver dollar in my truck for good luck. I have a few bars but nothing significant."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Have you ever seen a scotty roundback"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I've met some amazing people. Always have a blast."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "idk. Usually go down Monday night but I may just be too fat to add one more night on my back. Can I ponder this?"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "ee8a07a0-d752-4cf0-b8da-b63a2db335a1",
+        "display_name": "Nick Joyce",
+        "first_name": "Nick",
+        "last_name": "Joyce",
+        "player_key": "nickjoyce",
+        "active": true
+      },
+      "workbook_name": "Nick Joyce",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "86.4"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Pros: Consistent when consistent. Cons: Anything inside 80yds."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "A few ounces, unsure of total amount because it's in a safety deposit box."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Mini-driver"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "A. The laughs. B. The golf."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday evening arrival, Saturday evening departure."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "57f193fd-ee0e-45ae-9e85-bc3d41dc6b8d",
+        "display_name": "Clayton Hooks",
+        "first_name": "Clayton",
+        "last_name": "Hooks",
+        "player_key": "claytonhooks",
+        "active": true
+      },
+      "workbook_name": "Clayton Hooks",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "88-89"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strength is putting and energy guy, weakness is tee game and consistency with anything other than putter"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "no silver, fuck minerals"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "short, thick rough"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on the trip because it’s a yearly tradition for me to spend quality time with a lot of guys I’ve made close friendships with, to relive old memories and to create new ones. It’s the best trip I take every year"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "My arrival will 100% be dependent if I’m employed by then, if I’m not then probably Tuesday late morning early afternoon… if I am employed by then it’ll be early Wednesday morning"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "8beb9ad9-5732-4eec-a510-770516447edf",
+        "display_name": "Cameron Carter",
+        "first_name": "Cameron",
+        "last_name": "Carter",
+        "player_key": "cameroncarter",
+        "active": true
+      },
+      "workbook_name": "Cameron Carter",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "High 80s on a good day. Low 90s on a bad."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "I bring the weather! Birdie whistles and didgeridoos. Can be one of the longest off the tee, very solid short game. While I provide a lot of “A” shots, you’ll always get the D when paired with me."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "At least 30-40 nickels in my daughter’s crayola crayon piggy banks. Should I break into those yet?"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "I don’t struggle with performance anxiety and can be long, when everything is lined up well. I don’t like playing in the cold. I also always play with only the best balls."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Is this 20 years now? Craziness! I come for the stories. There is always something new, but the stories live forever."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I will be there late Tuesday night at earliest, but it may be early Wednesday morning. Still TbD (first money round is still Wed afternoon, right?)."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "cad9b23b-0789-415c-8108-3dd38d5a2cba",
+        "display_name": "James Peel",
+        "first_name": "James",
+        "last_name": "Peel",
+        "player_key": "jamespeel",
+        "active": true
+      },
+      "workbook_name": "James Peel",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "2.  Strength:  Being gay and not cooperating."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": ""
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "4."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": ""
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "6.  Monday PM (if he comes)"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": ""
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "36b61f55-6370-47c7-a63c-58cd83d4ea18",
+        "display_name": "Justin Moody",
+        "first_name": "Justin",
+        "last_name": "Moody",
+        "player_key": "justinmoody",
+        "active": true
+      },
+      "workbook_name": "Justin Moody",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "This year I’ve shot as low as 80 and as high as 90"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Pretty good chipping and putting, long irons are my weakness."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Under 0 oz."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "It feels worse than missing a gimme putt."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I was invested last year last minute and counted down the days to come back starting the day after it was over. Nothing better than acting a little homosexual with your cart girlfriend for the round."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I plan to be there Tuesday"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "8368858c-fa47-4133-9898-cdcaa3e1c105",
+        "display_name": "Jon Nickel",
+        "first_name": "Jon",
+        "last_name": "Nickel",
+        "player_key": "jonnickel",
+        "active": true
+      },
+      "workbook_name": "Jon Nickel",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "80"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "All around average game! Putting real good"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Too much to count… 1000’s of coins!!!"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Average 7wood!!!"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Best 4-5 days u can have drinking smoking drugs and hanging with Friends!! Best time of the year!!!"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday night! Like last year around 8-10!!!! Roughly"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "7bf3abe5-e8bd-4025-b7ee-f80cc1d9247e",
+        "display_name": "Chris Kerns",
+        "first_name": "Chris",
+        "last_name": "Kerns",
+        "player_key": "chriskerns",
+        "active": true
+      },
+      "workbook_name": "Chris Kerns",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Haven't played this year so I have no idea. I'd say 90s from the way last year went"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "100 yards and in would be my strength, Putting would be my weakness"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I have an ounce of silver that I got from this old guy after I built his patio as a tip like 20 years ago. Have no idea where it is"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Weiner in golf terms- drivable par 4- anyone has a chance to hit it"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on this trip for the people (mainly Blacklock and Yoder). I miss Tanglewood, but this place is ready for new memories"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I will arrive Tuesday night late, but with enough time to draft if need be"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "c3af1374-1e5a-4873-9893-da23b89cf778",
+        "display_name": "Dave Praeuner",
+        "first_name": "Dave",
+        "last_name": "Praeuner",
+        "player_key": "davepraeuner",
+        "active": true
+      },
+      "workbook_name": "Dave Praeuner",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "85"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Better than average on and around the greens, shorter than average off the tee, pretty good with short irons"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "None"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "12.5 degrees of loft, slight draw bias"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "To describe my wiener in golf terms"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday midday, planning on playing an afternoon round"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "be0acf1f-09b3-44ec-a148-c1765aa42846",
+        "display_name": "Doug Anewalt",
+        "first_name": "Doug",
+        "last_name": "Anewalt",
+        "player_key": "douganewalt",
+        "active": true
+      },
+      "workbook_name": "Doug Anewalt",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Handicap 12, so mid 85ish. Typical rounds range all over the 80's, with the occasional 79 or 90."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strained left knee so I haven't been able to play or practice as much as I'd like.\nDriver is consistent but short (220ish). Irons, chipping, putting solid but not spectacular."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "1.7 oz"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Augusta National"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Golf is fun. Plus great hilltop views of the pretty sunsets."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Do the team gambling rounds start Tuesday?"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "3330bb56-7684-417c-a1db-c04e31873190",
+        "display_name": "Andrew Dimino",
+        "first_name": "Andrew",
+        "last_name": "Dimino",
+        "player_key": "andrewdimino",
+        "active": true
+      },
+      "workbook_name": "Andrew Dimino",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Averaging 86 my last 10 rounds"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "strengths are short irons, chipping and the occasional long drive 2/10 tries"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "not enough to make J5 erect"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "always extra stiff shaft and when playing irradically, tends to bend slightly to the right. The head has a mind of its own, sometimes hitting the sweet spot dead center in some short grass, while other times, ending up in alot of bush."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "All the dicks"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "looking to arrive Tuesday morning\n\nScramble golf master"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "27fff4f3-3cfa-48d8-b24c-a5cb34459a11",
+        "display_name": "Scott Felix",
+        "first_name": "Scott",
+        "last_name": "Felix",
+        "player_key": "scottfelix",
+        "active": true
+      },
+      "workbook_name": "Scott Felix",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Ave 98ish."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strength: driving   Weaknesses: Everything else, and sometimes driving."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Silver: One ounce"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Built for distance"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Because it’s awesome"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday afternoon. (I think)"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "db73e8de-b277-4fc8-a756-5dd79ef05c3c",
+        "display_name": "Joe Fulk",
+        "first_name": "Joe",
+        "last_name": "Fulk",
+        "player_key": "joefulk",
+        "active": true
+      },
+      "workbook_name": "Joe Fulk",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "First nite of league play 48 so 4 to 5 strkes either way is how i play but if you check my record on the trip ...your almost always showing me the money$$$$."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "See above."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "My silver stock is low so i dont know."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "My wiener is like that club thats in your bag but never gets used old age suks.."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Im honored to still be on this trip great group lots of fun and i am a honorary team rape member..."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday is all i know they dont tell me anything.."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "2b1abe16-4329-422a-aa2e-36eadc987579",
+        "display_name": "Rob LaPlante",
+        "first_name": "Rob",
+        "last_name": "LaPlante",
+        "player_key": "roblaplante",
+        "active": true
+      },
+      "workbook_name": "Rob LaPlante",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "My average score…I’m all over the board. I’ve shot in the mid to high 80’s  all the way to the dreaded low triple digits. Sometimes my shots are so crisp they make a beautiful musical note coming off my club, and sometimes, not so much.  I can be sneaky good on some days of Camp, others days, not so much. A pick of Rob is a total crapshoot."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "See above."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "Silver, I have 1."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Ding-a-ling.  I switched from stiff to flex."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "The love of the game brought me to a Pecker, (a large group of GolfCampers), of great guys that provide me the fastest 5 days of my year. The camaraderie, the competition, the gambling, the frivolity of it all brings me back every year."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Tuesday afternoon"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "db95acc3-9d12-4c46-80af-b37600a97cee",
+        "display_name": "Clayton Allen",
+        "first_name": "Clayton",
+        "last_name": "Allen",
+        "player_key": "claytonallen",
+        "active": true
+      },
+      "workbook_name": "Clayton Allen",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "90ish"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "its a hodgepodge"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "48 grams...photo explanation attached  (It's a pic of a cock ring, for those wondering)"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "A putter.. long pullback and short, compact, accurate strokes."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Its the most joyous time of the year.  And its possible Don Fernando might touch my penis"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Monday night/Tuesday early.  Flying in so I gotta figure out who's getting there when and who will pick me up at the airport"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "b5b40e69-0854-43a8-bb3b-98e649cbe9e2",
+        "display_name": "Luke Merriman",
+        "first_name": "Luke",
+        "last_name": "Merriman",
+        "player_key": "lukemerriman",
+        "active": true
+      },
+      "workbook_name": "Luke Merriman",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "50"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Driver is strength irons r weakness"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "No silver"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Always a stiff shaft from the blues"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Because it’s fun entertaining and a great group of guys"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Leaving after work Tuesday. Arrival 830 pm"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "43bfcceb-fa37-40f0-88d3-99bb56984063",
+        "display_name": "Mike Case",
+        "first_name": "Mike",
+        "last_name": "Case",
+        "player_key": "mikecase",
+        "active": true
+      },
+      "workbook_name": "Mike Case",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "About 86-92"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strength:  short game. Weakness:  not a lot of distance."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "No gold, no silver."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Not quite a gimmee."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "No better place to check out from the world!"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Usually I arrive on Wednesday before the first money round. If the money rounds have moved up to Tuesday, then I’ll be there on Tuesday before the money rounds, but if it’s still Wednesday, then that’s when I’ll arrive."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "342c4e8d-d062-4c91-ac42-c60a49bbfd66",
+        "display_name": "Kris Yoder",
+        "first_name": "Kris",
+        "last_name": "Yoder",
+        "player_key": "krisyoder",
+        "active": true
+      },
+      "workbook_name": "Kris Yoder",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Average score is 98.  3 rounds have been 109, 85, then 100."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Sometimes I am great around the greens and from 150 in.  Sometimes I'm dependable off the tee for 240.  More likely the former."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "....."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "More dependable than Don Fernando's broken driver"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "To see my peeps and nut tap Byron drunk"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "The day of the first money round"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "3cffb8f7-4067-46ce-9688-15f2dc039cf5",
+        "display_name": "Jamie Miles",
+        "first_name": "Jamie",
+        "last_name": "Miles",
+        "player_key": "jamiemiles",
+        "active": true
+      },
+      "workbook_name": "Jamie Miles",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Ave Ind score 46"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "I’ve only played 3 times this year. Decent around the greens - iron play needs dialed in a bit\nI’ll have a great attitude do my best to hit quality golf shots and cheer my team on"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I own a small amount of silver, mostly coins and heirlooms\nMaybe 20 lbs worth…???"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "My penis in golf terms would have to be be a short par 4 - slight dog leg left"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on this trip for the guys and golf as much as I can. Forget about life and have a blast with great people doing something I love"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I’ll get there with Mike so whenever he said, mark me down for that arrival also please.  I was Sorry I couldn’t make it last year and really looking forward to being there this year."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "496e4f98-b518-4082-8a4b-8b37141400d5",
+        "display_name": "Shawn Bennett",
+        "first_name": "Shawn",
+        "last_name": "Bennett",
+        "player_key": "shawnbennett",
+        "active": false
+      },
+      "workbook_name": "Shawn Bennett",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "95"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Short irons/putting"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "50oz"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "The ole gap wedge"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Great company"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "current plan early Tuesday morning."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "2bf88e3d-41ee-46f7-b470-cc8d84a0a9f5",
+        "display_name": "Shawn Ice",
+        "first_name": "Shawn",
+        "last_name": "Ice",
+        "player_key": "shawnice",
+        "active": true
+      },
+      "workbook_name": "Shawn Ice",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "92"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "consistency strength putting weakness"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "i own no silver"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "shanked"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "for the people"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "and i’m pretty sure monday, have to check with hud"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "2b2f24de-2386-488b-92bb-46fdb09c9769",
+        "display_name": "Adam Hedrick",
+        "first_name": "Adam",
+        "last_name": "Hedrick",
+        "player_key": "adamhedrick",
+        "active": true
+      },
+      "workbook_name": "Adam Hedrick",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "105"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Depends on the day"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "$3000 +/-"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Top Flight XL"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "First time caller longtime listener"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Planned to come in Tuesday after work"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "4be25818-baea-4bb3-8c23-c044613210b4",
+        "display_name": "Alex Aust",
+        "first_name": "Alex",
+        "last_name": "Aust",
+        "player_key": "alexaust",
+        "active": true
+      },
+      "workbook_name": "Alex Aust",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "69"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths: Par 3 specialist, 3 x 3 woods in my bag, weaknesses: Being in the same cart as La Plant"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "28 ounces"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "It's my driver, but I've heard it referred to as a smooth iron. It’s got a head that demands respect, a shaft that does most of the work, and a tendency to get extra stiff when the pressure’s on. Starts the round tucked neatly in the bag, but give it the right conditions and suddenly it’s out on the fairway, standing at full attention like it’s about to tee off at Augusta."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "For my gentlemen lovers and #teamrape"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Monday night"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "01bc1e15-0a96-4e3d-aca7-945630ed7730",
+        "display_name": "Sam Kemp",
+        "first_name": "Sam",
+        "last_name": "Kemp",
+        "player_key": "samkemp",
+        "active": true
+      },
+      "workbook_name": "Sam Kemp",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Over 5000"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Sometimes I can hit a decent drive and hit a putt."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "0 USD"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "It’s like topping it off of the tee box when you’re first up with three groups behind you in a shotgun start."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "To bet on how long it takes prnr to walk back from a hole to his cart.    Just kidding, honestly just to hang out with the guys and get into questionable conversations."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I expect to arrive Tuesday afternoon."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "10264119-d522-415b-b9e8-3d7ad86ecb65",
+        "display_name": "Max Utter",
+        "first_name": "Max",
+        "last_name": "Utter",
+        "player_key": "maxutter",
+        "active": true
+      },
+      "workbook_name": "Max Utter",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "The description of my game is the same as last year, except for the fact that I can only possibly contribute from 140 yards in. I'm definitely a D this year because I haven't regained all my strength and stamina from my surgery. Then the pertinent question is how much strength and stamina should a 78 year old expect?"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "See above."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "All the silver that I own is in 3 fillings in my mouth."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "an old wooden shaft putter that has been retired to an old bag in the garage. Back in the day it was used out of the rough whenever I got out of bounds."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Originally, this trip permitted me the opportunity to see Peel. Then I met a group of degenerates that I could identify with. I have since played in both Indy and Florida with these same degenerates."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Wednesday"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "339255a2-beb8-4546-b08f-9d925ff51062",
+        "display_name": "Nick Blacklock",
+        "first_name": "Nick",
+        "last_name": "Blacklock",
+        "player_key": "nickblacklock",
+        "active": true
+      },
+      "workbook_name": "Nick Blacklock",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "100+"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Rare drive, irons trash, chipping mid, putting ok."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "No silver.  Just poker monies."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Rarely used and collecting dust in the garage."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Only time I can get some of my best friends all together in one location.  The mental break from life is always welcomed."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Monday night"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "18d08c6e-0814-4e7e-951c-bfced74bc41a",
+        "display_name": "Chris Romero",
+        "first_name": "Chris",
+        "last_name": "Romero",
+        "player_key": "chrisromero",
+        "active": true
+      },
+      "workbook_name": "Chris Romero",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "Currently shooting around a 120 post-surgery. Wrist surgery, not a “sex change” situation, so relax."
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Biggest improvement this year: putting and keeping the ball in play. So now instead of bad, I’m just consistently \"Terrable\". Progress."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I’m a LEGAL MexiCAN no \"silver\" spoons here… unless it wasn’t nailed down."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "My wiener is the most under par part of my game. Finally, something I can say is elite."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I come on this trip to watch Don Fernando get absolutely blitzed and casually drain a 20-footer like he’s on the Tour. It’s basically a live magic show. That, and Knife Ball. Iykyk"
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Planning to check in Tuesday morning… unless my roommates push me to the brink, then I’m pulling up Monday night like a golf refugee."
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "7bd985d3-58f8-4c28-a98c-2a2302e3f7f8",
+        "display_name": "Andrew Peretin",
+        "first_name": "Andrew",
+        "last_name": "Peretin",
+        "player_key": "andrewperetin",
+        "active": true
+      },
+      "workbook_name": "Andrew Peretin",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "98"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths are driving distance and good 1st putter for line and speed"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "I have the silver I have"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Like the course close to my house...Crooked Stick"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Hanging with the boys, golfing sun up to well past it goes down, and draft nights are always epic."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Buffalo Trace Tuesday morning, then to the course right after!"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "471a803c-8804-4395-8efd-2ceb2e25b858",
+        "display_name": "Shane Loeffler",
+        "first_name": "Shane",
+        "last_name": "Loeffler",
+        "player_key": "shaneloeffler",
+        "active": true
+      },
+      "workbook_name": "Shane Loeffler",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "I have only played 1-2 rounds all year. Guessing my average would be about 120"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "All weaknesses, no strength left after the wegovy so I don’t even have a decent drive"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "R me pirate don’t own any"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Doesn’t get used enough like my clubs"
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "I love the golf trip, it’s the family you chose to be around. I love camaraderie and golfing with friends."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "I am riding with you and took off that extra day as I think we are leaving Monday?"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "ae2f8ff2-8e7f-4435-997e-42fa7b52fc90",
+        "display_name": "Matt Galley",
+        "first_name": "Matt",
+        "last_name": "Galley",
+        "player_key": "mattgalley",
+        "active": true
+      },
+      "workbook_name": "Matt Galley",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "TNTC"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strength:  Comedic Relieft  Weakness:  Golf"
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "A few"
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Par 3 surrounded by nothing but bush with a tiny flagstick in the middle."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "Not for the golf."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "Wednesday"
+        }
+      }
+    },
+    {
+      "player": {
+        "id": "66b486e3-bdb8-4e13-88ae-c2a21db15d5c",
+        "display_name": "Nathan Bunch",
+        "first_name": "Nathan",
+        "last_name": "Bunch",
+        "player_key": "nathanbunch",
+        "active": true
+      },
+      "workbook_name": "Nathan Bunch",
+      "answers": {
+        "q1": {
+          "question": "What is your average individual score?",
+          "answer": "106. Blow up holes get ya"
+        },
+        "q2": {
+          "question": "Strengths/weaknesses of golf game",
+          "answer": "Strengths. Relaxing guy to be around. Good for several good shots a round. Will show a good line for putting. Weakness. Wildly inconsistent at times. Chipping around green has been rough to start the year."
+        },
+        "q3": {
+          "question": "How much silver do you own?",
+          "answer": "May have junk silver around in piggy banks."
+        },
+        "q4": {
+          "question": "Describe your wiener using golf terms.",
+          "answer": "Best club would be a 7 iron utilizing a narrow shaft that has an unnatural hook."
+        },
+        "q5": {
+          "question": "Why do you come on this trip?",
+          "answer": "The commaradery and love that only golf could give. Escape from the daily grind."
+        },
+        "q6": {
+          "question": "When do you plan on arriving to the course? (We can check in as early as Monday night if you're interested in getting moved in early. Plan is for first round of golf to be Tuesday afternoon.)",
+          "answer": "First money round Wednesday?"
+        }
+      }
+    }
+  ],
+  "unmatched": [],
+  "duplicateMatches": [],
+  "missingWorkbook": []
+}

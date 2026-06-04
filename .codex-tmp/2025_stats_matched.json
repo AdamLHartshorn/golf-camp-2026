@@ -1,0 +1,699 @@
+{
+  "rawRows": [
+    {
+      "Player": "Adam Hartshorn",
+      "Avg Draft Position": "2.33",
+      "Total Earnings": "$580.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "8.0"
+    },
+    {
+      "Player": "Alex Aust",
+      "Avg Draft Position": "21.00",
+      "Total Earnings": "$410.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Andrew Dimino",
+      "Avg Draft Position": "12.33",
+      "Total Earnings": "$330.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Andrew Peretin",
+      "Avg Draft Position": "16.00",
+      "Total Earnings": "$10.00",
+      "Best Finish": "4th",
+      "Draft Value Index": "4.0"
+    },
+    {
+      "Player": "Bret Fuller",
+      "Avg Draft Position": "4.00",
+      "Total Earnings": "$692.50",
+      "Best Finish": "1st",
+      "Draft Value Index": "8.8"
+    },
+    {
+      "Player": "Cameron Carter",
+      "Avg Draft Position": "11.33",
+      "Total Earnings": "$232.50",
+      "Best Finish": "2nd",
+      "Draft Value Index": "7.5"
+    },
+    {
+      "Player": "Chris Kerns",
+      "Avg Draft Position": "4.00",
+      "Total Earnings": "$130.00",
+      "Best Finish": "3rd",
+      "Draft Value Index": "3.0"
+    },
+    {
+      "Player": "Chris Romero",
+      "Avg Draft Position": "23.00",
+      "Total Earnings": "$87.50",
+      "Best Finish": "3rd",
+      "Draft Value Index": "8.9"
+    },
+    {
+      "Player": "Chris Spratt",
+      "Avg Draft Position": "15.67",
+      "Total Earnings": "$100.00",
+      "Best Finish": "3rd",
+      "Draft Value Index": "6.7"
+    },
+    {
+      "Player": "Clayton Allen",
+      "Avg Draft Position": "15.00",
+      "Total Earnings": "$272.50",
+      "Best Finish": "2nd",
+      "Draft Value Index": "9.8"
+    },
+    {
+      "Player": "Clayton Hooks",
+      "Avg Draft Position": "16.33",
+      "Total Earnings": "$25.00",
+      "Best Finish": "4th",
+      "Draft Value Index": "5.5"
+    },
+    {
+      "Player": "Dave Praeuner",
+      "Avg Draft Position": "9.00",
+      "Total Earnings": "$42.50",
+      "Best Finish": "4th",
+      "Draft Value Index": "2.8"
+    },
+    {
+      "Player": "Dustin Hudson",
+      "Avg Draft Position": "10.00",
+      "Total Earnings": "$20.00",
+      "Best Finish": "5th",
+      "Draft Value Index": "2.2"
+    },
+    {
+      "Player": "Jacob Koch",
+      "Avg Draft Position": "2.67",
+      "Total Earnings": "$15.00",
+      "Best Finish": "4th",
+      "Draft Value Index": "1.0"
+    },
+    {
+      "Player": "James Peel",
+      "Avg Draft Position": "14.67",
+      "Total Earnings": "$195.00",
+      "Best Finish": "2nd",
+      "Draft Value Index": "8.0"
+    },
+    {
+      "Player": "Jared Knight",
+      "Avg Draft Position": "7.67",
+      "Total Earnings": "$395.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "8.5"
+    },
+    {
+      "Player": "Jesse Prauener",
+      "Avg Draft Position": "2.00",
+      "Total Earnings": "$140.00",
+      "Best Finish": "2nd",
+      "Draft Value Index": "3.2"
+    },
+    {
+      "Player": "Joe Fulk",
+      "Avg Draft Position": "11.00",
+      "Total Earnings": "$402.50",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Jon Nickel",
+      "Avg Draft Position": "6.67",
+      "Total Earnings": "$30.00",
+      "Best Finish": "5th",
+      "Draft Value Index": "1.2"
+    },
+    {
+      "Player": "Justin Moody",
+      "Avg Draft Position": "12.00",
+      "Total Earnings": "$342.50",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Kent Kellar",
+      "Avg Draft Position": "19.67",
+      "Total Earnings": "$325.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Kevin Schofield",
+      "Avg Draft Position": "8.67",
+      "Total Earnings": "$115.00",
+      "Best Finish": "2nd",
+      "Draft Value Index": "4.5"
+    },
+    {
+      "Player": "Lucas Cassidy",
+      "Avg Draft Position": "8.33",
+      "Total Earnings": "$75.00",
+      "Best Finish": "3rd",
+      "Draft Value Index": "3.2"
+    },
+    {
+      "Player": "Luke Merriman",
+      "Avg Draft Position": "21.67",
+      "Total Earnings": "$140.00",
+      "Best Finish": "2nd",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Max Utter",
+      "Avg Draft Position": "23.00",
+      "Total Earnings": "$15.00",
+      "Best Finish": "8th",
+      "Draft Value Index": "6.8"
+    },
+    {
+      "Player": "Nick Blacklock",
+      "Avg Draft Position": "25.00",
+      "Total Earnings": "$250.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Nick Joyce",
+      "Avg Draft Position": "11.67",
+      "Total Earnings": "$75.00",
+      "Best Finish": "5th",
+      "Draft Value Index": "4.5"
+    },
+    {
+      "Player": "Rob LaPlante",
+      "Avg Draft Position": "12.33",
+      "Total Earnings": "$260.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "9.2"
+    },
+    {
+      "Player": "Sam Kemp",
+      "Avg Draft Position": "23.67",
+      "Total Earnings": "$75.00",
+      "Best Finish": "6th",
+      "Draft Value Index": "9.2"
+    },
+    {
+      "Player": "Scott Felix",
+      "Avg Draft Position": "16.00",
+      "Total Earnings": "$350.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Shane Loeffler",
+      "Avg Draft Position": "23.67",
+      "Total Earnings": "$232.50",
+      "Best Finish": "2nd",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Shawn Bennett",
+      "Avg Draft Position": "19.67",
+      "Total Earnings": "$220.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Shawn Ice",
+      "Avg Draft Position": "23.33",
+      "Total Earnings": "$470.00",
+      "Best Finish": "1st",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Steve Rasnic",
+      "Avg Draft Position": "21.00",
+      "Total Earnings": "$0.00",
+      "Best Finish": "4th",
+      "Draft Value Index": "4.8"
+    },
+    {
+      "Player": "Toby Kemp",
+      "Avg Draft Position": "22.33",
+      "Total Earnings": "$135.00",
+      "Best Finish": "2nd",
+      "Draft Value Index": "10.0"
+    },
+    {
+      "Player": "Tyler Schrohe",
+      "Avg Draft Position": "7.33",
+      "Total Earnings": "$10.00",
+      "Best Finish": "6th",
+      "Draft Value Index": "1.0"
+    }
+  ],
+  "matches": [
+    {
+      "player": {
+        "id": "b90ab409-55eb-4e60-9211-94779bca4bdf",
+        "display_name": "Adam Hartshorn",
+        "first_name": "Adam",
+        "last_name": "Hartshorn",
+        "active": true
+      },
+      "source_name": "Adam Hartshorn",
+      "scouting_2025_avg_draft_position": 2.33,
+      "scouting_2025_total_earnings": 580,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "8.0"
+    },
+    {
+      "player": {
+        "id": "4be25818-baea-4bb3-8c23-c044613210b4",
+        "display_name": "Alex Aust",
+        "first_name": "Alex",
+        "last_name": "Aust",
+        "active": true
+      },
+      "source_name": "Alex Aust",
+      "scouting_2025_avg_draft_position": 21,
+      "scouting_2025_total_earnings": 410,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "3330bb56-7684-417c-a1db-c04e31873190",
+        "display_name": "Andrew Dimino",
+        "first_name": "Andrew",
+        "last_name": "Dimino",
+        "active": true
+      },
+      "source_name": "Andrew Dimino",
+      "scouting_2025_avg_draft_position": 12.33,
+      "scouting_2025_total_earnings": 330,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "7bd985d3-58f8-4c28-a98c-2a2302e3f7f8",
+        "display_name": "Andrew Peretin",
+        "first_name": "Andrew",
+        "last_name": "Peretin",
+        "active": true
+      },
+      "source_name": "Andrew Peretin",
+      "scouting_2025_avg_draft_position": 16,
+      "scouting_2025_total_earnings": 10,
+      "scouting_2025_best_finish": "4th",
+      "scouting_2025_draft_value_index": "4.0"
+    },
+    {
+      "player": {
+        "id": "8beb9ad9-5732-4eec-a510-770516447edf",
+        "display_name": "Cameron Carter",
+        "first_name": "Cameron",
+        "last_name": "Carter",
+        "active": true
+      },
+      "source_name": "Cameron Carter",
+      "scouting_2025_avg_draft_position": 11.33,
+      "scouting_2025_total_earnings": 232.5,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "7.5"
+    },
+    {
+      "player": {
+        "id": "7bf3abe5-e8bd-4025-b7ee-f80cc1d9247e",
+        "display_name": "Chris Kerns",
+        "first_name": "Chris",
+        "last_name": "Kerns",
+        "active": true
+      },
+      "source_name": "Chris Kerns",
+      "scouting_2025_avg_draft_position": 4,
+      "scouting_2025_total_earnings": 130,
+      "scouting_2025_best_finish": "3rd",
+      "scouting_2025_draft_value_index": "3.0"
+    },
+    {
+      "player": {
+        "id": "18d08c6e-0814-4e7e-951c-bfced74bc41a",
+        "display_name": "Chris Romero",
+        "first_name": "Chris",
+        "last_name": "Romero",
+        "active": true
+      },
+      "source_name": "Chris Romero",
+      "scouting_2025_avg_draft_position": 23,
+      "scouting_2025_total_earnings": 87.5,
+      "scouting_2025_best_finish": "3rd",
+      "scouting_2025_draft_value_index": "8.9"
+    },
+    {
+      "player": {
+        "id": "db95acc3-9d12-4c46-80af-b37600a97cee",
+        "display_name": "Clayton Allen",
+        "first_name": "Clayton",
+        "last_name": "Allen",
+        "active": true
+      },
+      "source_name": "Clayton Allen",
+      "scouting_2025_avg_draft_position": 15,
+      "scouting_2025_total_earnings": 272.5,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "9.8"
+    },
+    {
+      "player": {
+        "id": "57f193fd-ee0e-45ae-9e85-bc3d41dc6b8d",
+        "display_name": "Clayton Hooks",
+        "first_name": "Clayton",
+        "last_name": "Hooks",
+        "active": true
+      },
+      "source_name": "Clayton Hooks",
+      "scouting_2025_avg_draft_position": 16.33,
+      "scouting_2025_total_earnings": 25,
+      "scouting_2025_best_finish": "4th",
+      "scouting_2025_draft_value_index": "5.5"
+    },
+    {
+      "player": {
+        "id": "c3af1374-1e5a-4873-9893-da23b89cf778",
+        "display_name": "Dave Praeuner",
+        "first_name": "Dave",
+        "last_name": "Praeuner",
+        "active": true
+      },
+      "source_name": "Dave Praeuner",
+      "scouting_2025_avg_draft_position": 9,
+      "scouting_2025_total_earnings": 42.5,
+      "scouting_2025_best_finish": "4th",
+      "scouting_2025_draft_value_index": "2.8"
+    },
+    {
+      "player": {
+        "id": "138a3a55-25db-4f2c-aa5d-c85b2473246b",
+        "display_name": "Dustin Hudson",
+        "first_name": "Dustin",
+        "last_name": "Hudson",
+        "active": true
+      },
+      "source_name": "Dustin Hudson",
+      "scouting_2025_avg_draft_position": 10,
+      "scouting_2025_total_earnings": 20,
+      "scouting_2025_best_finish": "5th",
+      "scouting_2025_draft_value_index": "2.2"
+    },
+    {
+      "player": {
+        "id": "c2dc47db-1eea-4879-851d-3381e8071602",
+        "display_name": "Jacob Koch",
+        "first_name": "Jacob",
+        "last_name": "Koch",
+        "active": true
+      },
+      "source_name": "Jacob Koch",
+      "scouting_2025_avg_draft_position": 2.67,
+      "scouting_2025_total_earnings": 15,
+      "scouting_2025_best_finish": "4th",
+      "scouting_2025_draft_value_index": "1.0"
+    },
+    {
+      "player": {
+        "id": "cad9b23b-0789-415c-8108-3dd38d5a2cba",
+        "display_name": "James Peel",
+        "first_name": "James",
+        "last_name": "Peel",
+        "active": true
+      },
+      "source_name": "James Peel",
+      "scouting_2025_avg_draft_position": 14.67,
+      "scouting_2025_total_earnings": 195,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "8.0"
+    },
+    {
+      "player": {
+        "id": "20aee9a1-bf1c-45d1-b9c3-abe2527c4c56",
+        "display_name": "Jared Knight",
+        "first_name": "Jared",
+        "last_name": "Knight",
+        "active": true
+      },
+      "source_name": "Jared Knight",
+      "scouting_2025_avg_draft_position": 7.67,
+      "scouting_2025_total_earnings": 395,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "8.5"
+    },
+    {
+      "player": {
+        "id": "f1c98c4a-1dcd-4894-9a65-2fe5326c2e1d",
+        "display_name": "Jesse Praeuner",
+        "first_name": "Jesse",
+        "last_name": "Praeuner",
+        "active": true
+      },
+      "source_name": "Jesse Prauener",
+      "scouting_2025_avg_draft_position": 2,
+      "scouting_2025_total_earnings": 140,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "3.2"
+    },
+    {
+      "player": {
+        "id": "db73e8de-b277-4fc8-a756-5dd79ef05c3c",
+        "display_name": "Joe Fulk",
+        "first_name": "Joe",
+        "last_name": "Fulk",
+        "active": true
+      },
+      "source_name": "Joe Fulk",
+      "scouting_2025_avg_draft_position": 11,
+      "scouting_2025_total_earnings": 402.5,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "8368858c-fa47-4133-9898-cdcaa3e1c105",
+        "display_name": "Jon Nickel",
+        "first_name": "Jon",
+        "last_name": "Nickel",
+        "active": true
+      },
+      "source_name": "Jon Nickel",
+      "scouting_2025_avg_draft_position": 6.67,
+      "scouting_2025_total_earnings": 30,
+      "scouting_2025_best_finish": "5th",
+      "scouting_2025_draft_value_index": "1.2"
+    },
+    {
+      "player": {
+        "id": "36b61f55-6370-47c7-a63c-58cd83d4ea18",
+        "display_name": "Justin Moody",
+        "first_name": "Justin",
+        "last_name": "Moody",
+        "active": true
+      },
+      "source_name": "Justin Moody",
+      "scouting_2025_avg_draft_position": 12,
+      "scouting_2025_total_earnings": 342.5,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "f8e93c40-d7b4-45a7-8bf6-c9f3d067a645",
+        "display_name": "Kevin Schofield",
+        "first_name": "Kevin",
+        "last_name": "Schofield",
+        "active": true
+      },
+      "source_name": "Kevin Schofield",
+      "scouting_2025_avg_draft_position": 8.67,
+      "scouting_2025_total_earnings": 115,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "4.5"
+    },
+    {
+      "player": {
+        "id": "b5b40e69-0854-43a8-bb3b-98e649cbe9e2",
+        "display_name": "Luke Merriman",
+        "first_name": "Luke",
+        "last_name": "Merriman",
+        "active": true
+      },
+      "source_name": "Luke Merriman",
+      "scouting_2025_avg_draft_position": 21.67,
+      "scouting_2025_total_earnings": 140,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "10264119-d522-415b-b9e8-3d7ad86ecb65",
+        "display_name": "Max Utter",
+        "first_name": "Max",
+        "last_name": "Utter",
+        "active": true
+      },
+      "source_name": "Max Utter",
+      "scouting_2025_avg_draft_position": 23,
+      "scouting_2025_total_earnings": 15,
+      "scouting_2025_best_finish": "8th",
+      "scouting_2025_draft_value_index": "6.8"
+    },
+    {
+      "player": {
+        "id": "339255a2-beb8-4546-b08f-9d925ff51062",
+        "display_name": "Nick Blacklock",
+        "first_name": "Nick",
+        "last_name": "Blacklock",
+        "active": true
+      },
+      "source_name": "Nick Blacklock",
+      "scouting_2025_avg_draft_position": 25,
+      "scouting_2025_total_earnings": 250,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "ee8a07a0-d752-4cf0-b8da-b63a2db335a1",
+        "display_name": "Nick Joyce",
+        "first_name": "Nick",
+        "last_name": "Joyce",
+        "active": true
+      },
+      "source_name": "Nick Joyce",
+      "scouting_2025_avg_draft_position": 11.67,
+      "scouting_2025_total_earnings": 75,
+      "scouting_2025_best_finish": "5th",
+      "scouting_2025_draft_value_index": "4.5"
+    },
+    {
+      "player": {
+        "id": "2b1abe16-4329-422a-aa2e-36eadc987579",
+        "display_name": "Rob LaPlante",
+        "first_name": "Rob",
+        "last_name": "LaPlante",
+        "active": true
+      },
+      "source_name": "Rob LaPlante",
+      "scouting_2025_avg_draft_position": 12.33,
+      "scouting_2025_total_earnings": 260,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "9.2"
+    },
+    {
+      "player": {
+        "id": "01bc1e15-0a96-4e3d-aca7-945630ed7730",
+        "display_name": "Sam Kemp",
+        "first_name": "Sam",
+        "last_name": "Kemp",
+        "active": true
+      },
+      "source_name": "Sam Kemp",
+      "scouting_2025_avg_draft_position": 23.67,
+      "scouting_2025_total_earnings": 75,
+      "scouting_2025_best_finish": "6th",
+      "scouting_2025_draft_value_index": "9.2"
+    },
+    {
+      "player": {
+        "id": "27fff4f3-3cfa-48d8-b24c-a5cb34459a11",
+        "display_name": "Scott Felix",
+        "first_name": "Scott",
+        "last_name": "Felix",
+        "active": true
+      },
+      "source_name": "Scott Felix",
+      "scouting_2025_avg_draft_position": 16,
+      "scouting_2025_total_earnings": 350,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "471a803c-8804-4395-8efd-2ceb2e25b858",
+        "display_name": "Shane Loeffler",
+        "first_name": "Shane",
+        "last_name": "Loeffler",
+        "active": true
+      },
+      "source_name": "Shane Loeffler",
+      "scouting_2025_avg_draft_position": 23.67,
+      "scouting_2025_total_earnings": 232.5,
+      "scouting_2025_best_finish": "2nd",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "496e4f98-b518-4082-8a4b-8b37141400d5",
+        "display_name": "Shawn Bennett",
+        "first_name": "Shawn",
+        "last_name": "Bennett",
+        "active": false
+      },
+      "source_name": "Shawn Bennett",
+      "scouting_2025_avg_draft_position": 19.67,
+      "scouting_2025_total_earnings": 220,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "2bf88e3d-41ee-46f7-b470-cc8d84a0a9f5",
+        "display_name": "Shawn Ice",
+        "first_name": "Shawn",
+        "last_name": "Ice",
+        "active": true
+      },
+      "source_name": "Shawn Ice",
+      "scouting_2025_avg_draft_position": 23.33,
+      "scouting_2025_total_earnings": 470,
+      "scouting_2025_best_finish": "1st",
+      "scouting_2025_draft_value_index": "10.0"
+    },
+    {
+      "player": {
+        "id": "a9d92ba4-bdb8-4ff1-813e-485e392ec1d3",
+        "display_name": "Tyler Schrohe",
+        "first_name": "Tyler",
+        "last_name": "Schrohe",
+        "active": true
+      },
+      "source_name": "Tyler Schrohe",
+      "scouting_2025_avg_draft_position": 7.33,
+      "scouting_2025_total_earnings": 10,
+      "scouting_2025_best_finish": "6th",
+      "scouting_2025_draft_value_index": "1.0"
+    }
+  ],
+  "unmatched": [
+    "Bret Fuller",
+    "Chris Spratt",
+    "Kent Kellar",
+    "Lucas Cassidy",
+    "Steve Rasnic",
+    "Toby Kemp"
+  ],
+  "activeWithoutStats": [
+    "Todd Anderson",
+    "Doug Anewalt",
+    "Nathan Bunch",
+    "Mike Case",
+    "Matt Galley",
+    "Austin Hartshorn",
+    "Adam Hedrick",
+    "Tyler Hofmann",
+    "Jamie Miles",
+    "Jim Smith",
+    "Kris Yoder"
+  ]
+}

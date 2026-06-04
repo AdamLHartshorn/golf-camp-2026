@@ -15,8 +15,8 @@ export function NightGolfNightPage({
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.1),transparent_32%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/night-golf" className="text-2xl text-[#a3a3a3]">
-            ‹
+          <Link href="/night-golf" className="gc-back-link">
+            ← BACK
           </Link>
           <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
             {nightLabel} Night Golf
@@ -75,13 +75,6 @@ export function NightGolfNightPage({
             <span className="font-mono text-xl font-black text-[#b8b0a1]">→</span>
           </Link>
         </div>
-
-        <Link
-          href="/night-golf"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Night Golf
-        </Link>
       </div>
     </main>
   );

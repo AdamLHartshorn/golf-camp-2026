@@ -109,6 +109,9 @@ export default function MoneyRoundsBankPage() {
 
   return (
     <main className="gc-mobile-shell" style={{ "--page-accent": "#6fa783" } as CSSProperties}>
+      <Link href="/money-rounds" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="gc-mobile-stage">
         <div className="gc-edge-card p-5">
           <p className="gc-card-kicker">
@@ -197,13 +200,6 @@ export default function MoneyRoundsBankPage() {
             ))}
           </section>
         )}
-
-        <Link
-          href="/money-rounds"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Money Rounds
-        </Link>
       </div>
     </main>
   );

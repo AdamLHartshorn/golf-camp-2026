@@ -5,6 +5,7 @@ export type GolfCampIconName =
   | "bank"
   | "calcutta"
   | "camp"
+  | "closing"
   | "draft"
   | "ledger"
   | "log"
@@ -77,6 +78,15 @@ export function GolfCampIcon({ name, ...props }: GolfCampIconProps) {
           <path d="M18.5 14h2" />
           <path d="M16 7V4.5" />
           <path d="M16 4.5h4.5" />
+        </svg>
+      );
+    case "closing":
+      return (
+        <svg {...baseProps(props)}>
+          <path d="M16 5.5 18.8 12l7 .6-5.3 4.6 1.6 6.8L16 20.4 9.9 24l1.6-6.8-5.3-4.6 7-.6L16 5.5Z" />
+          <path d="M8 27h16" />
+          <path d="M12 27v-3" />
+          <path d="M20 27v-3" />
         </svg>
       );
     case "draft":

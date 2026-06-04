@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useActivePlayers } from "@/lib/useActivePlayers";
@@ -17,6 +18,36 @@ const targets = [
   "3R",
 ];
 
+const scoreRows = ["1", "2", "3"] as const;
+const scoreColumns = [
+  {
+    key: "G",
+    label: "Green",
+    accent: "#22c55e",
+    fill: "#1fa358",
+    text: "#f0fff6",
+  },
+  {
+    key: "Y",
+    label: "Orange",
+    accent: "#EB9C5C",
+    fill: "#d97837",
+    text: "#fff6ee",
+  },
+  {
+    key: "R",
+    label: "Red",
+    accent: "#c93a4d",
+    fill: "#b72a3f",
+    text: "#fff2f4",
+  },
+] as const;
+
+const emptyScores = targets.reduce<Record<string, string>>((values, target) => {
+  values[target] = "";
+  return values;
+}, {});
+
 type NightGolfSubmitPageProps = {
   night: string;
   nightLabel: string;
@@ -29,8 +60,8 @@ export function NightGolfSubmitPage({
   backHref,
 }: NightGolfSubmitPageProps) {
   const [chosenPlayerName, setChosenPlayerName] = useState("");
-  const [selectedTarget, setSelectedTarget] = useState("1G");
-  const [selectedScore, setSelectedScore] = useState<number | null>(null);
+  const [scoresByTarget, setScoresByTarget] =
+    useState<Record<string, string>>(emptyScores);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -53,19 +84,35 @@ export function NightGolfSubmitPage({
       return;
     }
 
-    if (selectedScore === null) {
-      setError("Select a score before submitting.");
+    const parsedScores = targets.map((target) => ({
+      target,
+      score: Number(scoresByTarget[target]),
+    }));
+    const hasMissingScore = parsedScores.some(
+      ({ score }) => !Number.isFinite(score),
+    );
+    const hasInvalidScore = parsedScores.some(
+      ({ score }) => ![0, 1, 3].includes(score),
+    );
+
+    if (hasMissingScore) {
+      setError("Enter all 9 scores before submitting.");
+      return;
+    }
+
+    if (hasInvalidScore) {
+      setError("Night Golf scores must be 0, 1, or 3.");
       return;
     }
 
     setIsSubmitting(true);
 
-    const payload = {
+    const payload = parsedScores.map(({ target, score }) => ({
       night,
       player_name: trimmedPlayerName,
-      target: selectedTarget,
-      score: selectedScore,
-    };
+      target,
+      score,
+    }));
 
     try {
       const { error: insertError } = await supabase
@@ -77,15 +124,8 @@ export function NightGolfSubmitPage({
         return;
       }
 
-      const currentTargetIndex = targets.indexOf(selectedTarget);
-      const nextTarget = targets[currentTargetIndex + 1];
-
-      setMessage("Result added.");
-      setSelectedScore(null);
-
-      if (nextTarget) {
-        setSelectedTarget(nextTarget);
-      }
+      setMessage("Scorecard submitted.");
+      setScoresByTarget({ ...emptyScores });
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -97,8 +137,35 @@ export function NightGolfSubmitPage({
     }
   }
 
+  function updateScore(target: string, value: string) {
+    const normalizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
+
+    setScoresByTarget((currentScores) => ({
+      ...currentScores,
+      [target]: normalizedValue,
+    }));
+  }
+
+  const scorecardTotal = targets.reduce(
+    (total, target) => total + (Number(scoresByTarget[target]) || 0),
+    0,
+  );
+
+  function getScoreCellStyle(column: (typeof scoreColumns)[number]) {
+    return {
+      backgroundColor: column.fill,
+      borderColor: column.accent,
+      color: column.text,
+      caretColor: column.text,
+      boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 24px ${column.accent}66, 0 0 22px ${column.accent}40`,
+    } satisfies CSSProperties;
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
+      <Link href={backHref} className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-7 py-8">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.28em] text-[#a3a3a3]">
@@ -115,11 +182,7 @@ export function NightGolfSubmitPage({
         </div>
 
         <div className="space-y-4">
-          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
-              Player
-            </label>
-
+          <section className="rounded-[1rem] border border-[#ec4899]/30 bg-[#101010]/92 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),0_0_34px_rgba(236,72,153,0.08)]">
             {isLoadingPlayers && (
               <p className="text-sm text-[#a3a3a3]">Loading players...</p>
             )}
@@ -133,99 +196,84 @@ export function NightGolfSubmitPage({
             )}
 
             {!isLoadingPlayers && !playersError && players.length > 0 && (
-              <div className="grid grid-cols-2 gap-3">
-                {players.map((player) => (
-                  <button
+              <label className="block">
+                <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                  Player
+                </span>
+                <select
+                  value={selectedPlayerName}
+                  onChange={(event) => setChosenPlayerName(event.target.value)}
+                  className="w-full appearance-none rounded-[0.75rem] border border-[#ec4899]/35 bg-black/70 px-4 py-3 text-base font-bold text-[#f5f5f5] outline-none transition focus:border-[#ec4899] focus:ring-2 focus:ring-[#ec4899]/20"
+                >
+                  {players.map((player) => (
+                    <option
                     key={player.id}
-                    type="button"
-                    onClick={() => setChosenPlayerName(player.display_name)}
-                    className={`rounded-2xl border p-4 text-left text-sm font-semibold transition ${
-                      selectedPlayerName === player.display_name
-                        ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
-                        : "border-[#242424] bg-black/70 text-[#f5f5f5] hover:border-[#ec4899]"
-                    }`}
+                      value={player.display_name}
+                      className="bg-[#111111] text-[#f5f5f5]"
                   >
                     {player.display_name}
-                  </button>
-                ))}
-              </div>
+                    </option>
+                  ))}
+                </select>
+              </label>
             )}
           </section>
 
-          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
-              Target
-            </label>
-
-            <div className="grid grid-cols-3 gap-3">
-              {targets.map((target) => (
-                <button
-                  key={target}
-                  onClick={() => setSelectedTarget(target)}
-                  className={`rounded-2xl border p-4 text-lg font-semibold transition ${
-                    selectedTarget === target
-                      ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
-                      : "border-[#242424] bg-black/70 text-[#f472b6]"
-                  }`}
-                >
-                  {target}
-                </button>
-              ))}
+          <section className="rounded-[1.1rem] border border-[#ec4899]/30 bg-[#101010]/92 p-4 shadow-[0_18px_50px_rgba(0,0,0,0.24),0_0_34px_rgba(236,72,153,0.08)]">
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#f472b6]">
+                  Scorecard Grid
+                </p>
+                <p className="mt-1 text-xs font-semibold text-[#a3a3a3]">
+                  Enter 0, 1, or 3 for each target.
+                </p>
+              </div>
+              <div className="rounded-[0.65rem] border border-[#ec4899]/35 bg-[#2a111f] px-3 py-2 text-right">
+                <p className="text-[10px] font-black uppercase tracking-[0.16em] text-[#f472b6]">
+                  Total
+                </p>
+                <p className="text-2xl font-black">{scorecardTotal}</p>
+              </div>
             </div>
-          </section>
 
-          <section className="rounded-[1.45rem] border border-[#242424] bg-[#101010]/92 p-5 shadow-[0_18px_50px_rgba(0,0,0,0.24)]">
-            <label className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
-              Result
-            </label>
+            <div className="grid grid-cols-[2.15rem_repeat(3,minmax(0,1fr))] gap-2">
+              {scoreRows.map((row) =>
+                scoreColumns.map((column, columnIndex) => {
+                  const target = `${row}${column.key}`;
 
-            <div className="grid grid-cols-3 gap-3">
-              <button
-                onClick={() => setSelectedScore(0)}
-                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
-                  selectedScore === 0
-                    ? "border-[#a3a3a3] bg-[#242424] text-[#f5f5f5]"
-                    : "border-[#242424] bg-black/70"
-                }`}
-              >
-                0
-              </button>
-
-              <button
-                onClick={() => setSelectedScore(1)}
-                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
-                  selectedScore === 1
-                    ? "border-[#f5f5f5] bg-[#242424] text-[#f5f5f5]"
-                    : "border-[#242424] bg-black/70"
-                }`}
-              >
-                1
-              </button>
-
-              <button
-                onClick={() => setSelectedScore(3)}
-                className={`rounded-2xl border p-5 text-xl font-semibold transition ${
-                  selectedScore === 3
-                    ? "border-[#ec4899] bg-[#2a111f] text-[#f5f5f5]"
-                    : "border-[#242424] bg-black/70"
-                }`}
-              >
-                3
-              </button>
+                  return (
+                    <div
+                      key={columnIndex === 0 ? `${row}-group` : target}
+                      className={
+                        columnIndex === 0
+                          ? "contents"
+                          : undefined
+                      }
+                    >
+                      {columnIndex === 0 && (
+                        <div className="flex h-14 items-center justify-center rounded-[0.55rem] border border-[#f5f5f5]/75 bg-black/55 font-mono text-lg font-black text-[#f5f5f5] shadow-[0_0_16px_rgba(245,245,245,0.08)]">
+                          {row}
+                        </div>
+                      )}
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[013]*"
+                        value={scoresByTarget[target]}
+                        onChange={(event) => updateScore(target, event.target.value)}
+                        aria-label={`${row} ${column.label} score`}
+                        style={getScoreCellStyle(column)}
+                        className="h-14 w-full rounded-[0.55rem] border-2 text-center text-2xl font-black outline-none transition focus:ring-2 focus:ring-white/25"
+                      />
+                    </div>
+                  );
+                }),
+              )}
             </div>
           </section>
 
           <div className="space-y-4">
-            <div className="rounded-[1.45rem] border border-[#d8d1c4]/80 bg-[#efe9dc] p-5 text-center text-[#17130e]">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7a6f60]">
-                Current Total
-              </p>
-
-              <p className="mt-1 text-4xl font-semibold tracking-[-0.04em]">
-                {selectedScore ?? 0}
-              </p>
-            </div>
-
             {message && (
               <p className="text-center text-sm text-[#f472b6]">
                 {message}
@@ -244,18 +292,10 @@ export function NightGolfSubmitPage({
               disabled={isSubmitting || isLoadingPlayers || players.length === 0}
               className="w-full rounded-[1.35rem] bg-[#db2777] py-5 text-lg font-semibold text-white transition hover:bg-[#ec4899] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSubmitting ? "Submitting..." : "Submit Result"}
+              {isSubmitting ? "Submitting..." : "Submit Scorecard"}
             </button>
           </div>
         </div>
-
-        <Link
-          href={backHref}
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to {nightLabel} Night Golf
-        </Link>
-
       </div>
     </main>
   );

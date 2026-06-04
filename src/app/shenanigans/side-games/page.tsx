@@ -262,6 +262,9 @@ export default function ShenanigansSideGamesPage() {
       className="gc-mobile-shell text-[#f5f5f5]"
       style={{ "--page-accent": "#EB9C5C" } as CSSProperties}
     >
+      <Link href="/shenanigans" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="gc-mobile-stage w-full max-w-md justify-center space-y-8">
         <div className="gc-section-head">
           <p className="gc-card-kicker text-[#EB9C5C]">
@@ -502,13 +505,6 @@ export default function ShenanigansSideGamesPage() {
           </div>
         </section>
         )}
-
-        <Link
-          href="/shenanigans"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Shenanigans
-        </Link>
       </div>
     </main>
   );

@@ -150,7 +150,7 @@ export default function DraftMobilePage() {
       <div className="gc-mobile-stage justify-start">
         <div className="gc-topbar">
           <Link href="/draft" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Mobile Draft

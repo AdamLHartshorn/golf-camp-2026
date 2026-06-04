@@ -67,19 +67,13 @@ export default function MoneyRoundPresentationControllerPage() {
       ? placementSlides.length
       : currentSection.id === "skins"
         ? calculation.skins.length
-        : currentSection.id === "player_bank"
-          ? payoutSlides.length
         : 1;
   const currentIndex = Math.min(
     presentationState?.current_index || 0,
     Math.max(slideCount - 1, 0),
   );
   const hasPrevious = !(currentSection.id === "intro" && currentIndex === 0);
-  const hasNext =
-    currentSection.id !== "complete" &&
-    (currentSection.id !== "player_bank" ||
-      currentIndex < payoutSlides.length - 1 ||
-      currentSectionIndex < sections.length - 1);
+  const hasNext = currentSection.id !== "complete";
 
   useEffect(() => {
     let isCurrent = true;
@@ -204,19 +198,14 @@ export default function MoneyRoundPresentationControllerPage() {
       return;
     }
 
-    if (
-      currentSection.id === "player_bank" &&
-      currentIndex < payoutSlides.length - 1
-    ) {
-      setSection(currentSection.id, currentIndex + 1);
-      return;
-    }
-
     setSection(sections[Math.min(currentSectionIndex + 1, sections.length - 1)].id);
   }
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <Link href="/admin/money-rounds" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-6 py-8">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.35em] text-[#16a34a]">
@@ -300,7 +289,7 @@ export default function MoneyRoundPresentationControllerPage() {
                     ? " (Skin 1)"
                     : ""}
                   {section.id === "player_bank" && payoutSlides.length > 0
-                    ? " (Lowest to Highest)"
+                    ? " (Summary)"
                     : ""}
                 </button>
               ))}
@@ -311,18 +300,12 @@ export default function MoneyRoundPresentationControllerPage() {
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#ff8a8a]">{error}</p>}
 
-        <div className="grid grid-cols-2 gap-3">
+        <div>
           <Link
             href={`/money-rounds/${params.id}/results`}
-            className="rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a]"
+            className="block rounded-xl border border-[#16a34a] px-4 py-3 text-center text-sm font-bold text-[#16a34a]"
           >
             Open TV
-          </Link>
-          <Link
-            href="/admin/money-rounds"
-            className="rounded-xl border border-[#242424] px-4 py-3 text-center text-sm font-bold text-[#a3a3a3]"
-          >
-            Back
           </Link>
         </div>
       </div>

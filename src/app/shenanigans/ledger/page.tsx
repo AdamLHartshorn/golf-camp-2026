@@ -135,7 +135,7 @@ export default function ShenanigansLedgerPage() {
       <div className="gc-mobile-stage w-full max-w-md justify-center space-y-5">
         <div className="gc-topbar">
           <Link href="/shenanigans" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Shenanigans
@@ -287,13 +287,6 @@ export default function ShenanigansLedgerPage() {
           </div>
         </section>
         )}
-
-        <Link
-          href="/shenanigans"
-          className="text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Shenanigans
-        </Link>
       </div>
     </main>
   );

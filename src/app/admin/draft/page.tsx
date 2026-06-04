@@ -4,6 +4,11 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
+import {
+  getParimutuelMarketForDraft,
+  openParimutuelMarketForDraft,
+  resetParimutuelMarketForDraft,
+} from "@/lib/parimutuelAutomation";
 import { supabase } from "@/lib/supabase";
 import {
   comparePlayersForDraft,
@@ -75,6 +80,12 @@ function getDraftTeamErrorMessage(errorMessage: string | undefined) {
   }
 
   return errorMessage;
+}
+
+function isCompletedDraftStatus(status: string | null | undefined) {
+  return ["complete", "completed", "final", "finalized"].includes(
+    (status || "").toLowerCase(),
+  );
 }
 
 export default function AdminDraftPage() {
@@ -230,6 +241,57 @@ export default function AdminDraftPage() {
       ),
     [teams],
   );
+
+  async function confirmParimutuelResetIfNeeded(nextStatus: "pending" | "open") {
+    if (!selectedSession || !isCompletedDraftStatus(selectedSession.status)) {
+      return true;
+    }
+
+    const marketResult = await getParimutuelMarketForDraft(selectedSession.id);
+
+    if (marketResult.error) {
+      if (marketResult.schemaMissing) {
+        return true;
+      }
+
+      setError(
+        marketResult.error.message ||
+          "Could not check the linked Parimutuel market.",
+      );
+      return false;
+    }
+
+    if (!marketResult.market) {
+      return true;
+    }
+
+    const shouldContinue = window.confirm(
+      "Changing finalized draft teams will reset all Parimutuel wagers for this market. Continue?",
+    );
+
+    if (!shouldContinue) {
+      return false;
+    }
+
+    const resetResult = await resetParimutuelMarketForDraft(selectedSession.id, {
+      nextStatus,
+      summary: `${selectedSession.name} changed after Parimutuel betting opened.`,
+    });
+
+    if (resetResult.error) {
+      setError(
+        resetResult.error.message ||
+          "Could not reset the linked Parimutuel market.",
+      );
+      return false;
+    }
+
+    if (resetResult.reset) {
+      setMessage("Linked Parimutuel market reset.");
+    }
+
+    return true;
+  }
 
   async function handleCreateSession() {
     const trimmedName = sessionName.trim();
@@ -726,6 +788,26 @@ export default function AdminDraftPage() {
         entityId: selectedSession.id,
         summary: `${selectedSession.name} completed.`,
       });
+      const marketResult = await openParimutuelMarketForDraft({
+        id: selectedSession.id,
+        name: selectedSession.name,
+        status: "complete",
+      });
+
+      if (marketResult.schemaMissing) {
+        setError(
+          "Draft completed, but Parimutuel automation needs the Supabase setup SQL.",
+        );
+      } else if (marketResult.error) {
+        setError(
+          marketResult.error.message ||
+            "Draft completed, but Parimutuel Bets could not be opened.",
+        );
+      } else {
+        setMessage(
+          `${player.display_name} drafted by ${currentTeam.name}. Parimutuel Bets are open.`,
+        );
+      }
     }
     await fetchDraftState(selectedSession.id);
   }
@@ -736,6 +818,11 @@ export default function AdminDraftPage() {
     }
 
     const lastPick = picks[picks.length - 1];
+    const canContinue = await confirmParimutuelResetIfNeeded("pending");
+
+    if (!canContinue) {
+      return;
+    }
 
     setMessage("");
     setError("");
@@ -818,6 +905,9 @@ export default function AdminDraftPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
+      <Link href="/admin" className="gc-back-link gc-floating-back">
+        ← BACK
+      </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-8">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.35em] text-[#a3a3a3]">
@@ -1200,10 +1290,6 @@ export default function AdminDraftPage() {
             </section>
           </>
         )}
-
-        <Link href="/admin" className="block text-center text-sm text-[#a3a3a3]">
-          ← Back to Admin
-        </Link>
       </div>
     </main>
   );

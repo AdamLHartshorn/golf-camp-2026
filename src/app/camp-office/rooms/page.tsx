@@ -97,7 +97,7 @@ export default function RoomAssignmentsPage() {
       <div className="gc-mobile-stage justify-start">
         <div className="gc-topbar">
           <Link href="/camp-office" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             Room Assignments
@@ -183,13 +183,6 @@ export default function RoomAssignmentsPage() {
               </section>
             ))}
         </div>
-
-        <Link
-          href="/camp-office"
-          className="block text-center text-sm text-[#a3a3a3]"
-        >
-          ← Back to Camp Office
-        </Link>
       </div>
     </main>
   );

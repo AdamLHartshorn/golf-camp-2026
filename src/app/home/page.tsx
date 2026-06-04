@@ -1,19 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { GolfCampIconName } from "@/components/GolfCampIcons";
 import {
   AdminHomeRow,
   BrandSealHeader,
   CinematicHomeShell,
   GroupMeBridge,
   LiveFeedPanel,
+  type HomeModule,
   ModuleMenu,
   SessionStrip,
 } from "@/components/CinematicHome";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ActivityFeedItem } from "@/lib/activityFeed";
+import {
+  CampYear,
+  currentCampYear,
+  getCampYear,
+  isCampYearFinalized,
+} from "@/lib/campYear";
 import {
   clearPlayerSession,
   getPlayerSession,
@@ -94,23 +100,17 @@ const modules = [
     accent: "#f472b6",
     tint: "rgba(244,114,182,0.12)",
   },
-] satisfies {
-  icon: GolfCampIconName;
+] satisfies (HomeModule & {
   initial: string;
-  name: string;
-  href: string;
-  meta: string;
   description: string;
-  accent: string;
   lightAccent?: string;
-  tint: string;
-  comingSoon?: boolean;
-}[];
+})[];
 
 export default function HomePage() {
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [feedItems, setFeedItems] = useState<ActivityFeedItem[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
+  const [campYear, setCampYear] = useState<CampYear | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -127,6 +127,24 @@ export default function HomePage() {
     clearPlayerSession();
     router.push("/");
   }
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function fetchCampYear() {
+      const { campYear: nextCampYear } = await getCampYear(currentCampYear);
+
+      if (isCurrent) {
+        setCampYear(nextCampYear);
+      }
+    }
+
+    fetchCampYear();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
 
   useEffect(() => {
     let isCurrent = true;
@@ -161,6 +179,26 @@ export default function HomePage() {
     };
   }, []);
 
+  const visibleModules = useMemo((): HomeModule[] => {
+    const baseModules: HomeModule[] = modules;
+
+    if (!isCampYearFinalized(campYear)) {
+      return baseModules;
+    }
+
+    return [
+      ...baseModules,
+      {
+        icon: "closing",
+        name: "Closing Presentation",
+        href: "/closing-presentation",
+        meta: "Golf Camp 2026 Year In Review",
+        accent: "#d7c8a4",
+        tint: "rgba(215,200,164,0.15)",
+      },
+    ];
+  }, [campYear]);
+
   return (
     <CinematicHomeShell>
       <div className="relative">
@@ -177,7 +215,7 @@ export default function HomePage() {
 
       <GroupMeBridge />
 
-      <ModuleMenu modules={modules} />
+      <ModuleMenu modules={visibleModules} />
 
       <div className="space-y-3">
         {session?.is_admin && <AdminHomeRow />}

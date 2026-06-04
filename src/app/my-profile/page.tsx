@@ -456,7 +456,7 @@ export default function MyProfilePage() {
       <div className="gc-mobile-stage">
         <div className="gc-topbar">
           <Link href="/camp-office" className="gc-back-link">
-            ‹
+            ← BACK
           </Link>
           <p className="gc-topbar-title">
             My Profile
