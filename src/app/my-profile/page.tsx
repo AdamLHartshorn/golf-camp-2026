@@ -486,7 +486,7 @@ export default function MyProfilePage() {
 
         {!isLoading && player && (
           <>
-            <section className="player-identity-card overflow-hidden rounded-[0.65rem] border border-[#d7c9ad]/28 bg-[radial-gradient(circle_at_50%_-20%,rgba(244,241,234,0.16),transparent_15rem),linear-gradient(180deg,rgba(24,22,18,0.98),rgba(8,8,8,0.96))] text-[#f4f1ea] shadow-[0_22px_70px_rgba(0,0,0,0.42)]">
+            <section className="my-profile-identity-card overflow-hidden rounded-[0.65rem] border border-[#d7c9ad]/28 bg-[radial-gradient(circle_at_50%_-20%,rgba(244,241,234,0.16),transparent_15rem),linear-gradient(180deg,rgba(24,22,18,0.98),rgba(8,8,8,0.96))] text-[#f4f1ea] shadow-[0_22px_70px_rgba(0,0,0,0.42)]">
               <div className="border-b border-[#d7c9ad]/18 px-5 py-6 text-center">
                 <div className="mb-4 flex justify-center">
                   {player.photo_url ? (
@@ -526,7 +526,7 @@ export default function MyProfilePage() {
                 ].map(([label, value]) => (
                   <div
                     key={label}
-                    className="player-stat-chip rounded-[0.5rem] border border-[#d7c9ad]/22 bg-[#f4f1ea]/8 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    className="my-profile-stat-chip rounded-[0.5rem] border border-[#d7c9ad]/22 bg-[#f4f1ea]/8 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
                   >
                     <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#d7c9ad]">
                       {label}
@@ -541,10 +541,10 @@ export default function MyProfilePage() {
 
             <section className="gc-edge-card space-y-3 p-5">
               <h2 className="gc-card-title">
-                Camp Identity
+                Years Served
               </h2>
               <p className="gc-card-copy">
-                Keep your roster card current with a little earned seniority.
+                Keep your roster card current with your Golf Camp tenure.
               </p>
 
               <div>
@@ -577,7 +577,7 @@ export default function MyProfilePage() {
                 disabled={isSaving}
                 className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isSaving ? "Saving..." : "Save Camp Identity"}
+                {isSaving ? "Saving..." : "Save Years Served"}
               </button>
             </section>
 
