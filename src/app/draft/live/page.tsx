@@ -17,7 +17,7 @@ import {
 } from "@/app/draft/_lib/draftUtils";
 
 const completedDraftStatuses = ["complete", "completed", "final", "finalized"];
-const draftClockSeconds = 30;
+const draftClockSeconds = 60;
 const draftCompleteDelayMs = 8000;
 
 export default function DraftLivePage() {
@@ -185,6 +185,25 @@ export default function DraftLivePage() {
     () => new Map(teams.map((team) => [team.id, team])),
     [teams],
   );
+  const pickedPlayersById = useMemo(
+    () => new Map(picks.map((pick) => [pick.player_id, pick])),
+    [picks],
+  );
+  const boardPlayers = useMemo(() => {
+    const captainIds = new Set(
+      teams
+        .map((team) => team.captain_player_id)
+        .filter((playerId): playerId is string => Boolean(playerId)),
+    );
+
+    return players
+      .filter((player) => !captainIds.has(player.id))
+      .sort(comparePlayersForDraft);
+  }, [players, teams]);
+  const boardPlayersByRank = useMemo(
+    () => groupPlayersByRank(boardPlayers),
+    [boardPlayers],
+  );
   const recentPick = picks[picks.length - 1] || null;
   const recentPickPlayer = recentPick ? playersById.get(recentPick.player_id) : null;
   const recentPickTeam = recentPick
@@ -350,22 +369,22 @@ export default function DraftLivePage() {
   }
 
   return (
-    <main className="draft-tv-shell h-screen overflow-hidden bg-[#02040a] p-3 text-[#f5f5f5]">
-      <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_clamp(7.5rem,13vh,9rem)] gap-3">
-        <section className="grid min-h-0 grid-cols-[0.48fr_1.18fr_0.58fr_0.72fr] gap-3">
-          <div className="draft-brand-panel overflow-hidden rounded-[0.55rem] border border-[#2563eb]/45 bg-[#050915] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.42)]">
-            <div className="flex items-center justify-between gap-3">
-              <p className="font-mono text-[clamp(1rem,1.45vw,1.55rem)] font-black uppercase leading-none tracking-[0.2em] text-[#dbeafe] drop-shadow-[0_0_20px_rgba(147,197,253,0.2)]">
+    <main className="draft-tv-shell draft-whiteboard-mode h-screen overflow-hidden bg-[#e8ecdf] p-2 text-[#f5f5f5]">
+      <div className="grid h-full grid-rows-[clamp(6.2rem,13vh,7.7rem)_minmax(0,1fr)_clamp(7.5rem,13vh,9rem)] gap-2">
+        <section className="grid min-h-0 grid-cols-[0.42fr_1fr_0.52fr] gap-2">
+          <div className="draft-brand-panel flex h-full flex-col justify-center overflow-hidden rounded-[0.55rem] border border-[#2563eb]/45 bg-[#050915] px-3 py-2 shadow-[0_18px_60px_rgba(0,0,0,0.42)]">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-mono text-[clamp(0.58rem,0.76vw,0.78rem)] font-black uppercase leading-none tracking-[0.16em] text-[#dbeafe] drop-shadow-[0_0_20px_rgba(147,197,253,0.2)]">
                 Golf Camp 2026
               </p>
-              <span className="draft-live-badge rounded-full border px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-[0.2em]">
+              <span className="draft-live-badge rounded-full border px-2 py-0.5 font-mono text-[8px] font-black uppercase tracking-[0.16em]">
                 Live
               </span>
             </div>
-            <h1 className="draft-title-glow mt-1.5 text-[clamp(2rem,3.6vw,3.7rem)] font-black uppercase leading-[0.86] tracking-[-0.055em]">
+            <h1 className="draft-title-glow mt-1 text-[clamp(1.35rem,2vw,2.15rem)] font-black uppercase leading-[0.82] tracking-[-0.055em]">
               Live Draft
             </h1>
-            <p className="mt-1.5 truncate text-[clamp(0.75rem,1vw,0.98rem)] text-[#c7d2fe]">
+            <p className="mt-0.5 truncate text-[clamp(0.58rem,0.74vw,0.74rem)] font-bold text-[#c7d2fe]">
               {session?.name || "No active draft"}
               {isCompleteDraft ? " · Complete" : ""}
             </p>
@@ -374,19 +393,19 @@ export default function DraftLivePage() {
           <div className="min-h-0">
             <div
               key={currentTeam?.id || "clock"}
-              className="draft-clock-panel h-full rounded-[0.55rem] border border-[#60a5fa]/75 bg-[#050915] p-3.5 shadow-[0_0_40px_rgba(50,77,112,0.14)]"
+              className="draft-clock-panel h-full rounded-[0.55rem] border border-[#60a5fa]/75 bg-[#050915] px-4 py-2 shadow-[0_0_40px_rgba(50,77,112,0.14)]"
             >
-              <div className="grid grid-cols-[1fr_auto] items-center gap-4">
-                <div>
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="draft-electric-label text-[clamp(0.7rem,0.9vw,0.9rem)] font-semibold uppercase tracking-[0.24em] text-[#93c5fd]">
+              <div className="grid h-full grid-cols-[1fr_auto] items-center gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <p className="draft-electric-label text-[clamp(0.58rem,0.76vw,0.8rem)] font-black uppercase tracking-[0.22em] text-[#93c5fd]">
                       On The Clock
                     </p>
-                    <span className="draft-pick-pill rounded-full border border-[#2563eb]/70 bg-[#071123] px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-[#bfdbfe]">
+                    <span className="draft-pick-pill rounded-full border border-[#2563eb]/70 bg-[#071123] px-2.5 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-[#bfdbfe]">
                       Pick {picks.length + 1}
                     </span>
                   </div>
-                  <h2 className="draft-current-team mt-3 text-[clamp(3rem,5.2vw,5.6rem)] font-black uppercase leading-[0.82] tracking-[-0.065em]">
+                  <h2 className="draft-current-team mt-1 truncate text-[clamp(2.35rem,4vw,4.35rem)] font-black uppercase leading-[0.82] tracking-[-0.065em]">
                     {isLoading
                       ? "Loading"
                       : error
@@ -398,11 +417,11 @@ export default function DraftLivePage() {
                 </div>
 
                 <div
-                  className={`draft-countdown-ring relative flex h-[clamp(6.6rem,8.4vw,8rem)] w-[clamp(6.6rem,8.4vw,8rem)] items-center justify-center rounded-full ${
+                  className={`draft-countdown-ring relative flex h-[clamp(4.3rem,6.4vw,5.5rem)] w-[clamp(4.3rem,6.4vw,5.5rem)] items-center justify-center rounded-full ${
                     isClockExpired ? "is-expired" : ""
                   }`}
                   style={{
-                    background: `conic-gradient(${isClockExpired ? "#ef4444" : "#38bdf8"} ${clockPercent}%, rgba(37,99,235,0.2) ${clockPercent}% 100%)`,
+                    background: `conic-gradient(${isClockExpired ? "#ef4444" : "#1f5136"} ${clockPercent}%, rgba(31,81,54,0.18) ${clockPercent}% 100%)`,
                   }}
                   aria-label={
                     isClockExpired
@@ -413,7 +432,7 @@ export default function DraftLivePage() {
                   <div className="absolute inset-2 rounded-full border border-[#38bdf8]/35 bg-[#02040a]" />
                   <div className="relative text-center">
                     <p
-                      className={`font-mono text-[clamp(2.4rem,3.4vw,3.4rem)] font-black leading-none ${
+                      className={`font-mono text-[clamp(1.6rem,2.45vw,2.35rem)] font-black leading-none ${
                         isClockExpired ? "text-[#fca5a5]" : "text-[#e0f2fe]"
                       }`}
                     >
@@ -421,7 +440,7 @@ export default function DraftLivePage() {
                         ? "--"
                         : String(remainingSeconds).padStart(2, "0")}
                     </p>
-                    <p className="mt-1 font-mono text-[10px] font-black uppercase tracking-[0.2em] text-[#7dd3fc]">
+                    <p className="mt-0.5 font-mono text-[8px] font-black uppercase tracking-[0.18em] text-[#7dd3fc]">
                       Sec
                     </p>
                   </div>
@@ -430,36 +449,39 @@ export default function DraftLivePage() {
             </div>
           </div>
 
-          <div className="min-h-0">
-            <div className="draft-side-panel h-full rounded-[0.55rem] border border-[#324d70]/55 bg-[#050915] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.34)]">
-              <p className="draft-electric-label font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#9aacbf]">
-                On Deck
-              </p>
-              <p className="mt-2 line-clamp-2 text-[clamp(1.4rem,2.25vw,2.4rem)] font-black leading-[0.9] tracking-[-0.05em] text-[#dbeafe]">
-                {isCompleteDraft
-                  ? "Draft Complete"
-                  : onDeckTeam?.name || "Final Pick"}
-              </p>
+          <div className="grid min-h-0 grid-rows-2 gap-2">
+            <div className="draft-side-panel flex h-full items-center rounded-[0.55rem] border border-[#324d70]/55 bg-[#050915] px-3 py-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.34)]">
+              <div className="grid grid-cols-[auto_1fr] items-center gap-2">
+                <p className="draft-electric-label font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#9aacbf]">
+                  On Deck
+                </p>
+                <p className="truncate text-[clamp(0.9rem,1.35vw,1.42rem)] font-black leading-none tracking-[-0.045em] text-[#dbeafe]">
+                  {isCompleteDraft
+                    ? "Draft Complete"
+                    : onDeckTeam?.name || "Final Pick"}
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="min-h-0">
             <div
               key={recentPick?.id || "last-pick-empty"}
-              className="recent-pick-strip draft-side-panel h-full rounded-[0.55rem] border border-[#324d70]/60 bg-[#050915] px-4 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.38),0_0_28px_rgba(50,77,112,0.1)]"
+              className="recent-pick-strip draft-side-panel flex h-full items-center rounded-[0.55rem] border border-[#324d70]/60 bg-[#050915] px-3 py-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.38),0_0_28px_rgba(50,77,112,0.1)]"
             >
-              <p className="draft-electric-label font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#9aacbf]">
-                Last Pick
-              </p>
-              <p className="mt-2 truncate text-[clamp(0.78rem,1vw,0.98rem)] font-semibold text-[#dbeafe]">
-                {recentPickTeam ? `${recentPickTeam.name} selected` : "Awaiting first pick"}
-              </p>
-              <p className="mt-1 line-clamp-2 text-[clamp(1.35rem,2.15vw,2.35rem)] font-black leading-[0.92] tracking-[-0.04em]">
-                {recentPickPlayer?.display_name || "Draft ready"}
-              </p>
+              <div className="grid w-full grid-cols-[auto_1fr] items-center gap-2">
+                <p className="draft-electric-label font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#9aacbf]">
+                  Last Pick
+                </p>
+                <div className="min-w-0">
+                  <p className="truncate text-[clamp(0.58rem,0.74vw,0.76rem)] font-semibold text-[#dbeafe]">
+                    {recentPickTeam ? `${recentPickTeam.name} selected` : "Awaiting first pick"}
+                  </p>
+                  <p className="truncate text-[clamp(0.9rem,1.35vw,1.42rem)] font-black leading-none tracking-[-0.04em]">
+                    {recentPickPlayer?.display_name || "Draft ready"}
+                  </p>
+                </div>
+              </div>
+              {error && <p className="mt-1 text-xs text-[#ff8a8a]">{error}</p>}
             </div>
-
-            {error && <p className="mt-4 text-lg text-[#ff8a8a]">{error}</p>}
           </div>
         </section>
 
@@ -475,7 +497,7 @@ export default function DraftLivePage() {
             </span>
           </div>
 
-          <div className="mt-2 grid h-[calc(100%-3.35rem)] grid-cols-4 gap-2 overflow-hidden">
+          <div className="mt-2 grid h-[calc(100%-3.35rem)] grid-cols-4 gap-1.5 overflow-hidden">
             {["A", "B", "C", "D"].map((rank) => (
               <div
                 key={rank}
@@ -486,23 +508,36 @@ export default function DraftLivePage() {
                     Rank {rank}
                   </h3>
                   <span className="draft-rank-count rounded-full border border-[#38bdf8]/35 bg-[#082f49]/35 px-2.5 py-1 font-mono text-[10px] font-black text-[#7dd3fc]">
-                    {(availableByRank[rank] || []).length}
+                    {(availableByRank[rank] || []).length}/
+                    {(boardPlayersByRank[rank] || []).length}
                   </span>
                 </div>
-                <div className="mt-2 grid grid-cols-1 gap-1">
-                  {(availableByRank[rank] || []).slice(0, 18).map((player) => (
-                    <div
-                      key={player.id}
-                      className="draft-available-row flex items-center justify-between gap-2 rounded-[0.4rem] border border-[#1e40af]/25 bg-[#030712] px-3 py-1.5"
-                    >
-                      <span className="truncate text-[clamp(1.08rem,1.45vw,1.52rem)] font-bold leading-tight">
-                        {player.display_name}
-                      </span>
-                      <span className="text-[clamp(1.08rem,1.45vw,1.52rem)] font-black leading-tight text-[#93c5fd]">
-                        {getPublicDisplayRank(player.display_rank, player.rank)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="mt-1 grid grid-cols-1 gap-0.5">
+                  {(boardPlayersByRank[rank] || []).slice(0, 18).map((player) => {
+                    const pickedPlayer = pickedPlayersById.get(player.id);
+                    const pickedTeam = pickedPlayer
+                      ? teamsById.get(pickedPlayer.draft_team_id)
+                      : null;
+
+                    return (
+                      <div
+                        key={player.id}
+                        className={`draft-available-row draft-whiteboard-player-row flex items-center justify-between gap-2 rounded-[0.4rem] border border-[#1e40af]/25 bg-[#030712] px-3 py-0.5 ${
+                          pickedPlayer ? "is-drafted" : ""
+                        }`}
+                      >
+                        <span className="draft-whiteboard-name min-w-0 flex-1 truncate text-[clamp(1.08rem,1.45vw,1.52rem)] font-bold leading-tight">
+                          {player.display_name}
+                        </span>
+                        <span className="draft-whiteboard-picked-note hidden shrink-0 truncate text-[clamp(0.58rem,0.75vw,0.76rem)] font-black uppercase tracking-[0.1em]">
+                          {pickedTeam?.name || "Picked"}
+                        </span>
+                        <span className="draft-whiteboard-rank text-[clamp(1.08rem,1.45vw,1.52rem)] font-black leading-tight text-[#93c5fd]">
+                          {getPublicDisplayRank(player.display_rank, player.rank)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -510,7 +545,7 @@ export default function DraftLivePage() {
         </section>
 
         <section className="draft-team-rail draft-board-panel min-h-0 overflow-hidden rounded-[0.6rem] border border-[#1e40af]/45 bg-[#050915] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-          <div className="flex h-full min-h-0 gap-3">
+          <div className="flex h-full min-h-0 gap-2">
             <div className="flex w-[clamp(6.5rem,8vw,8.5rem)] shrink-0 flex-col justify-between border-r border-[#1e40af]/35 pr-3">
               <p className="draft-electric-label text-[10px] font-semibold uppercase tracking-[0.24em] text-[#93c5fd]">
                 Teams
@@ -522,7 +557,7 @@ export default function DraftLivePage() {
 
             <div className="draft-team-marquee-window min-h-0 flex-1 overflow-hidden">
               <div
-                className="draft-team-marquee flex h-full min-w-max gap-3"
+                className="draft-team-marquee flex h-full min-w-max gap-2"
                 style={{
                   animationDuration: `${teamRailDurationSeconds}s`,
                 }}
@@ -976,6 +1011,306 @@ const draftTvStyles = `
 
         .draft-team-rail:hover .draft-team-marquee {
           animation-play-state: paused;
+        }
+
+        .draft-whiteboard-mode {
+          --draft-marker-blue: #1f5136;
+          --draft-marker-green: #1f5136;
+          --draft-marker-green-soft: #315f48;
+          --draft-marker-red: #c81e1e;
+          --draft-marker-black: #172033;
+          background:
+            radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.44), transparent 18rem),
+            radial-gradient(circle at 86% 70%, rgba(31, 81, 54, 0.1), transparent 26rem),
+            repeating-linear-gradient(-2deg, rgba(23, 32, 51, 0.018) 0 1px, transparent 1px 11px),
+            #e8ecdf !important;
+          color: #172033 !important;
+        }
+
+        .draft-whiteboard-mode::before {
+          background:
+            radial-gradient(circle at 20% 14%, rgba(31, 81, 54, 0.08), transparent 28rem),
+            radial-gradient(circle at 84% 72%, rgba(200, 30, 30, 0.055), transparent 26rem),
+            linear-gradient(135deg, rgba(255, 255, 255, 0.18), transparent 34%);
+          animation: draftAmbientDrift 18s ease-in-out infinite alternate;
+        }
+
+        .draft-whiteboard-mode::after {
+          background:
+            repeating-linear-gradient(0deg, rgba(17, 24, 39, 0.018) 0 1px, transparent 1px 8px),
+            radial-gradient(circle at center, transparent 62%, rgba(17, 24, 39, 0.18) 100%);
+          opacity: 0.8;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel,
+        .draft-whiteboard-mode .draft-clock-panel,
+        .draft-whiteboard-mode .draft-side-panel,
+        .draft-whiteboard-mode .draft-board-panel,
+        .draft-whiteboard-mode .draft-rank-card,
+        .draft-whiteboard-mode .draft-team-card {
+          border-width: 3px !important;
+          border-color: rgba(23, 32, 51, 0.76) !important;
+          background:
+            radial-gradient(circle at 16% 0%, rgba(255, 255, 255, 0.82), transparent 14rem),
+            repeating-linear-gradient(-2deg, rgba(23, 32, 51, 0.035) 0 1px, transparent 1px 10px),
+            linear-gradient(180deg, #f8faf4, #e8ecdf) !important;
+          color: #172033 !important;
+          box-shadow:
+            inset 0 0 0 2px rgba(255, 255, 255, 0.62),
+            inset 0 0 34px rgba(31, 81, 54, 0.045),
+            0 20px 70px rgba(0, 0, 0, 0.42),
+            0 0 0 1px rgba(17, 24, 39, 0.38) !important;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel::before,
+        .draft-whiteboard-mode .draft-clock-panel::before,
+        .draft-whiteboard-mode .draft-side-panel::before,
+        .draft-whiteboard-mode .draft-board-panel::before,
+        .draft-whiteboard-mode .draft-rank-card::before,
+        .draft-whiteboard-mode .draft-team-card::before {
+          background:
+            linear-gradient(90deg, rgba(31, 81, 54, 0.18), transparent 9%, transparent 91%, rgba(200, 30, 30, 0.11)),
+            repeating-linear-gradient(90deg, transparent 0 20px, rgba(23, 32, 51, 0.03) 20px 21px);
+          opacity: 0.72;
+          animation: none;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel::after,
+        .draft-whiteboard-mode .draft-clock-panel::after,
+        .draft-whiteboard-mode .draft-side-panel::after,
+        .draft-whiteboard-mode .draft-board-panel::after,
+        .draft-whiteboard-mode .draft-rank-card::after,
+        .draft-whiteboard-mode .draft-team-card::after {
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.74),
+            inset 0 -2px 0 rgba(23, 32, 51, 0.08);
+        }
+
+        .draft-whiteboard-mode .draft-title-glow,
+        .draft-whiteboard-mode .draft-current-team,
+        .draft-whiteboard-mode .draft-pool-title,
+        .draft-whiteboard-mode .draft-rank-title {
+          color: var(--draft-marker-black) !important;
+          text-shadow:
+            0.035em 0.025em 0 rgba(31, 81, 54, 0.12),
+            -0.02em 0.02em 0 rgba(200, 30, 30, 0.06) !important;
+        }
+
+        .draft-whiteboard-mode .draft-current-team {
+          position: relative;
+          display: inline-block;
+          overflow: visible !important;
+          isolation: isolate;
+        }
+
+        .draft-whiteboard-mode .draft-current-team::before {
+          content: "";
+          position: absolute;
+          left: 0.04em;
+          right: -0.04em;
+          bottom: -0.12em;
+          z-index: -1;
+          height: 0.08em;
+          border-radius: 999px;
+          background: rgba(31, 81, 54, 0.58);
+          transform: rotate(-1.2deg);
+          opacity: 0.84;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel .draft-title-glow {
+          color: var(--draft-marker-black) !important;
+          text-shadow:
+            0.035em 0.025em 0 rgba(31, 81, 54, 0.12),
+            0.035em 0.025em 0 rgba(200, 30, 30, 0.18) !important;
+        }
+
+        .draft-whiteboard-mode .draft-electric-label {
+          color: var(--draft-marker-blue) !important;
+          text-shadow: none !important;
+        }
+
+        .draft-whiteboard-mode .draft-pick-pill,
+        .draft-whiteboard-mode .draft-live-badge,
+        .draft-whiteboard-mode .draft-rank-count {
+          border-color: rgba(31, 81, 54, 0.52) !important;
+          background: rgba(220, 238, 226, 0.76) !important;
+          color: #1f5136 !important;
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.38) !important;
+        }
+
+        .draft-whiteboard-mode .draft-live-badge {
+          background: rgba(31, 81, 54, 0.12) !important;
+          color: #1f5136 !important;
+          border-color: rgba(31, 81, 54, 0.46) !important;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel p {
+          color: #172033 !important;
+          text-shadow: none !important;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel p:first-child {
+          color: #1f5136 !important;
+        }
+
+        .draft-whiteboard-mode .draft-brand-panel h1 {
+          color: #172033 !important;
+        }
+
+        .draft-whiteboard-mode .draft-side-panel p,
+        .draft-whiteboard-mode .draft-team-card p,
+        .draft-whiteboard-mode .draft-team-card h3,
+        .draft-whiteboard-mode .draft-team-card .draft-pick-row,
+        .draft-whiteboard-mode .draft-team-card .draft-pick-row span {
+          color: #172033 !important;
+          text-shadow: none !important;
+        }
+
+        .draft-whiteboard-mode .draft-countdown-ring {
+          position: relative;
+          box-shadow:
+            0 0 0 4px rgba(23, 32, 51, 0.09),
+            0 0 28px rgba(31, 81, 54, 0.16) !important;
+          animation: draftRingBreathe 4.2s ease-in-out infinite alternate;
+        }
+
+        .draft-whiteboard-mode .draft-countdown-ring::before,
+        .draft-whiteboard-mode .draft-countdown-ring::after {
+          content: "";
+          position: absolute;
+          inset: -0.18rem;
+          pointer-events: none;
+          border-radius: 999px;
+          border: 0.16rem solid rgba(31, 81, 54, 0.56);
+          transform: rotate(-4deg);
+          opacity: 0.82;
+          z-index: 1;
+        }
+
+        .draft-whiteboard-mode .draft-countdown-ring::after {
+          inset: -0.02rem;
+          border-color: rgba(23, 32, 51, 0.18);
+          border-width: 0.08rem;
+          transform: rotate(5deg);
+          opacity: 0.74;
+        }
+
+        .draft-whiteboard-mode .draft-countdown-ring > div:first-child {
+          background: #f8faf4 !important;
+          border-color: rgba(23, 32, 51, 0.24) !important;
+        }
+
+        .draft-whiteboard-mode .draft-countdown-ring p {
+          color: var(--draft-marker-green) !important;
+        }
+
+        .draft-whiteboard-mode .draft-rank-card {
+          border-width: 3px !important;
+          border-style: solid;
+          border-color: rgba(23, 32, 51, 0.72) !important;
+        }
+
+        .draft-whiteboard-mode .draft-rank-card:nth-child(1) {
+          box-shadow:
+            inset 0 0 0 2px rgba(31, 81, 54, 0.1),
+            0 18px 44px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        .draft-whiteboard-mode .draft-rank-card:nth-child(2) {
+          box-shadow:
+            inset 0 0 0 2px rgba(22, 101, 52, 0.08),
+            0 18px 44px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        .draft-whiteboard-mode .draft-rank-card:nth-child(3) {
+          box-shadow:
+            inset 0 0 0 2px rgba(180, 83, 9, 0.09),
+            0 18px 44px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        .draft-whiteboard-mode .draft-rank-card:nth-child(4) {
+          box-shadow:
+            inset 0 0 0 2px rgba(200, 30, 30, 0.08),
+            0 18px 44px rgba(0, 0, 0, 0.28) !important;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row {
+          position: relative;
+          overflow: hidden;
+          border: 0 !important;
+          border-bottom: 2px solid rgba(23, 32, 51, 0.16) !important;
+          border-radius: 0.1rem !important;
+          background:
+            linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(238, 242, 231, 0.68)) !important;
+          box-shadow: none !important;
+          animation: none !important;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row::before {
+          content: "";
+          position: absolute;
+          left: 0.45rem;
+          right: 0.45rem;
+          top: 50%;
+          height: 0.24rem;
+          border-radius: 999px;
+          background:
+            linear-gradient(90deg, transparent, rgba(200, 30, 30, 0.95) 8%, rgba(200, 30, 30, 0.84) 88%, transparent);
+          transform: translateY(-50%) rotate(-2deg) scaleX(0);
+          transform-origin: left center;
+          opacity: 0;
+          box-shadow:
+            0 0 0 1px rgba(127, 29, 29, 0.18),
+            0 0 10px rgba(200, 30, 30, 0.22);
+          transition: transform 320ms ease, opacity 220ms ease;
+          z-index: 2;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row.is-drafted {
+          opacity: 0.78;
+          background:
+            linear-gradient(90deg, rgba(255, 255, 255, 0.52), rgba(238, 242, 231, 0.55)) !important;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row.is-drafted::before {
+          opacity: 1;
+          transform: translateY(-50%) rotate(-2deg) scaleX(1);
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-name,
+        .draft-whiteboard-mode .draft-whiteboard-rank {
+          color: var(--draft-marker-black) !important;
+          text-shadow:
+            0.03em 0.02em 0 rgba(31, 81, 54, 0.08);
+          position: relative;
+          z-index: 1;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-rank {
+          color: var(--draft-marker-blue) !important;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row.is-drafted .draft-whiteboard-name,
+        .draft-whiteboard-mode .draft-whiteboard-player-row.is-drafted .draft-whiteboard-rank {
+          color: rgba(23, 32, 51, 0.58) !important;
+        }
+
+        .draft-whiteboard-mode .draft-whiteboard-player-row.is-drafted .draft-whiteboard-picked-note {
+          display: block;
+          color: #991b1b !important;
+          position: relative;
+          z-index: 3;
+          max-width: 38%;
+        }
+
+        .draft-whiteboard-mode .draft-team-rail-card {
+          background:
+            linear-gradient(180deg, #f8faf4, #e8ecdf) !important;
+          border-width: 3px !important;
+          border-color: rgba(23, 32, 51, 0.7) !important;
+          box-shadow:
+            inset 0 0 0 2px rgba(255, 255, 255, 0.52),
+            0 18px 44px rgba(0, 0, 0, 0.28) !important;
         }
 
         @keyframes draftAmbientDrift {
