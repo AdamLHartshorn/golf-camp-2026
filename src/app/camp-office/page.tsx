@@ -4,6 +4,14 @@ import { GolfCampIcon, GolfCampIconName } from "@/components/GolfCampIcons";
 
 const cards = [
   {
+    icon: "rules",
+    initial: "101",
+    name: "Golf Camp App 101",
+    href: "/camp-office/app-101",
+    label: "Start Here • How It Works",
+    accent: "#d7c8a4",
+  },
+  {
     icon: "roster",
     initial: "R",
     name: "Camp Roster",

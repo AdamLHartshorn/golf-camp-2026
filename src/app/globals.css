@@ -2310,6 +2310,24 @@ button {
   -webkit-tap-highlight-color: transparent;
 }
 
+.shenanigans-selected-player-pill {
+  border-color: rgba(235, 156, 92, 0.78) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 218, 170, 0.28), transparent 72%),
+    linear-gradient(180deg, #f2ad72, #EB9C5C) !important;
+  color: #120a05 !important;
+  box-shadow: 0 0 18px rgba(235, 156, 92, 0.16) !important;
+}
+
+html[data-theme="light"] .shenanigans-selected-player-pill {
+  border-color: rgba(160, 87, 33, 0.45) !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 246, 230, 0.72), transparent 70%),
+    linear-gradient(180deg, #f5bf8d, #EB9C5C) !important;
+  color: #1b1008 !important;
+  box-shadow: 0 10px 24px rgba(160, 87, 33, 0.16) !important;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .module-row,
   .module-icon,

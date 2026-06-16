@@ -316,7 +316,7 @@ export function CompactPlayerSelect({
 
           {selectedName && (
             <div className="flex flex-wrap gap-2">
-              <span className="rounded-full border border-[#EB9C5C]/70 bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]">
+              <span className="shenanigans-selected-player-pill rounded-full border px-3 py-1 text-xs font-bold">
                 {selectedName}
               </span>
             </div>
@@ -432,7 +432,7 @@ export function CompactPlayerMultiSelect({
                   key={name}
                   type="button"
                   onClick={() => togglePlayer(name)}
-                  className="rounded-full border border-[#EB9C5C]/70 bg-[#1a0d0d] px-3 py-1 text-xs font-bold text-[#f5f5f5]"
+                  className="shenanigans-selected-player-pill rounded-full border px-3 py-1 text-xs font-bold"
                 >
                   {name} ×
                 </button>

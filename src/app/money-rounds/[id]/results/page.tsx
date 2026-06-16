@@ -780,11 +780,15 @@ export default function MoneyRoundResultsPage() {
               <div className="space-y-8">
                 <div>
                   <p className="results-section-label text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
-                    Next Market
+                    Linked Market Highlights
                   </p>
                   <h1 className="results-major-title mt-5 text-7xl font-black tracking-[-0.07em] lg:text-8xl">
                     Parimutuel Bets
                   </h1>
+                  <p className="mt-4 max-w-4xl text-3xl font-semibold leading-tight text-[#a3a3a3]">
+                    Nightly results update the ledger. Everyone settles one time
+                    at the end of camp.
+                  </p>
                 </div>
 
                 {!parimutuelMarket || parimutuelError ? (
@@ -825,12 +829,12 @@ export default function MoneyRoundResultsPage() {
                       <div className="space-y-4">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
-                            Nightly Leaders
+                            Round Leaders
                           </p>
                           {parimutuelTopPlayers.length === 0 ? (
                             <p className="mt-4 text-2xl text-[#a3a3a3]">
-                              Parimutuel standings will appear once markets are
-                              resolved.
+                              Parimutuel highlights will appear once this
+                              round’s linked markets are resolved.
                             </p>
                           ) : (
                             <div className="mt-4 grid gap-3">

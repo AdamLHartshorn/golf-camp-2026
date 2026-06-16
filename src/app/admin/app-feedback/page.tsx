@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 
 type AppFeedbackRow = {
@@ -21,7 +22,9 @@ function formatDate(value: string | null) {
 export default function AdminAppFeedbackPage() {
   const [items, setItems] = useState<AppFeedbackRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState("");
 
   async function fetchFeedback() {
     setIsLoading(true);
@@ -48,6 +51,80 @@ export default function AdminAppFeedbackPage() {
     setItems((data as AppFeedbackRow[]) || []);
     setError("");
     setIsLoading(false);
+  }
+
+  async function handleUpdateStatus(item: AppFeedbackRow, nextStatus: string) {
+    setMessage("");
+    setError("");
+    setSavingId(item.id);
+
+    const { data, error: updateError } = await supabase
+      .from("app_feedback")
+      .update({
+        status: nextStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", item.id)
+      .select("*")
+      .single();
+
+    setSavingId("");
+
+    if (updateError) {
+      setError(updateError.message || "Could not update feedback status.");
+      return;
+    }
+
+    setItems((currentItems) =>
+      currentItems.map((currentItem) =>
+        currentItem.id === item.id ? (data as AppFeedbackRow) : currentItem,
+      ),
+    );
+    setMessage(`Feedback marked ${nextStatus}.`);
+
+    await logAuditEvent({
+      actionType: "app_feedback_status_updated",
+      entityType: "app_feedback",
+      entityId: item.id,
+      summary: `App feedback marked ${nextStatus}.`,
+      oldValue: item,
+      newValue: data,
+    });
+  }
+
+  async function handleDeleteFeedback(item: AppFeedbackRow) {
+    if (!window.confirm("Delete this app feedback item?")) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setSavingId(item.id);
+
+    const { error: deleteError } = await supabase
+      .from("app_feedback")
+      .delete()
+      .eq("id", item.id);
+
+    setSavingId("");
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not delete feedback.");
+      return;
+    }
+
+    setItems((currentItems) =>
+      currentItems.filter((currentItem) => currentItem.id !== item.id),
+    );
+    setMessage("Feedback deleted.");
+
+    await logAuditEvent({
+      actionType: "app_feedback_deleted",
+      entityType: "app_feedback",
+      entityId: item.id,
+      summary: `Admin deleted app feedback: ${item.message.slice(0, 80)}`,
+      oldValue: item,
+    });
   }
 
   useEffect(() => {
@@ -136,8 +213,14 @@ export default function AdminAppFeedbackPage() {
             </p>
           )}
 
+          {message && (
+            <p className="border-b border-[#242420] px-5 py-3 text-sm font-semibold text-[#8fa66a]">
+              {message}
+            </p>
+          )}
+
           {error && (
-            <p className="px-5 py-6 text-sm font-semibold text-[#fca5a5]">
+            <p className="border-b border-[#242420] px-5 py-3 text-sm font-semibold text-[#fca5a5]">
               {error}
             </p>
           )}
@@ -171,6 +254,33 @@ export default function AdminAppFeedbackPage() {
                 <p className="mt-3 text-xs leading-5 text-[#82786a]">
                   Submitted by {item.created_by_name || "Anonymous"}
                 </p>
+
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateStatus(item, "reviewed")}
+                    disabled={savingId === item.id || item.status === "reviewed"}
+                    className="rounded-xl border border-[#34312a] px-3 py-2 text-[11px] font-black text-[#c8bfae] transition hover:border-[#b98590] hover:text-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Reviewed
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateStatus(item, "archived")}
+                    disabled={savingId === item.id || item.status === "archived"}
+                    className="rounded-xl border border-[#34312a] px-3 py-2 text-[11px] font-black text-[#c8bfae] transition hover:border-[#b98590] hover:text-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Archive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteFeedback(item)}
+                    disabled={savingId === item.id}
+                    className="rounded-xl border border-[#5a2b33] px-3 py-2 text-[11px] font-black text-[#fca5a5] transition hover:bg-[#1a0d10] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    Delete
+                  </button>
+                </div>
               </article>
             ))}
         </section>
