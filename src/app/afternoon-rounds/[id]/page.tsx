@@ -57,6 +57,28 @@ type AfternoonRoundScore = {
   score: number;
 };
 
+type AfternoonSkinResult = {
+  hole: number;
+  team: AfternoonRoundTeam;
+  score: number;
+  value: number;
+};
+
+type AfternoonSettlementRow = {
+  playerName: string;
+  teamName: string;
+  placementWinnings: number;
+  skinsWinnings: number;
+  buyIn: number;
+  net: number;
+};
+
+type AfternoonPaymentRow = {
+  payer: string;
+  receiver: string;
+  amount: number;
+};
+
 type ScoreDrafts = Record<string, Record<number, string>>;
 
 type RoundForm = {
@@ -210,6 +232,135 @@ function sortStandings(
     });
 }
 
+function calculateAfternoonSkins(
+  teams: AfternoonRoundTeam[],
+  scoresByTeam: Record<string, Record<number, number>>,
+  skinsPot: number,
+) {
+  const safeSkinsPot = Math.max(Number(skinsPot || 0), 0);
+  const skinWinners: Omit<AfternoonSkinResult, "value">[] = [];
+
+  holes.forEach((hole) => {
+    const scoredTeams = teams
+      .map((team) => ({
+        team,
+        score: scoresByTeam[team.id]?.[hole],
+      }))
+      .filter(
+        (entry): entry is { team: AfternoonRoundTeam; score: number } =>
+          typeof entry.score === "number",
+      );
+
+    if (scoredTeams.length === 0 || scoredTeams.length < teams.length) {
+      return;
+    }
+
+    const lowestScore = Math.min(...scoredTeams.map((entry) => entry.score));
+    const lowTeams = scoredTeams.filter((entry) => entry.score === lowestScore);
+
+    if (lowTeams.length === 1) {
+      skinWinners.push({
+        hole,
+        team: lowTeams[0].team,
+        score: lowestScore,
+      });
+    }
+  });
+
+  const skinValue = skinWinners.length > 0 ? safeSkinsPot / skinWinners.length : 0;
+
+  return skinWinners.map((skin) => ({
+    ...skin,
+    value: skinValue,
+  }));
+}
+
+function calculateAfternoonSettlement(
+  standings: ReturnType<typeof sortStandings>,
+  skins: AfternoonSkinResult[],
+  round: AfternoonRound | null,
+) {
+  if (!round) {
+    return { settlementRows: [], paymentRows: [] };
+  }
+
+  const placementByPosition: Record<number, number> = {
+    1: Number(round.first_place_payout || 0),
+    2: Number(round.second_place_payout || 0),
+    3: Number(round.third_place_payout || 0),
+  };
+  const skinsByTeam = skins.reduce<Record<string, number>>((groups, skin) => {
+    groups[skin.team.id] = (groups[skin.team.id] || 0) + skin.value;
+    return groups;
+  }, {});
+  const buyIn =
+    Number(round.buy_in_per_player || 0) +
+    Number(round.skins_buy_in_per_player || 0);
+  const settlementRows = standings.flatMap<AfternoonSettlementRow>(
+    (standing, index) => {
+      const playerNames =
+        standing.team.player_names?.length > 0 ? standing.team.player_names : [];
+
+      if (playerNames.length === 0) {
+        return [];
+      }
+
+      const playerCount = playerNames.length;
+      const placementWinnings =
+        (placementByPosition[standing.completedHoleCount > 0 ? index + 1 : 0] || 0) /
+        playerCount;
+      const skinsWinnings = (skinsByTeam[standing.team.id] || 0) / playerCount;
+
+      return playerNames.map((playerName) => ({
+        playerName,
+        teamName: standing.team.name,
+        placementWinnings,
+        skinsWinnings,
+        buyIn,
+        net: placementWinnings + skinsWinnings - buyIn,
+      }));
+    },
+  );
+  const receivers = settlementRows
+    .filter((row) => row.net > 0.005)
+    .map((row) => ({ name: row.playerName, remaining: row.net }))
+    .sort((a, b) => b.remaining - a.remaining);
+  const payers = settlementRows
+    .filter((row) => row.net < -0.005)
+    .map((row) => ({ name: row.playerName, remaining: Math.abs(row.net) }))
+    .sort((a, b) => b.remaining - a.remaining);
+  const paymentRows: AfternoonPaymentRow[] = [];
+  let payerIndex = 0;
+  let receiverIndex = 0;
+
+  while (payerIndex < payers.length && receiverIndex < receivers.length) {
+    const payer = payers[payerIndex];
+    const receiver = receivers[receiverIndex];
+    const amount = Math.min(payer.remaining, receiver.remaining);
+
+    if (amount > 0.005) {
+      paymentRows.push({
+        payer: payer.name,
+        receiver: receiver.name,
+        amount,
+      });
+    }
+
+    payer.remaining -= amount;
+    receiver.remaining -= amount;
+
+    if (payer.remaining <= 0.005) {
+      payerIndex += 1;
+    }
+
+    if (receiver.remaining <= 0.005) {
+      receiverIndex += 1;
+    }
+  }
+
+  return { settlementRows, paymentRows };
+}
+
 function PlayerSelector({
   players,
   selectedIds,
@@ -318,9 +469,19 @@ export default function AfternoonRoundDetailPage() {
   );
   const scoresByTeam = useMemo(() => getScoresByTeam(scores), [scores]);
   const standings = useMemo(() => sortStandings(teams, scoresByTeam), [scoresByTeam, teams]);
+  const totalSkinsPot =
+    participants.length * Number(round?.skins_buy_in_per_player || 0);
+  const skins = useMemo(
+    () => calculateAfternoonSkins(teams, scoresByTeam, totalSkinsPot),
+    [scoresByTeam, teams, totalSkinsPot],
+  );
+  const { paymentRows, settlementRows } = useMemo(
+    () => calculateAfternoonSettlement(standings, skins, round),
+    [round, skins, standings],
+  );
   const totalBuyIn =
     participants.length * Number(round?.buy_in_per_player || 0) +
-    participants.length * Number(round?.skins_buy_in_per_player || 0);
+    totalSkinsPot;
   const assignedPlayerIds = useMemo(
     () => new Set(teams.flatMap((team) => team.player_ids || [])),
     [teams],
@@ -996,7 +1157,7 @@ export default function AfternoonRoundDetailPage() {
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(255,218,3,0.13),transparent_34%),#050505] p-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/afternoon-rounds" className="gc-back-link">
+          <Link href="/afternoon-rounds" className="gc-back-link gc-back-afternoon">
             ← BACK
           </Link>
           <p className="font-mono text-sm uppercase tracking-[0.22em] text-[#f5f5f5]">
@@ -1221,6 +1382,88 @@ export default function AfternoonRoundDetailPage() {
               )}
             </section>
 
+            <section className="overflow-hidden rounded-2xl border border-[#2b2b27] bg-[#0d0d0b]">
+              <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
+                <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
+                  Skins
+                </p>
+                <h2 className="mt-2 text-xl font-black">Skins Board</h2>
+                <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                  Holes count only after every team has posted a score. Tied
+                  low scores produce no skin.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 border-b border-[#2a2925] text-sm">
+                <div className="border-r border-[#2a2925] px-5 py-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+                    Skins Pot
+                  </p>
+                  <p className="mt-1 text-lg font-black text-[#ffda03]">
+                    {money(totalSkinsPot)}
+                  </p>
+                </div>
+                <div className="px-5 py-4">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#a3a3a3]">
+                    Skin Value
+                  </p>
+                  <p className="mt-1 text-lg font-black text-[#f5f5f5]">
+                    {skins.length > 0 ? money(skins[0].value) : "$0"}
+                  </p>
+                </div>
+              </div>
+
+              {teams.length === 0 ? (
+                <p className="p-5 text-sm text-[#a3a3a3]">
+                  Build teams to start tracking skins.
+                </p>
+              ) : skins.length === 0 ? (
+                <div className="p-5">
+                  <p className="font-semibold text-[#f5f5f5]">
+                    No skins awarded yet.
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-[#a3a3a3]">
+                    Skins will appear as soon as a completed hole has one unique
+                    low team score.
+                  </p>
+                </div>
+              ) : (
+                skins.map((skin) => {
+                  const metadata = scorecardByHole.get(skin.hole);
+
+                  return (
+                    <div
+                      key={skin.hole}
+                      className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 border-b border-[#2a2925] px-5 py-4 last:border-b-0"
+                    >
+                      <div>
+                        <p className="font-mono text-sm font-black text-[#ffda03]">
+                          Hole {skin.hole}
+                        </p>
+                        <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-[#737373]">
+                          Par {metadata?.par || "-"}
+                        </p>
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="truncate font-bold">{skin.team.name}</h3>
+                        <p className="mt-1 truncate text-xs text-[#a3a3a3]">
+                          {skin.team.player_names.join(", ") || "No players"}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-mono text-sm font-black text-[#f5f5f5]">
+                          {skin.score}
+                        </p>
+                        <p className="mt-1 text-xs font-bold text-[#ffda03]">
+                          {money(skin.value)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </section>
+
             {canManage && (
               <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">
                 <div>
@@ -1371,6 +1614,88 @@ export default function AfternoonRoundDetailPage() {
                     {round.payout_notes}
                   </p>
                 )}
+              </section>
+            )}
+
+            {isFinal && (
+              <section className="overflow-hidden rounded-2xl border border-[#3a2a12] bg-[#111111]">
+                <div className="border-b border-[#2a2925] bg-[#11110f] px-5 py-4">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
+                    Settlement
+                  </p>
+                  <h2 className="mt-2 text-xl font-black">Settle Up</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                    Based on buy-ins, placement payouts, and skins. Players
+                    settle directly.
+                  </p>
+                </div>
+
+                <div className="border-b border-[#2a2925]">
+                  {settlementRows.length === 0 ? (
+                    <p className="p-5 text-sm text-[#a3a3a3]">
+                      Add teams, players, and payout settings to calculate
+                      settlement.
+                    </p>
+                  ) : (
+                    settlementRows
+                      .slice()
+                      .sort((a, b) => b.net - a.net || a.playerName.localeCompare(b.playerName))
+                      .map((row) => (
+                        <div
+                          key={`${row.teamName}-${row.playerName}`}
+                          className="grid grid-cols-[1fr_auto] gap-3 border-b border-[#2a2925] px-5 py-4 last:border-b-0"
+                        >
+                          <div className="min-w-0">
+                            <h3 className="truncate font-bold">{row.playerName}</h3>
+                            <p className="mt-1 truncate text-xs text-[#a3a3a3]">
+                              {row.teamName}
+                            </p>
+                            <p className="mt-2 text-xs leading-5 text-[#a3a3a3]">
+                              Place {money(row.placementWinnings)} · Skins{" "}
+                              {money(row.skinsWinnings)} · Buy-In{" "}
+                              {money(row.buyIn)}
+                            </p>
+                          </div>
+                          <span
+                            className={`self-center font-mono text-lg font-black ${
+                              row.net >= 0 ? "text-[#ffda03]" : "text-[#f5c56f]"
+                            }`}
+                          >
+                            {row.net >= 0 ? "+" : "-"}
+                            {money(Math.abs(row.net))}
+                          </span>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                <div className="p-5">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.24em] text-[#ffda03]">
+                    Who Pays Who
+                  </p>
+
+                  {paymentRows.length === 0 ? (
+                    <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
+                      No settlement payments needed yet.
+                    </p>
+                  ) : (
+                    <div className="mt-4 space-y-3">
+                      {paymentRows.map((payment, index) => (
+                        <div
+                          key={`${payment.payer}-${payment.receiver}-${index}`}
+                          className="rounded-xl border border-[#3a2a12] bg-black/35 p-4"
+                        >
+                          <p className="text-sm font-bold text-[#f5f5f5]">
+                            {payment.payer} pays {payment.receiver}
+                          </p>
+                          <p className="mt-1 font-mono text-xl font-black text-[#ffda03]">
+                            {money(payment.amount)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </section>
             )}
 

@@ -92,7 +92,7 @@ export function NightGolfSubmitPage({
       ({ score }) => !Number.isFinite(score),
     );
     const hasInvalidScore = parsedScores.some(
-      ({ score }) => ![0, 1, 3].includes(score),
+      ({ score }) => ![0, 1, 3, 5].includes(score),
     );
 
     if (hasMissingScore) {
@@ -101,7 +101,7 @@ export function NightGolfSubmitPage({
     }
 
     if (hasInvalidScore) {
-      setError("Night Golf scores must be 0, 1, or 3.");
+      setError("Night Golf scores must be 0, 1, 3, or 5.");
       return;
     }
 
@@ -163,7 +163,7 @@ export function NightGolfSubmitPage({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <Link href={backHref} className="gc-back-link gc-floating-back">
+      <Link href={backHref} className="gc-back-link gc-floating-back gc-back-night">
         ← BACK
       </Link>
       <div className="mx-auto w-full max-w-md space-y-7 py-8">
@@ -226,7 +226,7 @@ export function NightGolfSubmitPage({
                   Scorecard Grid
                 </p>
                 <p className="mt-1 text-xs font-semibold text-[#a3a3a3]">
-                  Enter 0, 1, or 3 for each target.
+                  Enter 0, 1, 3, or 5 for each target.
                 </p>
               </div>
               <div className="rounded-[0.65rem] border border-[#ec4899]/35 bg-[#2a111f] px-3 py-2 text-right">
@@ -259,7 +259,7 @@ export function NightGolfSubmitPage({
                       <input
                         type="text"
                         inputMode="numeric"
-                        pattern="[013]*"
+                        pattern="[0135]*"
                         value={scoresByTarget[target]}
                         onChange={(event) => updateScore(target, event.target.value)}
                         aria-label={`${row} ${column.label} score`}

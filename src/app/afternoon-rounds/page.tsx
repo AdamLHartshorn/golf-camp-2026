@@ -289,6 +289,20 @@ export default function AfternoonRoundsPage() {
         <section className="gc-edge-card">
           <div className="gc-section-head">
             <p className="gc-card-kicker">
+              Active Afternoon Rounds
+            </p>
+            <h2 className="gc-card-title">Open Games</h2>
+          </div>
+          <RoundList
+            rounds={activeRounds}
+            isLoading={isLoadingRounds}
+            emptyText="No active Afternoon Rounds yet."
+          />
+        </section>
+
+        <section className="gc-edge-card">
+          <div className="gc-section-head">
+            <p className="gc-card-kicker">
               Create Afternoon Round
             </p>
             <h1 className="gc-card-title">
@@ -347,20 +361,6 @@ export default function AfternoonRoundsPage() {
 
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#f5c56f]">{error}</p>}
-
-        <section className="gc-edge-card">
-          <div className="gc-section-head">
-            <p className="gc-card-kicker">
-              Active Afternoon Rounds
-            </p>
-            <h2 className="gc-card-title">Open Games</h2>
-          </div>
-          <RoundList
-            rounds={activeRounds}
-            isLoading={isLoadingRounds}
-            emptyText="No active Afternoon Rounds yet."
-          />
-        </section>
 
         <section className="gc-edge-card">
           <div className="gc-section-head">

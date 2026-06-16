@@ -344,6 +344,60 @@ export default function ShenanigansSideGamesPage() {
         {!selectedGameId && !isLoadingGame && <NoShenanigansGamePrompt />}
 
         {selectedGameId && (
+        <section className="space-y-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+              Recent Side Games
+            </p>
+
+            <h2 className="mt-2 text-xl font-bold">Booked Chaos</h2>
+          </div>
+
+          <div className="space-y-3">
+            {isLoadingEvents && (
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
+                Loading side games...
+              </div>
+            )}
+
+            {!isLoadingEvents && events.length === 0 && (
+              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
+                No side games logged yet.
+              </div>
+            )}
+
+            {!isLoadingEvents &&
+              events.map((event) => (
+                <div
+                  key={event.id}
+                  className="gc-edge-card p-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-bold">{event.player_name}</h3>
+
+                        <span className="text-xs text-[#737373]">
+                          {formatTimestamp(event.created_at)}
+                        </span>
+                      </div>
+
+                      <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
+                        {event.description}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
+                      +{event.points}
+                    </span>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </section>
+        )}
+
+        {selectedGameId && (
         <section className="gc-edge-card p-5">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
             Log Side Game
@@ -452,59 +506,6 @@ export default function ShenanigansSideGamesPage() {
           <p className="text-center text-sm text-[#fca5a5]">{error}</p>
         )}
 
-        {selectedGameId && (
-        <section className="space-y-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
-              Recent Side Games
-            </p>
-
-            <h2 className="mt-2 text-xl font-bold">Booked Chaos</h2>
-          </div>
-
-          <div className="space-y-3">
-            {isLoadingEvents && (
-              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
-                Loading side games...
-              </div>
-            )}
-
-            {!isLoadingEvents && events.length === 0 && (
-              <div className="gc-edge-card p-5 text-sm text-[#a3a3a3]">
-                No side games logged yet.
-              </div>
-            )}
-
-            {!isLoadingEvents &&
-              events.map((event) => (
-                <div
-                  key={event.id}
-                  className="gc-edge-card p-5"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-bold">{event.player_name}</h3>
-
-                        <span className="text-xs text-[#737373]">
-                          {formatTimestamp(event.created_at)}
-                        </span>
-                      </div>
-
-                      <p className="mt-2 text-sm leading-6 text-[#a3a3a3]">
-                        {event.description}
-                      </p>
-                    </div>
-
-                    <span className="shrink-0 rounded-full border border-[#b91c1c]/70 px-3 py-1 text-sm font-bold text-[#f5f5f5]">
-                      +{event.points}
-                    </span>
-                  </div>
-                </div>
-              ))}
-          </div>
-        </section>
-        )}
       </div>
     </main>
   );

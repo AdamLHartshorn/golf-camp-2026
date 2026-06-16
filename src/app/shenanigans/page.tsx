@@ -28,9 +28,9 @@ const cards = [
   {
     icon: "log",
     initial: "L",
-    name: "Log Event",
+    name: "Log Points",
     href: "/shenanigans/log-event",
-    description: "Add Bank points, wagers, side games, or custom chaos.",
+    description: "Quickly score one player, one hole, and what happened.",
   },
   {
     icon: "wagers",
@@ -40,18 +40,18 @@ const cards = [
     description: "Track player-to-player action.",
   },
   {
-    icon: "ledger",
-    initial: "G",
-    name: "Ledger",
-    href: "/shenanigans/ledger",
-    description: "Live point totals and round activity.",
-  },
-  {
     icon: "sideGames",
     initial: "S",
     name: "Side Games",
     href: "/shenanigans/side-games",
     description: "Bocce, basket-golf, and whatever else gets invented.",
+  },
+  {
+    icon: "ledger",
+    initial: "G",
+    name: "Ledger",
+    href: "/shenanigans/ledger",
+    description: "Live point totals and round activity.",
   },
   {
     icon: "settlement",
@@ -204,10 +204,37 @@ export default function ShenanigansPage() {
           onEndGame={endGame}
         />
 
+        <div className="gc-edge-list">
+          {cards.map((card) => (
+            <Link
+              key={card.name}
+              href={card.href}
+              className="gc-edge-row"
+            >
+              <span className="gc-edge-mark">
+                <GolfCampIcon name={card.icon} className="h-6 w-6" />
+              </span>
+                <div className="min-w-0">
+                  <h2 className="gc-edge-title">
+                    {card.name}
+                  </h2>
+
+                  <p className="gc-edge-meta">
+                    {card.description}
+                  </p>
+                </div>
+
+                <span className="gc-edge-arrow">
+                  →
+                </span>
+            </Link>
+          ))}
+        </div>
+
         <section className="gc-edge-card">
           <div className="gc-section-head">
             <p className="gc-card-kicker">
-              Current Game
+              Start New Game
             </p>
             <h1 className="gc-card-title">
               Shenanigans
@@ -255,33 +282,6 @@ export default function ShenanigansPage() {
 
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#fca5a5]">{error}</p>}
-
-        <div className="gc-edge-list">
-          {cards.map((card) => (
-            <Link
-              key={card.name}
-              href={card.href}
-              className="gc-edge-row"
-            >
-              <span className="gc-edge-mark">
-                <GolfCampIcon name={card.icon} className="h-6 w-6" />
-              </span>
-                <div className="min-w-0">
-                  <h2 className="gc-edge-title">
-                    {card.name}
-                  </h2>
-
-                  <p className="gc-edge-meta">
-                    {card.description}
-                  </p>
-                </div>
-
-                <span className="gc-edge-arrow">
-                  →
-                </span>
-            </Link>
-          ))}
-        </div>
       </div>
     </main>
   );

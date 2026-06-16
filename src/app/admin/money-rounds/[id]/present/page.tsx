@@ -203,7 +203,7 @@ export default function MoneyRoundPresentationControllerPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <Link href="/admin/money-rounds" className="gc-back-link gc-floating-back">
+      <Link href="/admin/money-rounds" className="gc-back-link gc-floating-back gc-back-money">
         ← BACK
       </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-6 py-8">

@@ -13,8 +13,36 @@ import {
   useShenanigansGame,
 } from "@/lib/shenanigansGame";
 
-const eventTypes = ["Bank", "Wager", "Side Game", "Custom"];
-const pointValues = [-5, -3, -1, 1, 2, 3, 5, 10];
+const goodThings = [
+  "Longest Drive",
+  "FIR",
+  "Longest Approach",
+  "GIR",
+  "Made Eagle Putt",
+  "Made Birdie Putt",
+  "Best Putt",
+];
+
+const badThings = [
+  "Tree Hard",
+  "Tree Medium",
+  "Tree Light",
+  "Water Entry",
+  "Water Skip",
+  "Water Exit",
+  "Manmade Object Hit",
+  "Cart Path Bounce",
+  "Other",
+];
+
+const holeNumbers = Array.from({ length: 18 }, (_, index) => index + 1);
+const pointValues = Array.from({ length: 15 }, (_, index) => index + 1);
+
+function toggleSelection(currentValues: string[], value: string) {
+  return currentValues.includes(value)
+    ? currentValues.filter((currentValue) => currentValue !== value)
+    : [...currentValues, value];
+}
 
 export default function ShenanigansLogEventPage() {
   const {
@@ -28,8 +56,10 @@ export default function ShenanigansLogEventPage() {
     endGame,
   } = useShenanigansGame();
   const [chosenPlayer, setChosenPlayer] = useState("");
-  const [selectedType, setSelectedType] = useState(eventTypes[0]);
-  const [selectedPoints, setSelectedPoints] = useState<number | null>(2);
+  const [selectedHole, setSelectedHole] = useState<number>(1);
+  const [selectedGoodThings, setSelectedGoodThings] = useState<string[]>([]);
+  const [selectedBadThings, setSelectedBadThings] = useState<string[]>([]);
+  const [selectedPoints, setSelectedPoints] = useState<number | null>(3);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,14 +73,21 @@ export default function ShenanigansLogEventPage() {
   const signedPoints =
     selectedPoints === null
       ? "-"
-      : selectedPoints > 0
-        ? `+${selectedPoints}`
-        : String(selectedPoints);
-  const previewDescription = description.trim() || "What happened?";
+      : `+${selectedPoints}`;
+  const selectedTags = [...selectedGoodThings, ...selectedBadThings];
+  const optionalDescription = description.trim();
+  const generatedDescription = [
+    selectedPlayer,
+    `Hole ${selectedHole}`,
+    selectedTags.join(" - "),
+    optionalDescription,
+  ]
+    .filter(Boolean)
+    .join(" - ");
+  const previewDescription =
+    generatedDescription || "Select a player, hole, and what happened.";
 
   async function handleSubmit() {
-    const trimmedDescription = description.trim();
-
     setMessage("");
     setError("");
 
@@ -69,8 +106,8 @@ export default function ShenanigansLogEventPage() {
       return;
     }
 
-    if (!trimmedDescription) {
-      setError("Description is required.");
+    if (selectedTags.length === 0 && !optionalDescription) {
+      setError("Select at least one tag or add an optional note.");
       return;
     }
 
@@ -78,13 +115,11 @@ export default function ShenanigansLogEventPage() {
 
     const payload = {
       player_name: selectedPlayer,
-      event_type: selectedType,
-      description: trimmedDescription,
+      event_type: "Log Points",
+      description: generatedDescription,
       points: selectedPoints,
       game_id: selectedGameId,
     };
-
-    console.log("Submitting shenanigans_events payload:", payload);
 
     try {
       const { data, error: insertError } = await supabase
@@ -92,24 +127,19 @@ export default function ShenanigansLogEventPage() {
         .insert(payload)
         .select();
 
-      console.log("shenanigans_events insert result:", {
-        data,
-        error: insertError,
-      });
-
       if (insertError) {
         setError(insertError.message || "Could not add event.");
         return;
       }
 
-      setMessage("Event added.");
+      setMessage("Points logged.");
       const createdEventId = Array.isArray(data) ? data[0]?.id : null;
       await logActivityFeedItem({
         type: "shenanigans_event_logged",
         source: "shenanigans",
         sourceId: createdEventId || null,
         linkUrl: "/shenanigans/ledger",
-        message: `Shenanigans: ${selectedPlayer} ${signedPoints} — ${trimmedDescription}.`,
+        message: `Shenanigans: ${selectedPlayer} ${signedPoints} — ${generatedDescription}.`,
       });
       await logAuditEvent({
         actionType: "shenanigans_ledger_event_created",
@@ -117,9 +147,16 @@ export default function ShenanigansLogEventPage() {
         entityId: createdEventId || null,
         summary: `${selectedPlayer} logged ${signedPoints} Shenanigans points.`,
         newValue: Array.isArray(data) ? data[0] : payload,
-        metadata: { game_id: selectedGameId },
+        metadata: {
+          game_id: selectedGameId,
+          hole: selectedHole,
+          good_things: selectedGoodThings,
+          bad_things: selectedBadThings,
+        },
       });
       setSelectedPoints(null);
+      setSelectedGoodThings([]);
+      setSelectedBadThings([]);
       setDescription("");
     } catch (submitError) {
       console.error("shenanigans_events insert failed:", submitError);
@@ -148,11 +185,11 @@ export default function ShenanigansLogEventPage() {
           </p>
 
           <h1 className="gc-card-title">
-            Log Event
+            Log Points
           </h1>
 
           <p className="gc-card-copy">
-            Add points to the chaos ledger.
+            Select the player, hole, tags, and points.
           </p>
         </div>
 
@@ -187,25 +224,91 @@ export default function ShenanigansLogEventPage() {
         {selectedGameId && (
         <section className="space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
-            Event Type
+            Hole Number
           </p>
 
-          <div className="grid grid-cols-2 gap-3">
-            {eventTypes.map((type) => {
-              const isSelected = type === selectedType;
+          <div className="grid grid-cols-6 gap-2">
+            {holeNumbers.map((hole) => {
+              const isSelected = hole === selectedHole;
 
               return (
                 <button
-                  key={type}
+                  key={hole}
                   type="button"
-                  onClick={() => setSelectedType(type)}
-                  className={`rounded-2xl border p-4 text-left text-sm font-semibold transition-colors duration-200 ${
+                  onClick={() => setSelectedHole(hole)}
+                  className={`rounded-xl border py-3 text-center text-sm font-black transition-colors duration-200 ${
                     isSelected
                       ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
                       : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
                   }`}
                 >
-                  {type}
+                  {hole}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+        )}
+
+        {selectedGameId && (
+        <section className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+            Good Things
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            {goodThings.map((tag) => {
+              const isSelected = selectedGoodThings.includes(tag);
+
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() =>
+                    setSelectedGoodThings((currentTags) =>
+                      toggleSelection(currentTags, tag),
+                    )
+                  }
+                  className={`rounded-2xl border px-3 py-3 text-left text-sm font-semibold transition-colors duration-200 ${
+                    isSelected
+                      ? "border-[#EB9C5C] bg-[#EB9C5C] text-black"
+                      : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#EB9C5C]"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+        )}
+
+        {selectedGameId && (
+        <section className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]">
+            Bad Things
+          </p>
+
+          <div className="grid grid-cols-2 gap-3">
+            {badThings.map((tag) => {
+              const isSelected = selectedBadThings.includes(tag);
+
+              return (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() =>
+                    setSelectedBadThings((currentTags) =>
+                      toggleSelection(currentTags, tag),
+                    )
+                  }
+                  className={`rounded-2xl border px-3 py-3 text-left text-sm font-semibold transition-colors duration-200 ${
+                    isSelected
+                      ? "border-[#b91c1c] bg-[#b91c1c] text-[#f5f5f5]"
+                      : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
+                  }`}
+                >
+                  {tag}
                 </button>
               );
             })}
@@ -219,10 +322,9 @@ export default function ShenanigansLogEventPage() {
             Point Value
           </p>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-5 gap-2">
             {pointValues.map((points) => {
               const isSelected = points === selectedPoints;
-              const label = points > 0 ? `+${points}` : String(points);
 
               return (
                 <button
@@ -235,7 +337,7 @@ export default function ShenanigansLogEventPage() {
                       : "border-[#242424] bg-[#111111] text-[#f5f5f5] hover:border-[#b91c1c]"
                   }`}
                 >
-                  {label}
+                  {points}
                 </button>
               );
             })}
@@ -249,7 +351,7 @@ export default function ShenanigansLogEventPage() {
             htmlFor="event-description"
             className="block text-xs font-semibold uppercase tracking-[0.28em] text-[#b91c1c]"
           >
-            Description
+            Optional Note
           </label>
 
           <input
@@ -257,7 +359,7 @@ export default function ShenanigansLogEventPage() {
             type="text"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="What happened?"
+            placeholder="Only add weird details if needed."
             className="w-full rounded-2xl border border-[#242424] bg-[#111111] px-4 py-4 text-[#f5f5f5] outline-none transition-colors duration-200 placeholder:text-[#737373] focus:border-[#b91c1c]"
           />
         </section>
@@ -275,7 +377,7 @@ export default function ShenanigansLogEventPage() {
                 <h2 className="font-bold">{selectedPlayer}</h2>
 
                 <span className="rounded-full border border-[#242424] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#a3a3a3]">
-                  {selectedType}
+                  Hole {selectedHole}
                 </span>
               </div>
 
@@ -286,7 +388,7 @@ export default function ShenanigansLogEventPage() {
 
             <span
               className={`shrink-0 rounded-full border px-3 py-1 text-sm font-bold ${
-                selectedPoints !== null && selectedPoints > 0
+                selectedPoints !== null
                   ? "border-[#b91c1c]/70 text-[#f5f5f5]"
                   : "border-[#7f1d1d] bg-[#1f1111] text-[#fca5a5]"
               }`}
@@ -316,7 +418,7 @@ export default function ShenanigansLogEventPage() {
           }
           className="gc-primary-button px-5 py-4 text-center text-base font-bold transition disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? "Adding..." : "Add to Ledger"}
+          {isSubmitting ? "Adding..." : "Log Points"}
         </button>
       </div>
     </main>

@@ -102,7 +102,7 @@ export default function SystemAdminPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <Link href="/admin" className="gc-back-link gc-floating-back">
+      <Link href="/admin" className="gc-back-link gc-floating-back gc-back-admin">
         ← BACK
       </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-8 py-8">

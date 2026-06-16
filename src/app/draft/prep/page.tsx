@@ -267,7 +267,7 @@ export default function DraftPrepPage() {
     <main className="draft-prep-shell min-h-screen bg-[radial-gradient(circle_at_50%_-8%,rgba(50,77,112,0.2),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(244,241,234,0.07),transparent_28%),#050505] px-4 py-5 text-[#f5f5f5]">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center gap-4 py-4">
         <header className="flex items-center justify-between gap-4">
-          <Link href="/draft" className="gc-back-link">
+          <Link href="/draft" className="gc-back-link gc-back-draft">
             ← BACK
           </Link>
           <div className="text-center">

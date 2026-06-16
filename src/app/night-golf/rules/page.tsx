@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function RulesPage() {
   return (
     <main className="min-h-screen bg-black text-[#f5f5f5] p-6">
-      <Link href="/night-golf" className="gc-back-link gc-floating-back">
+      <Link href="/night-golf" className="gc-back-link gc-floating-back gc-back-night">
         ← BACK
       </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-10">
@@ -106,14 +106,12 @@ export default function RulesPage() {
                 </span>
               </div>
 
-              <div className="rounded-xl border border-[#ec4899] bg-black p-4 text-center">
-                <p className="text-sm text-[#a3a3a3]">
-                  Maximum Possible Score
-                </p>
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899] bg-black p-4">
+                <span>Hole-Out</span>
 
-                <p className="mt-1 text-3xl font-bold text-[#f472b6]">
-                  27
-                </p>
+                <span className="font-bold text-[#f472b6]">
+                  5
+                </span>
               </div>
             </div>
           </section>
@@ -125,24 +123,21 @@ export default function RulesPage() {
               <p>
                 Ball must come to rest inside the target area to count.
               </p>
-
-              <p>
-                If the ball is visibly on the line (you can see the laser
-                hitting the ball), it counts.
-              </p>
             </div>
           </section>
 
           <section className="rounded-2xl border border-[#242424] bg-[#111111] p-5">
-            <h2 className="text-2xl font-bold">Tiebreaker</h2>
+            <h2 className="text-2xl font-bold">Sudden Death</h2>
 
             <div className="mt-4 space-y-3 text-[#d4d4d4]">
               <p>
-                1. Most “stuck both” scores wins.
+                Ties are settled Open-style. Tied players start at the first
+                hole and continue hole-by-hole.
               </p>
 
               <p>
-                2. Sudden death challenge target if still tied.
+                After each hole, the lowest point total among the tied players
+                is eliminated. Continue until one winner remains.
               </p>
             </div>
           </section>

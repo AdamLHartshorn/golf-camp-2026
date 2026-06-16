@@ -119,7 +119,7 @@ export default function AdminCampFeedPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(143,166,106,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <Link href="/admin" className="gc-back-link gc-floating-back">
+      <Link href="/admin" className="gc-back-link gc-floating-back gc-back-feed">
         ← BACK
       </Link>
       <div className="mx-auto w-full max-w-md space-y-6 py-8">

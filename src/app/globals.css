@@ -466,14 +466,17 @@ main {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--page-accent, #f4f1ea) 30%, rgba(244, 241, 234, 0.12));
+  border: 1px solid color-mix(in srgb, var(--page-accent, #f4f1ea) 48%, rgba(244, 241, 234, 0.16));
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--page-accent, #f4f1ea) 8%, transparent), rgba(255, 255, 255, 0.018)),
-    rgba(0, 0, 0, 0.26);
-  color: color-mix(in srgb, var(--page-accent, #f4f1ea) 58%, #f4f1ea 42%);
+    radial-gradient(circle at 0% 50%, color-mix(in srgb, var(--page-accent, #f4f1ea) 22%, transparent), transparent 6rem),
+    linear-gradient(180deg, color-mix(in srgb, var(--page-accent, #f4f1ea) 12%, transparent), rgba(255, 255, 255, 0.02)),
+    rgba(0, 0, 0, 0.34);
+  color: color-mix(in srgb, var(--page-accent, #f4f1ea) 76%, #f4f1ea 24%);
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--page-accent, #f4f1ea) 10%, transparent),
-    0 10px 28px rgba(0, 0, 0, 0.2);
+    inset 0 0 0 1px color-mix(in srgb, var(--page-accent, #f4f1ea) 16%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 10px 28px rgba(0, 0, 0, 0.24),
+    0 0 22px color-mix(in srgb, var(--page-accent, #f4f1ea) 12%, transparent);
 }
 
 .gc-back-link {
@@ -489,6 +492,56 @@ main {
   letter-spacing: 0.14em;
   line-height: 1;
   text-transform: uppercase;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    background 180ms ease;
+}
+
+.gc-back-link:hover {
+  border-color: color-mix(in srgb, var(--page-accent, #f4f1ea) 70%, rgba(244, 241, 234, 0.2));
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--page-accent, #f4f1ea) 22%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 12px 30px rgba(0, 0, 0, 0.28),
+    0 0 28px color-mix(in srgb, var(--page-accent, #f4f1ea) 18%, transparent);
+}
+
+.gc-back-admin {
+  --page-accent: #a8a29a;
+}
+
+.gc-back-camp {
+  --page-accent: #f4f1ea;
+}
+
+.gc-back-money {
+  --page-accent: #6fa783;
+}
+
+.gc-back-draft {
+  --page-accent: #7bbcff;
+}
+
+.gc-back-shenanigans {
+  --page-accent: #EB9C5C;
+}
+
+.gc-back-afternoon {
+  --page-accent: #ffda03;
+}
+
+.gc-back-night {
+  --page-accent: #f472b6;
+}
+
+.gc-back-feed {
+  --page-accent: #9a1f2e;
+}
+
+.gc-back-parimutuel {
+  --page-accent: #9c91ba;
 }
 
 .gc-floating-back {

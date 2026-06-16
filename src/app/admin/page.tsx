@@ -107,7 +107,7 @@ const sections = [
 export default function AdminPage() {
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(244,241,234,0.08),transparent_34%),#050505] p-5 text-[#f5f5f5]">
-      <Link href="/home" className="gc-back-link gc-floating-back">
+      <Link href="/home" className="gc-back-link gc-floating-back gc-back-admin">
         ← BACK
       </Link>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col justify-center space-y-5 py-6">

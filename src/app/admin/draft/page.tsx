@@ -905,7 +905,7 @@ export default function AdminDraftPage() {
 
   return (
     <main className="min-h-screen bg-black p-6 text-[#f5f5f5]">
-      <Link href="/admin" className="gc-back-link gc-floating-back">
+      <Link href="/admin" className="gc-back-link gc-floating-back gc-back-draft">
         ← BACK
       </Link>
       <div className="mx-auto w-full max-w-md space-y-8 py-8">
