@@ -7,8 +7,8 @@ const sections = [
     copy: "Shenanigans is played under the rules of a golf scramble. Points are earned through skill, luck, side games, and player-to-player wagers. At the end of the round, the player with the most points wins.",
   },
   {
-    title: "The Bank",
-    copy: "The Bank awards structured points for tee shots, approach shots, putting, and standard proposition outcomes.",
+    title: "Point Bank",
+    copy: "Each game starts every player at 5 points. From there, Log Points, Live Wagers, and Side Games move players up or down. The ledger is the running record of point movement; settlement converts the final point totals into payments using the selected dollar-per-point multiplier.",
   },
   {
     title: "Wagering Points",
@@ -20,7 +20,7 @@ const sections = [
   },
   {
     title: "Monetizing Points",
-    copy: "Optional: each point can represent one unit of cash. Final settlement can be calculated from each player’s final point total.",
+    copy: "Optional: each point can represent one unit of cash. Final settlement is calculated from each player's final point total and produces minimized payments so the group has fewer transactions.",
   },
   {
     title: "Optional Double Points",

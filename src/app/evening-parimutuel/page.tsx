@@ -11,6 +11,15 @@ import {
   ParimutuelMarket,
   setParimutuelTeeTime,
 } from "@/lib/parimutuelAutomation";
+import { autoResolveParimutuelForMoneyRound } from "@/lib/parimutuelResolution";
+import {
+  aggregateParimutuelStandings,
+  calculateParimutuelSettlements,
+  createParimutuelPaymentRows,
+  normalizeParimutuelAmount,
+  normalizeWinningSelections,
+} from "@/lib/parimutuelSettlement";
+import { logAuditEvent } from "@/lib/auditLog";
 import { getPlayerSession, PlayerSession } from "@/lib/playerSession";
 import { supabase } from "@/lib/supabase";
 import { ActivePlayer, useActivePlayers } from "@/lib/useActivePlayers";
@@ -31,7 +40,7 @@ type EveningBet = {
   money_round_id?: string | null;
 };
 
-type EveningView = "hub" | "wagers" | "ledger";
+type EveningView = "hub" | "wagers" | "ledger" | "resolve";
 
 type DraftSessionOption = {
   id: string;
@@ -46,6 +55,17 @@ type DraftTeamOption = {
   draft_session_id: string;
   name: string;
   draft_position: number | null;
+};
+
+type EveningResult = {
+  id: string;
+  parimutuel_market_id: string;
+  betting_night: string | null;
+  money_round_day: string | null;
+  market: string;
+  winning_selections: string[] | unknown;
+  resolved_at: string | null;
+  resolved_by_player_id: string | null;
 };
 
 const rulesSeenKey = "eveningParimutuelRulesSeen";
@@ -73,7 +93,7 @@ const quickBetAmounts = [5, 10, 15, 20];
 const moneyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
-  maximumFractionDigits: 0,
+  maximumFractionDigits: 2,
 });
 
 function formatMoney(value: number) {
@@ -81,8 +101,7 @@ function formatMoney(value: number) {
 }
 
 function normalizeAmount(value: number | string) {
-  const amount = Number(value);
-  return Number.isFinite(amount) ? amount : 0;
+  return normalizeParimutuelAmount(value);
 }
 
 function formatDateTime(value: string | null) {
@@ -243,6 +262,7 @@ export default function EveningParimutuelPage() {
     useActivePlayers();
   const [session] = useState<PlayerSession | null>(() => getPlayerSession());
   const [bets, setBets] = useState<EveningBet[]>([]);
+  const [results, setResults] = useState<EveningResult[]>([]);
   const [draftSession, setDraftSession] = useState<DraftSessionOption | null>(
     null,
   );
@@ -267,11 +287,17 @@ export default function EveningParimutuelPage() {
       }, {}),
   );
   const [isLoadingBets, setIsLoadingBets] = useState(true);
+  const [isLoadingResults, setIsLoadingResults] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSavingResults, setIsSavingResults] = useState(false);
+  const [isAutoResolving, setIsAutoResolving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [activeView, setActiveView] = useState<EveningView>("hub");
   const [showRules, setShowRules] = useState(false);
+  const [resolutionSelections, setResolutionSelections] = useState<
+    Record<string, string[]>
+  >({});
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -324,6 +350,40 @@ export default function EveningParimutuelPage() {
     return () => {
       isCurrent = false;
       window.clearInterval(intervalId);
+    };
+  }, [parimutuelMarket?.id]);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function fetchResults() {
+      setIsLoadingResults(true);
+
+      if (!parimutuelMarket?.id) {
+        setResults([]);
+        setResolutionSelections({});
+        setIsLoadingResults(false);
+        return;
+      }
+
+      const nextResults = await fetchResultsForMarket(parimutuelMarket.id);
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (nextResults) {
+        setResults(nextResults);
+        syncResolutionSelections(nextResults);
+      }
+
+      setIsLoadingResults(false);
+    }
+
+    fetchResults();
+
+    return () => {
+      isCurrent = false;
     };
   }, [parimutuelMarket?.id]);
 
@@ -478,7 +538,9 @@ export default function EveningParimutuelPage() {
   const isAdmin = Boolean(session?.is_admin);
   const isMarketPending = parimutuelMarket?.status === "pending";
   const isMarketLocked = parimutuelMarket?.status === "locked";
+  const isMarketSettled = parimutuelMarket?.status === "settled";
   const isMarketOpen = parimutuelMarket?.status === "open";
+  const isBettingClosed = isMarketPending || isMarketLocked || isMarketSettled;
   const marketStatusLabel = parimutuelMarket
     ? `${parimutuelMarket.status || "pending"}`
     : "draft-linked";
@@ -574,6 +636,36 @@ export default function EveningParimutuelPage() {
       return accumulator;
     }, {}),
   ).sort((a, b) => b.total - a.total || a.player.localeCompare(b.player));
+  const resolvedMarketSettlements = useMemo(
+    () => calculateParimutuelSettlements(bets, results),
+    [bets, results],
+  );
+  const selectedNightSettlements = useMemo(
+    () =>
+      resolvedMarketSettlements.filter(
+        (settlement) => settlement.result.betting_night === selectedNight,
+      ),
+    [resolvedMarketSettlements, selectedNight],
+  );
+  const selectedNightStandings = useMemo(
+    () => aggregateParimutuelStandings(selectedNightSettlements),
+    [selectedNightSettlements],
+  );
+  const weekStandings = useMemo(
+    () => aggregateParimutuelStandings(resolvedMarketSettlements),
+    [resolvedMarketSettlements],
+  );
+  const finalPaymentRows = useMemo(
+    () => createParimutuelPaymentRows(weekStandings),
+    [weekStandings],
+  );
+  const unresolvedMarkets = markets.filter(
+    (market) =>
+      !results.some(
+        (result) =>
+          result.betting_night === selectedNight && result.market === market,
+      ),
+  );
 
   function getMarketOptions(market: string) {
     return holeMarkets.has(market) ? holeOptions : teamOptions;
@@ -632,11 +724,227 @@ export default function EveningParimutuelPage() {
     setError("");
   }
 
+  function setResolutionSelection(
+    market: string,
+    selection: string,
+    index = 0,
+  ) {
+    setResolutionSelections((currentSelections) => {
+      const currentMarketSelections = [...(currentSelections[market] || [])];
+      currentMarketSelections[index] = selection;
+
+      return {
+        ...currentSelections,
+        [market]: currentMarketSelections
+          .map((currentSelection) => currentSelection.trim())
+          .filter(Boolean)
+          .filter(
+            (currentSelection, currentIndex, selections) =>
+              selections.indexOf(currentSelection) === currentIndex,
+          ),
+      };
+    });
+    setMessage("");
+    setError("");
+  }
+
+  async function handleSaveMarketResult(market: string) {
+    if (!parimutuelMarket || !isAdmin) {
+      return;
+    }
+
+    const winningSelections = (resolutionSelections[market] || [])
+      .map((selection) => selection.trim())
+      .filter(Boolean);
+
+    setMessage("");
+    setError("");
+
+    if (winningSelections.length === 0) {
+      setError("Choose at least one official winning selection.");
+      return;
+    }
+
+    setIsSavingResults(true);
+
+    const payload = {
+      parimutuel_market_id: parimutuelMarket.id,
+      betting_night: parimutuelMarket.betting_night || selectedNight,
+      money_round_day: parimutuelMarket.money_round_day || selectedNightMeta.roundDay,
+      market,
+      winning_selections: winningSelections,
+      resolved_at: new Date().toISOString(),
+      resolved_by_player_id: session?.id || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error: saveError } = await supabase
+      .from("evening_parimutuel_results")
+      .upsert(payload, { onConflict: "parimutuel_market_id,market" })
+      .select("*")
+      .single();
+
+    if (saveError) {
+      setIsSavingResults(false);
+      setError(
+        ["42P01", "42703"].includes(saveError.code || "")
+          ? "Run the Parimutuel resolution SQL before saving official results."
+          : saveError.message || "Could not save official result.",
+      );
+      return;
+    }
+
+    const savedResult = data as EveningResult;
+    const nextResults = [
+      savedResult,
+      ...results.filter((result) => result.market !== savedResult.market),
+    ];
+    setResults(nextResults);
+
+    await logAuditEvent({
+      actionType: "parimutuel_market_result_resolved",
+      entityType: "evening_parimutuel_result",
+      entityId: savedResult.id,
+      summary: `${market} resolved as ${winningSelections.join(", ")}.`,
+      newValue: savedResult,
+      metadata: {
+        parimutuel_market_id: parimutuelMarket.id,
+        market,
+      },
+    });
+
+    const allMarketsResolved = markets.every((marketName) =>
+      nextResults.some((result) => result.market === marketName),
+    );
+
+    if (allMarketsResolved && parimutuelMarket.status !== "settled") {
+      const { data: marketData, error: marketError } = await supabase
+        .from("evening_parimutuel_markets")
+        .update({
+          status: "settled",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", parimutuelMarket.id)
+        .select("*")
+        .single();
+
+      if (!marketError && marketData) {
+        setParimutuelMarket(marketData as ParimutuelMarket);
+      }
+    }
+
+    setIsSavingResults(false);
+    setMessage(`${market} result saved.`);
+  }
+
   function closeRules() {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(rulesSeenKey, "true");
     }
     setShowRules(false);
+  }
+
+  function syncResolutionSelections(nextResults: EveningResult[]) {
+    setResolutionSelections(
+      nextResults.reduce<Record<string, string[]>>((accumulator, result) => {
+        accumulator[result.market] = normalizeWinningSelections(
+          result.winning_selections,
+        );
+        return accumulator;
+      }, {}),
+    );
+  }
+
+  async function fetchResultsForMarket(marketId: string) {
+    const { data, error: fetchError } = await supabase
+      .from("evening_parimutuel_results")
+      .select("*")
+      .eq("parimutuel_market_id", marketId)
+      .order("market", { ascending: true });
+
+    if (fetchError) {
+      setResults([]);
+      setResolutionSelections({});
+
+      if (["42P01", "42703"].includes(fetchError.code || "")) {
+        setError(
+          "Parimutuel settlement needs the resolution SQL before markets can be resolved.",
+        );
+        return null;
+      }
+
+      setError(fetchError.message || "Could not load Parimutuel results.");
+      return null;
+    }
+
+    return ((data as EveningResult[]) || []);
+  }
+
+  async function handleAutoResolveFromMoneyRound() {
+    if (!parimutuelMarket?.money_round_id || !isAdmin) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setIsAutoResolving(true);
+
+    const [
+      { data: roundData, error: roundError },
+      { data: teamData, error: teamError },
+      { data: scoreData, error: scoreError },
+    ] = await Promise.all([
+      supabase
+        .from("money_rounds")
+        .select("*")
+        .eq("id", parimutuelMarket.money_round_id)
+        .single(),
+      supabase
+        .from("money_round_teams")
+        .select("*")
+        .eq("money_round_id", parimutuelMarket.money_round_id),
+      supabase
+        .from("money_round_scores")
+        .select("*")
+        .eq("money_round_id", parimutuelMarket.money_round_id),
+    ]);
+
+    if (roundError || teamError || scoreError || !roundData) {
+      setIsAutoResolving(false);
+      setError(
+        roundError?.message ||
+          teamError?.message ||
+          scoreError?.message ||
+          "Could not load linked Money Round.",
+      );
+      return;
+    }
+
+    const result = await autoResolveParimutuelForMoneyRound(
+      roundData,
+      teamData || [],
+      scoreData || [],
+      session?.id || null,
+    );
+
+    if (result.market) {
+      setParimutuelMarket(result.market);
+      const nextResults = await fetchResultsForMarket(result.market.id);
+
+      if (nextResults) {
+        setResults(nextResults);
+        syncResolutionSelections(nextResults);
+      }
+    }
+
+    setIsAutoResolving(false);
+
+    if (result.error) {
+      setError(result.message);
+      return;
+    }
+
+    setMessage(result.message);
   }
 
   async function handleSetTeeTime() {
@@ -726,6 +1034,11 @@ export default function EveningParimutuelPage() {
       return;
     }
 
+    if (isMarketSettled) {
+      setError("Parimutuel Bets are settled for this Money Round.");
+      return;
+    }
+
     setIsSaving(true);
 
     const betPayload: Record<string, string | number | null> = {
@@ -796,6 +1109,14 @@ export default function EveningParimutuelPage() {
             label="03"
             onClick={() => setActiveView("ledger")}
           />
+          {isAdmin && (
+            <EveningActionCard
+              title="Resolve Markets"
+              subtitle="Enter official winners after the Money Round"
+              label="04"
+              onClick={() => setActiveView("resolve")}
+            />
+          )}
         </section>
 
         {activeView === "wagers" && (
@@ -855,6 +1176,8 @@ export default function EveningParimutuelPage() {
                   className={`rounded-full border px-3 py-1 font-mono text-[9px] font-black uppercase tracking-[0.16em] ${
                     isMarketLocked
                       ? "border-[#fca5a5]/50 bg-[#fca5a5]/10 text-[#fca5a5]"
+                      : isMarketSettled
+                        ? "border-[#d8d0ea]/70 bg-[#d8d0ea]/15 text-[#f4f1ea]"
                       : isMarketOpen
                         ? "border-[#d8d0ea]/55 bg-[#d8d0ea]/10 text-[#d8d0ea]"
                         : "border-[#746a91]/50 bg-black/25 text-[#9c91ba]"
@@ -947,8 +1270,7 @@ export default function EveningParimutuelPage() {
               isSaving ||
               isLoadingPlayers ||
               isLoadingDraftTeams ||
-              isMarketPending ||
-              isMarketLocked ||
+              isBettingClosed ||
               !selectedPlayerId ||
               !selectedOption ||
               options.length === 0;
@@ -1090,6 +1412,8 @@ export default function EveningParimutuelPage() {
                     >
                       {isSaving
                         ? "Logging..."
+                        : isMarketSettled
+                          ? "Settled"
                         : isMarketLocked
                           ? "Locked"
                           : isMarketPending
@@ -1181,6 +1505,219 @@ export default function EveningParimutuelPage() {
           </>
         )}
 
+        {activeView === "resolve" && isAdmin && (
+          <>
+            <section className="gc-edge-card overflow-hidden">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Admin Resolution</p>
+                <h2 className="gc-card-title">Resolve Markets</h2>
+                <p className="gc-card-copy">
+                  Enter official results after the Money Round. Players can see
+                  nightly standings as markets are resolved; final settlement
+                  stays cumulative until the end of camp.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleAutoResolveFromMoneyRound}
+                  disabled={
+                    isAutoResolving ||
+                    !parimutuelMarket?.money_round_id
+                  }
+                  className="mt-4 rounded-xl border border-[#9c91ba] bg-[#9c91ba] px-4 py-3 text-sm font-black text-[#050505] transition hover:border-[#d8d0ea] hover:bg-[#d8d0ea] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {isAutoResolving
+                    ? "Resolving..."
+                    : "Auto Resolve From Final Money Round"}
+                </button>
+                {!parimutuelMarket?.money_round_id && (
+                  <p className="mt-2 text-xs font-semibold text-[#a3a3a3]">
+                    Link this market to a Money Round before auto-resolving.
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-px bg-[#746a91]/25">
+                <div className="bg-[#0d0d0b]/75 px-4 py-4">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                    Status
+                  </p>
+                  <p className="mt-1 text-lg font-black capitalize text-[#f4f1ea]">
+                    {marketStatusLabel}
+                  </p>
+                </div>
+                <div className="bg-[#0d0d0b]/75 px-4 py-4">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                    Resolved
+                  </p>
+                  <p className="mt-1 text-lg font-black text-[#f4f1ea]">
+                    {results.length}/{markets.length}
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            {isLoadingResults ? (
+              <section className="gc-edge-card p-5 text-sm font-semibold text-[#a3a3a3]">
+                Loading official results...
+              </section>
+            ) : (
+              <section className="space-y-4">
+                {markets.map((market) => {
+                  const options = getMarketOptions(market);
+                  const savedResult = results.find(
+                    (result) => result.market === market,
+                  );
+                  const savedSelections = savedResult
+                    ? normalizeWinningSelections(savedResult.winning_selections)
+                    : [];
+                  const currentSelections = resolutionSelections[market] || [];
+                  const marketSettlement = resolvedMarketSettlements.find(
+                    (settlement) => settlement.result.market === market,
+                  );
+                  const isTopThreeMarket = market === "Show or Better (Top 3)";
+
+                  return (
+                    <article
+                      key={market}
+                      className="gc-edge-card overflow-hidden border-[#746a91]/45"
+                    >
+                      <div className="border-b border-[#746a91]/25 bg-[radial-gradient(circle_at_0%_0%,rgba(156,145,186,0.2),transparent_12rem)] px-5 py-4">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                              Official Market
+                            </p>
+                            <h3 className="mt-1 text-xl font-black tracking-[-0.04em] text-[#f4f1ea]">
+                              {market}
+                            </h3>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[9px] font-black uppercase tracking-[0.16em] ${
+                              savedResult
+                                ? "border-[#d8d0ea]/60 bg-[#d8d0ea]/10 text-[#d8d0ea]"
+                                : "border-[#746a91]/45 bg-black/30 text-[#9c91ba]"
+                            }`}
+                          >
+                            {savedResult ? "Resolved" : "Open"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4 p-5">
+                        {options.length === 0 ? (
+                          <p className="rounded-xl border border-[#34312a] bg-black/30 px-4 py-3 text-sm font-semibold text-[#a3a3a3]">
+                            Draft teams will appear after the draft is complete.
+                          </p>
+                        ) : isTopThreeMarket ? (
+                          <div className="grid gap-3">
+                            {[0, 1, 2].map((index) => (
+                              <label key={index} className="block">
+                                <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                                  Top {index + 1}
+                                </span>
+                                <select
+                                  value={currentSelections[index] || ""}
+                                  onChange={(event) =>
+                                    setResolutionSelection(
+                                      market,
+                                      event.target.value,
+                                      index,
+                                    )
+                                  }
+                                  className="gc-input"
+                                >
+                                  <option value="">Choose team</option>
+                                  {options.map((option) => (
+                                    <option key={option} value={option}>
+                                      {option}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                            ))}
+                          </div>
+                        ) : holeMarkets.has(market) ? (
+                          <div>
+                            <p className="mb-2 font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                              Official Hole
+                            </p>
+                            <div className="grid grid-cols-6 gap-2">
+                              {options.map((option) => (
+                                <button
+                                  key={option}
+                                  type="button"
+                                  onClick={() =>
+                                    setResolutionSelection(market, option)
+                                  }
+                                  className={`rounded-lg border px-2 py-2 text-xs font-black transition ${
+                                    currentSelections[0] === option
+                                      ? "border-[#9c91ba] bg-[#9c91ba] text-[#050505]"
+                                      : "border-[#34312a] bg-black/30 text-[#f4f1ea] hover:border-[#9c91ba]"
+                                  }`}
+                                >
+                                  {option.replace("Hole ", "")}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <label className="block">
+                            <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                              Official Winner
+                            </span>
+                            <select
+                              value={currentSelections[0] || ""}
+                              onChange={(event) =>
+                                setResolutionSelection(market, event.target.value)
+                              }
+                              className="gc-input"
+                            >
+                              <option value="">Choose team</option>
+                              {options.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+
+                        {savedSelections.length > 0 && (
+                          <div className="rounded-xl border border-[#746a91]/35 bg-black/25 px-4 py-3">
+                            <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                              Current Result
+                            </p>
+                            <p className="mt-1 text-sm font-bold text-[#f4f1ea]">
+                              {savedSelections.join(", ")}
+                            </p>
+                            {marketSettlement && (
+                              <p className="mt-1 text-xs font-semibold text-[#a3a3a3]">
+                                Pool {formatMoney(marketSettlement.pool)}
+                                {marketSettlement.noWinners
+                                  ? " · no winners, refunded"
+                                  : ` · winning bets ${formatMoney(marketSettlement.winningBetTotal)}`}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => handleSaveMarketResult(market)}
+                          disabled={isSavingResults || options.length === 0}
+                          className="gc-primary-button disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {isSavingResults ? "Saving..." : "Save Official Result"}
+                        </button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </section>
+            )}
+          </>
+        )}
+
         {activeView === "ledger" && (
           <>
             <section className="gc-edge-card">
@@ -1188,9 +1725,9 @@ export default function EveningParimutuelPage() {
                 <p className="gc-card-kicker">Ledger & Settlement</p>
                 <h2 className="gc-card-title">Weekly Ledger</h2>
                 <p className="gc-card-copy">
-                  Settlement is public at the end of camp once markets are
-                  resolved. For now, this tracks every active wager in the
-                  ledger.
+                  Nightly results update once official markets are resolved.
+                  Final settlement combines every resolved market at the end of
+                  camp.
                 </p>
               </div>
 
@@ -1212,6 +1749,152 @@ export default function EveningParimutuelPage() {
                   </p>
                 </div>
               </div>
+
+              <div className="border-t border-[#34312a] p-5">
+                <label className="block">
+                  <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                    Nightly View
+                  </span>
+                  <select
+                    value={selectedNight}
+                    onChange={(event) => setSelectedNight(event.target.value)}
+                    className="gc-input"
+                  >
+                    {nights.map((night) => (
+                      <option key={night.value} value={night.value}>
+                        {night.label} for {night.roundDay}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section className="gc-edge-card">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Nightly Results</p>
+                <h2 className="gc-card-title">{selectedNightMeta.label}</h2>
+                <p className="gc-card-copy">
+                  These standings include only markets Nick has officially
+                  resolved.
+                </p>
+              </div>
+
+              {isLoadingResults ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  Loading results...
+                </p>
+              ) : selectedNightStandings.length === 0 ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  No resolved markets for this night yet.
+                </p>
+              ) : (
+                selectedNightStandings.map((row, index) => (
+                  <div
+                    key={row.playerId}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-[#34312a] px-5 py-4 last:border-b-0"
+                  >
+                    <span className="font-mono text-xs font-black text-[#9c91ba]">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[#f4f1ea]">
+                        {row.player}
+                      </p>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">
+                        Wagered {formatMoney(row.wagered)} · Won{" "}
+                        {formatMoney(row.winnings)}
+                      </p>
+                    </div>
+                    <p
+                      className={`font-mono text-lg font-black ${
+                        row.net >= 0 ? "text-[#d8d0ea]" : "text-[#fca5a5]"
+                      }`}
+                    >
+                      {row.net >= 0 ? "+" : ""}
+                      {formatMoney(row.net)}
+                    </p>
+                  </div>
+                ))
+              )}
+
+              {unresolvedMarkets.length > 0 && (
+                <p className="border-t border-[#34312a] px-5 py-3 text-xs font-semibold text-[#a3a3a3]">
+                  Awaiting official result: {unresolvedMarkets.join(", ")}
+                </p>
+              )}
+            </section>
+
+            <section className="gc-edge-card">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Week To Date</p>
+                <h2 className="gc-card-title">Parimutuel Standings</h2>
+              </div>
+
+              {weekStandings.length === 0 ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  No resolved Parimutuel results yet.
+                </p>
+              ) : (
+                weekStandings.map((row, index) => (
+                  <div
+                    key={row.playerId}
+                    className="grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-[#34312a] px-5 py-4 last:border-b-0"
+                  >
+                    <span className="font-mono text-xs font-black text-[#9c91ba]">
+                      {index + 1}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[#f4f1ea]">
+                        {row.player}
+                      </p>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">
+                        {row.wins} hit{row.wins === 1 ? "" : "s"} ·{" "}
+                        {row.bets} bet{row.bets === 1 ? "" : "s"} graded
+                      </p>
+                    </div>
+                    <p
+                      className={`font-mono text-lg font-black ${
+                        row.net >= 0 ? "text-[#d8d0ea]" : "text-[#fca5a5]"
+                      }`}
+                    >
+                      {row.net >= 0 ? "+" : ""}
+                      {formatMoney(row.net)}
+                    </p>
+                  </div>
+                ))
+              )}
+            </section>
+
+            <section className="gc-edge-card">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Final Settlement Preview</p>
+                <h2 className="gc-card-title">Who Pays Who</h2>
+                <p className="gc-card-copy">
+                  Use this on the last day after all nightly markets are
+                  resolved.
+                </p>
+              </div>
+
+              {finalPaymentRows.length === 0 ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  No settlement payments yet.
+                </p>
+              ) : (
+                finalPaymentRows.map((row) => (
+                  <div
+                    key={`${row.from}-${row.to}-${row.amount}`}
+                    className="grid grid-cols-[1fr_auto] gap-3 border-b border-[#34312a] px-5 py-4 last:border-b-0"
+                  >
+                    <p className="text-sm font-semibold text-[#f4f1ea]">
+                      {row.from} pays {row.to}
+                    </p>
+                    <p className="font-mono text-lg font-black text-[#d8d0ea]">
+                      {formatMoney(row.amount)}
+                    </p>
+                  </div>
+                ))
+              )}
             </section>
 
             <section className="gc-edge-card">

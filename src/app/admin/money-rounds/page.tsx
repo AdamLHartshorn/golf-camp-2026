@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
+import { autoResolveParimutuelForMoneyRound } from "@/lib/parimutuelResolution";
 import { supabase } from "@/lib/supabase";
 import {
   buildPlayerBank,
@@ -1013,7 +1014,18 @@ export default function AdminMoneyRoundsPage() {
       oldValue: { status: round.status },
       newValue: data,
     });
-    setMessage("Round marked final.");
+
+    const parimutuelResult = await autoResolveParimutuelForMoneyRound(
+      data as MoneyRound,
+      teams,
+      currentScores,
+      null,
+    );
+    setMessage(
+      parimutuelResult.skipped
+        ? `Round marked final. ${parimutuelResult.message}`
+        : `Round marked final. ${parimutuelResult.message}`,
+    );
     setIsSaving(false);
   }
 

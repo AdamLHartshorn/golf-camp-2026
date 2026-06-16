@@ -60,13 +60,6 @@ const cards = [
     href: "/shenanigans/settlement",
     description: "Calculate final point payouts.",
   },
-  {
-    icon: "bank",
-    initial: "B",
-    name: "The Bank",
-    href: "/shenanigans/bank",
-    description: "Structured points and standard prop values.",
-  },
 ] satisfies {
   icon: GolfCampIconName;
   initial: string;
