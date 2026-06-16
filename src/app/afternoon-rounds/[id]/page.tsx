@@ -450,6 +450,7 @@ export default function AfternoonRoundDetailPage() {
   const [selectedTeamPlayerIds, setSelectedTeamPlayerIds] = useState<string[]>([]);
   const [selectedParticipantIds, setSelectedParticipantIds] = useState<string[]>([]);
   const [scoreDrafts, setScoreDrafts] = useState<ScoreDrafts>({});
+  const [payoutSettingsUnlocked, setPayoutSettingsUnlocked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -534,6 +535,7 @@ export default function AfternoonRoundDetailPage() {
     setTeams((teamData as AfternoonRoundTeam[]) || []);
     setScores(nextScores);
     setScoreDrafts(buildScoreDrafts(nextScores));
+    setPayoutSettingsUnlocked(false);
     setIsLoading(false);
   }
 
@@ -564,6 +566,20 @@ export default function AfternoonRoundDetailPage() {
     setError("");
   }
 
+  function handleUnlockPayoutSettings() {
+    if (
+      !window.confirm(
+        "Changing pay-in or payout settings may affect settlement totals. Continue?",
+      )
+    ) {
+      return;
+    }
+
+    setPayoutSettingsUnlocked(true);
+    setMessage("Pay-in and payout settings unlocked.");
+    setError("");
+  }
+
   async function handleSaveRoundSettings() {
     if (!round || !roundForm || !canManage) {
       return;
@@ -572,12 +588,24 @@ export default function AfternoonRoundDetailPage() {
     const payload = {
       name: roundForm.name.trim(),
       round_date: roundForm.round_date || null,
-      buy_in_per_player: numberOrNull(roundForm.buy_in_per_player),
-      skins_buy_in_per_player: numberOrNull(roundForm.skins_buy_in_per_player),
-      first_place_payout: numberOrNull(roundForm.first_place_payout),
-      second_place_payout: numberOrNull(roundForm.second_place_payout),
-      third_place_payout: numberOrNull(roundForm.third_place_payout),
-      payout_notes: roundForm.payout_notes.trim() || null,
+      buy_in_per_player: payoutSettingsUnlocked
+        ? numberOrNull(roundForm.buy_in_per_player)
+        : round.buy_in_per_player,
+      skins_buy_in_per_player: payoutSettingsUnlocked
+        ? numberOrNull(roundForm.skins_buy_in_per_player)
+        : round.skins_buy_in_per_player,
+      first_place_payout: payoutSettingsUnlocked
+        ? numberOrNull(roundForm.first_place_payout)
+        : round.first_place_payout,
+      second_place_payout: payoutSettingsUnlocked
+        ? numberOrNull(roundForm.second_place_payout)
+        : round.second_place_payout,
+      third_place_payout: payoutSettingsUnlocked
+        ? numberOrNull(roundForm.third_place_payout)
+        : round.third_place_payout,
+      payout_notes: payoutSettingsUnlocked
+        ? roundForm.payout_notes.trim() || null
+        : round.payout_notes,
       updated_at: new Date().toISOString(),
     };
 
@@ -607,6 +635,7 @@ export default function AfternoonRoundDetailPage() {
 
     setRound(data as AfternoonRound);
     setRoundForm(roundToForm(data as AfternoonRound));
+    setPayoutSettingsUnlocked(false);
     setMessage("Round settings updated.");
     await logAuditEvent({
       actionType: "afternoon_round_updated",
@@ -1274,6 +1303,40 @@ export default function AfternoonRoundDetailPage() {
                   onChange={(event) => updateRoundForm("round_date", event.target.value)}
                   className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
                 />
+
+                <div className="rounded-2xl border border-[#9a8500]/45 bg-[#1f1a05]/45 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#ffda03]">
+                        Pay-In / Payout Terms
+                      </p>
+                      <p className="mt-2 text-sm leading-5 text-[#c8bfae]">
+                        Locked after creation to prevent accidental settlement changes.
+                      </p>
+                    </div>
+
+                    <span
+                      className={`shrink-0 rounded-full border px-3 py-1 font-mono text-[9px] font-black uppercase tracking-[0.16em] ${
+                        payoutSettingsUnlocked
+                          ? "border-[#ffda03] text-[#ffda03]"
+                          : "border-[#3d3620] text-[#a8a29a]"
+                      }`}
+                    >
+                      {payoutSettingsUnlocked ? "Unlocked" : "Locked"}
+                    </span>
+                  </div>
+
+                  {!payoutSettingsUnlocked && (
+                    <button
+                      type="button"
+                      onClick={handleUnlockPayoutSettings}
+                      className="mt-4 w-full rounded-xl border border-[#9a8500]/70 px-4 py-3 text-sm font-black text-[#ffda03] transition hover:bg-[#2a2307]"
+                    >
+                      Unlock Pay-In / Payout Settings
+                    </button>
+                  )}
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     ["buy_in_per_player", "Buy-In Per Player"],
@@ -1290,21 +1353,23 @@ export default function AfternoonRoundDetailPage() {
                         type="number"
                         inputMode="decimal"
                         value={roundForm[field as keyof RoundForm]}
+                        disabled={!payoutSettingsUnlocked}
                         onChange={(event) =>
                           updateRoundForm(field as keyof RoundForm, event.target.value)
                         }
                         placeholder="$0 optional"
-                        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
+                        className="w-full rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03] disabled:cursor-not-allowed disabled:border-[#242424] disabled:bg-[#080808] disabled:text-[#a8a29a] disabled:opacity-80"
                       />
                     </label>
                   ))}
                 </div>
                 <textarea
                   value={roundForm.payout_notes}
+                  disabled={!payoutSettingsUnlocked}
                   onChange={(event) => updateRoundForm("payout_notes", event.target.value)}
                   placeholder="Optional payout notes"
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03]"
+                  className="w-full resize-none rounded-xl border border-[#242424] bg-black px-4 py-3 outline-none focus:border-[#ffda03] disabled:cursor-not-allowed disabled:border-[#242424] disabled:bg-[#080808] disabled:text-[#a8a29a] disabled:opacity-80"
                 />
                 <button
                   type="button"

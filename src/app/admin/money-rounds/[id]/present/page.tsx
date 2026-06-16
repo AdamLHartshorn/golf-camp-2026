@@ -19,6 +19,7 @@ const sections = [
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Player Bank" },
+  { id: "parimutuel", label: "Parimutuel Bets" },
   { id: "complete", label: "Complete" },
 ];
 

@@ -25,6 +25,14 @@ const cards = [
     label: "Itinerary • Meals • Events",
   },
   {
+    icon: "log",
+    initial: "F",
+    name: "App Feedback",
+    href: "/camp-office/feedback",
+    label: "Ideas • Bugs • Notes",
+    accent: "#b98590",
+  },
+  {
     icon: "roster",
     initial: "P",
     name: "My Profile",

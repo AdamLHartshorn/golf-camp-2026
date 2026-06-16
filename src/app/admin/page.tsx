@@ -68,6 +68,15 @@ const sections = [
   },
   {
     number: "08",
+    label: "Feedback",
+    title: "App Feedback",
+    href: "/admin/app-feedback",
+    description: "Review player-submitted app notes, bugs, and ideas.",
+    accent: "#b98590",
+    tint: "rgba(185,133,144,0.1)",
+  },
+  {
+    number: "09",
     label: "Schedule",
     title: "Daily Schedule",
     href: "/admin/daily-schedule",
@@ -76,7 +85,7 @@ const sections = [
     tint: "rgba(244,241,234,0.06)",
   },
   {
-    number: "09",
+    number: "10",
     label: "Audit",
     title: "Audit Log",
     href: "/admin/audit-log",
@@ -85,7 +94,7 @@ const sections = [
     tint: "rgba(168,162,154,0.08)",
   },
   {
-    number: "10",
+    number: "11",
     label: "Closing",
     title: "Closing Presentation",
     href: "/closing-presentation",
@@ -94,7 +103,7 @@ const sections = [
     tint: "rgba(215,200,164,0.1)",
   },
   {
-    number: "11",
+    number: "12",
     label: "System",
     title: "System Tools",
     href: "/admin/system",

@@ -2,6 +2,14 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  aggregateParimutuelStandings,
+  calculateParimutuelSettlements,
+  normalizeParimutuelAmount,
+  normalizeWinningSelections,
+  ParimutuelBetLike,
+  ParimutuelResultLike,
+} from "@/lib/parimutuelSettlement";
 import { supabase } from "@/lib/supabase";
 import {
   calculateRoundMoney,
@@ -25,6 +33,7 @@ const sections = [
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Round Bank" },
+  { id: "parimutuel", label: "Parimutuel Bets" },
   { id: "complete", label: "Complete" },
 ];
 
@@ -92,11 +101,25 @@ type HoleHighlight = {
   averageRelativeToPar: number;
 };
 
+type ParimutuelMarketRow = {
+  id: string;
+  status: string | null;
+  betting_night: string | null;
+  money_round_day: string | null;
+};
+
 export default function MoneyRoundResultsPage() {
   const params = useParams<{ id: string }>();
   const [round, setRound] = useState<MoneyRound | null>(null);
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
   const [scores, setScores] = useState<MoneyScore[]>([]);
+  const [parimutuelMarket, setParimutuelMarket] =
+    useState<ParimutuelMarketRow | null>(null);
+  const [parimutuelBets, setParimutuelBets] = useState<ParimutuelBetLike[]>([]);
+  const [parimutuelResults, setParimutuelResults] = useState<
+    ParimutuelResultLike[]
+  >([]);
+  const [parimutuelError, setParimutuelError] = useState("");
   const [currentSection, setCurrentSection] = useState("intro");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [presentationStateError, setPresentationStateError] = useState("");
@@ -143,6 +166,54 @@ export default function MoneyRoundResultsPage() {
       setRound(roundData as MoneyRound);
       setTeams((teamData as MoneyTeam[]) || []);
       setScores((scoreData as MoneyScore[]) || []);
+
+      const { data: marketData, error: marketError } = await supabase
+        .from("evening_parimutuel_markets")
+        .select("id, status, betting_night, money_round_day")
+        .eq("money_round_id", params.id)
+        .order("opened_at", { ascending: false, nullsFirst: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (marketError) {
+        setParimutuelError(
+          ["42P01", "42703"].includes(marketError.code || "")
+            ? "Parimutuel data is not set up for this round."
+            : marketError.message || "Could not load Parimutuel data.",
+        );
+      } else {
+        const market = ((marketData as ParimutuelMarketRow[]) || [])[0] || null;
+        setParimutuelMarket(market);
+
+        if (market) {
+          const [
+            { data: betData, error: betError },
+            { data: resultData, error: resultError },
+          ] = await Promise.all([
+            supabase
+              .from("evening_parimutuel_bets")
+              .select("*")
+              .eq("parimutuel_market_id", market.id)
+              .eq("status", "active"),
+            supabase
+              .from("evening_parimutuel_results")
+              .select("*")
+              .eq("parimutuel_market_id", market.id),
+          ]);
+
+          if (betError || resultError) {
+            setParimutuelError(
+              betError?.message ||
+                resultError?.message ||
+                "Could not load Parimutuel ledger.",
+            );
+          } else {
+            setParimutuelBets((betData as ParimutuelBetLike[]) || []);
+            setParimutuelResults((resultData as ParimutuelResultLike[]) || []);
+          }
+        }
+      }
+
       setIsLoading(false);
     }
 
@@ -277,6 +348,24 @@ export default function MoneyRoundResultsPage() {
         a.net - b.net ||
         a.playerName.localeCompare(b.playerName),
     );
+  const parimutuelSettlements = useMemo(
+    () => calculateParimutuelSettlements(parimutuelBets, parimutuelResults),
+    [parimutuelBets, parimutuelResults],
+  );
+  const parimutuelStandings = useMemo(
+    () => aggregateParimutuelStandings(parimutuelSettlements),
+    [parimutuelSettlements],
+  );
+  const parimutuelTotalBacked = parimutuelBets.reduce(
+    (total, bet) => total + normalizeParimutuelAmount(bet.amount),
+    0,
+  );
+  const parimutuelResolvedCount = parimutuelResults.length;
+  const parimutuelTopPlayers = parimutuelStandings.slice(0, 3);
+  const parimutuelMarketHighlights = parimutuelSettlements
+    .slice()
+    .sort((a, b) => b.pool - a.pool || a.result.market.localeCompare(b.result.market))
+    .slice(0, 3);
   const winningStanding = standings.find((standing) => standing.position === 1);
   const biggestWinningTeam = Object.entries(bankByTeam)
     .filter(([, totals]) => totals.total > 0)
@@ -683,6 +772,120 @@ export default function MoneyRoundResultsPage() {
                       </div>
                     </div>
                   </>
+                )}
+              </div>
+            )}
+
+            {!isLoading && !error && round && section.id === "parimutuel" && (
+              <div className="space-y-8">
+                <div>
+                  <p className="results-section-label text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
+                    Next Market
+                  </p>
+                  <h1 className="results-major-title mt-5 text-7xl font-black tracking-[-0.07em] lg:text-8xl">
+                    Parimutuel Bets
+                  </h1>
+                </div>
+
+                {!parimutuelMarket || parimutuelError ? (
+                  <p className="results-empty-state rounded-[0.9rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
+                    {parimutuelError ||
+                      "No linked Parimutuel Bets market for this round."}
+                  </p>
+                ) : (
+                  <div className="results-spotlight-card rounded-[0.9rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.16),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.96),rgba(0,0,0,0.72))] p-10 shadow-[0_0_58px_rgba(49,95,72,0.11),0_28px_90px_rgba(0,0,0,0.48)]">
+                    <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
+                          Market Status
+                        </p>
+                        <h2 className="mt-4 text-6xl font-black capitalize tracking-[-0.06em]">
+                          {parimutuelMarket.status || "pending"}
+                        </h2>
+                        <div className="mt-8 grid grid-cols-2 gap-3">
+                          <div className="results-stat-card rounded-[0.75rem] border border-[#22c55e]/40 bg-black/35 p-5">
+                            <p className="text-xs uppercase tracking-[0.22em] text-[#a3a3a3]">
+                              Total Backed
+                            </p>
+                            <p className="results-payout-value mt-3 text-4xl font-black text-[#86efac]">
+                              {money(parimutuelTotalBacked)}
+                            </p>
+                          </div>
+                          <div className="results-stat-card rounded-[0.75rem] border border-[#22c55e]/40 bg-black/35 p-5">
+                            <p className="text-xs uppercase tracking-[0.22em] text-[#a3a3a3]">
+                              Markets Graded
+                            </p>
+                            <p className="mt-3 text-4xl font-black">
+                              {parimutuelResolvedCount}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
+                            Nightly Leaders
+                          </p>
+                          {parimutuelTopPlayers.length === 0 ? (
+                            <p className="mt-4 text-2xl text-[#a3a3a3]">
+                              Parimutuel standings will appear once markets are
+                              resolved.
+                            </p>
+                          ) : (
+                            <div className="mt-4 grid gap-3">
+                              {parimutuelTopPlayers.map((row, index) => (
+                                <div
+                                  key={row.playerId}
+                                  className="results-stat-card grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-[0.75rem] border border-[#22c55e]/40 bg-black/35 p-4"
+                                >
+                                  <span className="font-mono text-xl font-black text-[#86efac]">
+                                    {index + 1}
+                                  </span>
+                                  <div className="min-w-0">
+                                    <p className="truncate text-2xl font-black tracking-[-0.04em]">
+                                      {row.player}
+                                    </p>
+                                    <p className="mt-1 text-sm uppercase tracking-[0.16em] text-[#a3a3a3]">
+                                      {row.wins} hit{row.wins === 1 ? "" : "s"} ·{" "}
+                                      {row.bets} graded
+                                    </p>
+                                  </div>
+                                  <p className="results-payout-value text-3xl font-black text-[#86efac]">
+                                    {row.net >= 0 ? "+" : "-"}
+                                    {money(Math.abs(row.net))}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {parimutuelMarketHighlights.length > 0 && (
+                          <div className="grid gap-2 lg:grid-cols-3">
+                            {parimutuelMarketHighlights.map((settlement) => (
+                              <div
+                                key={settlement.result.market}
+                                className="results-stat-card rounded-[0.75rem] border border-[#22c55e]/35 bg-black/35 p-4"
+                              >
+                                <p className="truncate text-xs font-bold uppercase tracking-[0.18em] text-[#a3a3a3]">
+                                  {settlement.result.market}
+                                </p>
+                                <p className="mt-2 truncate text-lg font-black">
+                                  {normalizeWinningSelections(
+                                    settlement.result.winning_selections,
+                                  ).join(", ") || "-"}
+                                </p>
+                                <p className="mt-1 font-mono text-sm font-black text-[#86efac]">
+                                  Pool {money(settlement.pool)}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
