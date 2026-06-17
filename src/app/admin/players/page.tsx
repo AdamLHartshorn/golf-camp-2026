@@ -556,7 +556,7 @@ export default function PlayersAdminPage() {
       yearsServed !== null &&
       (!Number.isInteger(yearsServed) || yearsServed < 0)
     ) {
-      setError("Years served must be a positive whole number.");
+      setError("Years served must be zero or a positive whole number.");
       return;
     }
 
@@ -776,7 +776,7 @@ export default function PlayersAdminPage() {
       payload.years_served !== null &&
       (!Number.isInteger(payload.years_served) || payload.years_served < 0)
     ) {
-      setError("Years served must be a positive whole number.");
+      setError("Years served must be zero or a positive whole number.");
       return;
     }
 
@@ -965,7 +965,9 @@ export default function PlayersAdminPage() {
 
               <span className="rounded-full border border-[#242424] px-2 py-1 text-[#a3a3a3]">
                 {typeof player.years_served === "number"
-                  ? `${player.years_served} Years Served`
+                  ? player.years_served === 0
+                    ? "Rookie"
+                    : `${player.years_served} Years Served`
                   : "Years -"}
               </span>
 

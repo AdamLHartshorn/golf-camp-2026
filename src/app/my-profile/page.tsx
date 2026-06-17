@@ -516,7 +516,9 @@ export default function MyProfilePage() {
                   [
                     "Years Served",
                     typeof player.years_served === "number"
-                      ? String(player.years_served)
+                      ? player.years_served === 0
+                        ? "Rookie"
+                        : String(player.years_served)
                       : "-",
                   ],
                   ["Room", player.room || "-"],

@@ -188,7 +188,9 @@ export default function PlayerProfilePage() {
                 <p className="gc-card-copy">
                   Rank {getPublicDisplayRank(player.display_rank, player.rank)} ·{" "}
                   {typeof player.years_served === "number"
-                    ? `${player.years_served} Years Served`
+                    ? player.years_served === 0
+                      ? "Rookie"
+                      : `${player.years_served} Years Served`
                     : `Room ${player.room || "-"}`}
                 </p>
               </div>
@@ -213,7 +215,9 @@ export default function PlayerProfilePage() {
 
                   <p className="mt-2 text-3xl font-semibold">
                     {typeof player.years_served === "number"
-                      ? player.years_served
+                      ? player.years_served === 0
+                        ? "Rookie"
+                        : player.years_served
                       : "-"}
                   </p>
                 </div>

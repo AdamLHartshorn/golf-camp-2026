@@ -142,7 +142,9 @@ export default function CampRosterPage() {
                 <p className="mt-1 text-sm text-[#b8b0a1]">
                   Room {player.room || "-"} ·{" "}
                   {typeof player.years_served === "number"
-                    ? `${player.years_served} Years Served`
+                    ? player.years_served === 0
+                      ? "Rookie"
+                      : `${player.years_served} Years Served`
                     : player.arrival || "Arrival TBD"}
                 </p>
               </div>

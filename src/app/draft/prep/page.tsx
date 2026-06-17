@@ -316,7 +316,9 @@ export default function DraftPrepPage() {
                 );
                 const seasonsLabel =
                   typeof player.years_served === "number"
-                    ? `season ${player.years_served}`
+                    ? player.years_served === 0
+                      ? "Rookie"
+                      : `season ${player.years_served}`
                     : "season ?";
                 const questionRows = getQuestionRows(player);
                 const performanceRows = [

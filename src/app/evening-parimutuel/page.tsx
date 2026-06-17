@@ -40,7 +40,7 @@ type EveningBet = {
   money_round_id?: string | null;
 };
 
-type EveningView = "hub" | "wagers" | "ledger" | "resolve";
+type EveningView = "hub" | "wagers" | "ledger" | "resolve" | "cleanup";
 
 type DraftSessionOption = {
   id: string;
@@ -291,6 +291,7 @@ export default function EveningParimutuelPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingResults, setIsSavingResults] = useState(false);
   const [isAutoResolving, setIsAutoResolving] = useState(false);
+  const [isDeletingBets, setIsDeletingBets] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [activeView, setActiveView] = useState<EveningView>("hub");
@@ -996,6 +997,111 @@ export default function EveningParimutuelPage() {
     setMessage("Betting locked.");
   }
 
+  async function handleDeleteBet(bet: EveningBet) {
+    if (!isAdmin) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      `Delete this ${formatMoney(normalizeAmount(bet.amount))} test bet for ${bet.bettor_name}?`,
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setIsDeletingBets(true);
+
+    const { error: deleteError } = await supabase
+      .from("evening_parimutuel_bets")
+      .delete()
+      .eq("id", bet.id);
+
+    setIsDeletingBets(false);
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not delete bet.");
+      return;
+    }
+
+    setBets((currentBets) =>
+      currentBets.filter((currentBet) => currentBet.id !== bet.id),
+    );
+    setMessage("Bet deleted.");
+
+    await logAuditEvent({
+      actionType: "parimutuel_bet_deleted",
+      entityType: "evening_parimutuel_bet",
+      entityId: bet.id,
+      summary: `Admin deleted ${bet.bettor_name}'s ${bet.market} bet.`,
+      oldValue: bet,
+      metadata: {
+        betting_night: bet.betting_night,
+        market: bet.market,
+        selection: bet.selection,
+        amount: normalizeAmount(bet.amount),
+        parimutuel_market_id: bet.parimutuel_market_id || null,
+      },
+    });
+  }
+
+  async function handleClearSelectedNightBets() {
+    if (!isAdmin || visibleBets.length === 0) {
+      return;
+    }
+
+    const shouldDelete = window.confirm(
+      `Delete all ${visibleBets.length} active bets for ${selectedNightMeta.label}? This is intended for test cleanup only.`,
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    setIsDeletingBets(true);
+
+    let query = supabase
+      .from("evening_parimutuel_bets")
+      .delete()
+      .eq("status", "active")
+      .eq("betting_night", selectedNight);
+
+    if (parimutuelMarket?.id) {
+      query = query.eq("parimutuel_market_id", parimutuelMarket.id);
+    }
+
+    const { error: deleteError } = await query;
+
+    setIsDeletingBets(false);
+
+    if (deleteError) {
+      setError(deleteError.message || "Could not clear selected night bets.");
+      return;
+    }
+
+    const deletedBetIds = new Set(visibleBets.map((bet) => bet.id));
+    setBets((currentBets) =>
+      currentBets.filter((currentBet) => !deletedBetIds.has(currentBet.id)),
+    );
+    setMessage(`${selectedNightMeta.label} bets cleared.`);
+
+    await logAuditEvent({
+      actionType: "parimutuel_bets_cleared",
+      entityType: "evening_parimutuel_bet",
+      summary: `Admin cleared ${visibleBets.length} Parimutuel bets for ${selectedNightMeta.label}.`,
+      oldValue: visibleBets,
+      metadata: {
+        betting_night: selectedNight,
+        parimutuel_market_id: parimutuelMarket?.id || null,
+        count: visibleBets.length,
+      },
+    });
+  }
+
   async function handleSubmitBet(market: string) {
     const parsedAmount = Number(marketAmounts[market] || 0);
     const trimmedSelection = (marketSelections[market] || "").trim();
@@ -1110,12 +1216,20 @@ export default function EveningParimutuelPage() {
             onClick={() => setActiveView("ledger")}
           />
           {isAdmin && (
-            <EveningActionCard
-              title="Resolve Markets"
-              subtitle="Enter official winners after the Money Round"
-              label="04"
-              onClick={() => setActiveView("resolve")}
-            />
+            <>
+              <EveningActionCard
+                title="Resolve Markets"
+                subtitle="Enter official winners after the Money Round"
+                label="04"
+                onClick={() => setActiveView("resolve")}
+              />
+              <EveningActionCard
+                title="Cleanup Test Bets"
+                subtitle="Delete bad or test wagers before camp goes live"
+                label="05"
+                onClick={() => setActiveView("cleanup")}
+              />
+            </>
           )}
         </section>
 
@@ -1715,6 +1829,137 @@ export default function EveningParimutuelPage() {
                 })}
               </section>
             )}
+          </>
+        )}
+
+        {activeView === "cleanup" && isAdmin && (
+          <>
+            <section className="gc-edge-card overflow-hidden">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Admin Cleanup</p>
+                <h2 className="gc-card-title">Test Bets</h2>
+                <p className="gc-card-copy">
+                  Delete incorrect or test wagers. This only removes bet rows;
+                  it does not delete draft teams, Money Rounds, market records,
+                  or official results.
+                </p>
+              </div>
+
+              <div className="space-y-4 border-t border-[#34312a] p-5">
+                <label className="block">
+                  <span className="mb-2 block font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                    Betting Night
+                  </span>
+                  <select
+                    value={selectedNight}
+                    onChange={(event) => {
+                      setSelectedNight(event.target.value);
+                      setMessage("");
+                      setError("");
+                    }}
+                    className="gc-input"
+                  >
+                    {nights.map((night) => (
+                      <option key={night.value} value={night.value}>
+                        {night.label} for {night.roundDay}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <div className="rounded-xl border border-[#746a91]/35 bg-black/25 px-4 py-3">
+                  <p className="font-mono text-[10px] font-black uppercase tracking-[0.18em] text-[#9c91ba]">
+                    Selected Night
+                  </p>
+                  <div className="mt-1 flex items-center justify-between gap-3">
+                    <p className="text-sm font-semibold text-[#f4f1ea]">
+                      {visibleBets.length} active bet
+                      {visibleBets.length === 1 ? "" : "s"}
+                    </p>
+                    <p className="font-mono text-sm font-black text-[#d8d0ea]">
+                      {formatMoney(
+                        visibleBets.reduce(
+                          (total, bet) => total + normalizeAmount(bet.amount),
+                          0,
+                        ),
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleClearSelectedNightBets}
+                  disabled={isDeletingBets || visibleBets.length === 0}
+                  className="w-full rounded-xl border border-[#fca5a5]/50 px-4 py-3 text-sm font-black text-[#fca5a5] transition hover:border-[#fca5a5] disabled:cursor-not-allowed disabled:opacity-45"
+                >
+                  {isDeletingBets
+                    ? "Deleting..."
+                    : `Clear ${selectedNightMeta.label} Bets`}
+                </button>
+
+                {message && (
+                  <p className="text-sm font-semibold text-[#d8d0ea]">
+                    {message}
+                  </p>
+                )}
+                {error && (
+                  <p className="text-sm font-semibold text-[#fca5a5]">
+                    {error}
+                  </p>
+                )}
+              </div>
+            </section>
+
+            <section className="gc-edge-card overflow-hidden">
+              <div className="gc-section-head">
+                <p className="gc-card-kicker">Recent Wagers</p>
+                <h2 className="gc-card-title">Delete Individual Bets</h2>
+              </div>
+
+              {isLoadingBets ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  Loading bets...
+                </p>
+              ) : visibleBets.length === 0 ? (
+                <p className="p-5 text-sm font-semibold text-[#a3a3a3]">
+                  No active bets for this night.
+                </p>
+              ) : (
+                visibleBets.map((bet) => (
+                  <div
+                    key={bet.id}
+                    className="grid grid-cols-[1fr_auto] items-center gap-3 border-b border-[#34312a] px-5 py-4 last:border-b-0"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-[#f4f1ea]">
+                        {bet.bettor_name}
+                      </p>
+                      <p className="mt-1 text-xs text-[#a3a3a3]">
+                        {bet.market} · {bet.selection}
+                      </p>
+                      <p className="mt-1 text-[11px] font-semibold text-[#737373]">
+                        {formatDateTime(bet.created_at)}
+                      </p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="font-mono text-sm font-black text-[#d8d0ea]">
+                        {formatMoney(normalizeAmount(bet.amount))}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBet(bet)}
+                        disabled={isDeletingBets}
+                        className="mt-2 rounded-lg border border-[#fca5a5]/45 px-3 py-2 font-mono text-[10px] font-black uppercase tracking-[0.14em] text-[#fca5a5] transition hover:border-[#fca5a5] disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </section>
           </>
         )}
 

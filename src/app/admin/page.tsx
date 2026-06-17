@@ -23,6 +23,15 @@ const sections = [
   },
   {
     number: "03",
+    label: "Parimutuel",
+    title: "Parimutuel Bets",
+    href: "/evening-parimutuel",
+    description: "Set tee times, lock betting, resolve markets, and review settlement.",
+    accent: "#746a91",
+    tint: "rgba(116,106,145,0.13)",
+  },
+  {
+    number: "04",
     label: "Money Rounds",
     title: "Money Rounds Admin",
     href: "/admin/money-rounds",
@@ -31,7 +40,7 @@ const sections = [
     tint: "rgba(49,95,72,0.12)",
   },
   {
-    number: "04",
+    number: "05",
     label: "Night Golf",
     title: "Night Golf Admin",
     href: "/admin/night-golf",
@@ -40,7 +49,7 @@ const sections = [
     tint: "rgba(244,114,182,0.11)",
   },
   {
-    number: "05",
+    number: "06",
     label: "Shenanigans",
     title: "Shenanigans Admin",
     href: "/admin/shenanigans",
@@ -49,7 +58,7 @@ const sections = [
     tint: "rgba(235,156,92,0.14)",
   },
   {
-    number: "06",
+    number: "07",
     label: "Afternoon Rounds",
     title: "Afternoon Rounds",
     href: "/admin/afternoon-rounds",
@@ -58,7 +67,7 @@ const sections = [
     tint: "rgba(255,218,3,0.11)",
   },
   {
-    number: "07",
+    number: "08",
     label: "Camp Feed",
     title: "Camp Feed Admin",
     href: "/admin/camp-feed",
@@ -67,7 +76,7 @@ const sections = [
     tint: "rgba(106,49,60,0.12)",
   },
   {
-    number: "08",
+    number: "09",
     label: "Feedback",
     title: "App Feedback",
     href: "/admin/app-feedback",
@@ -76,7 +85,7 @@ const sections = [
     tint: "rgba(185,133,144,0.1)",
   },
   {
-    number: "09",
+    number: "10",
     label: "Schedule",
     title: "Daily Schedule",
     href: "/admin/daily-schedule",
@@ -85,7 +94,7 @@ const sections = [
     tint: "rgba(244,241,234,0.06)",
   },
   {
-    number: "10",
+    number: "11",
     label: "Audit",
     title: "Audit Log",
     href: "/admin/audit-log",
@@ -94,7 +103,7 @@ const sections = [
     tint: "rgba(168,162,154,0.08)",
   },
   {
-    number: "11",
+    number: "12",
     label: "Closing",
     title: "Closing Presentation",
     href: "/closing-presentation",
@@ -103,7 +112,7 @@ const sections = [
     tint: "rgba(215,200,164,0.1)",
   },
   {
-    number: "12",
+    number: "13",
     label: "System",
     title: "System Tools",
     href: "/admin/system",
