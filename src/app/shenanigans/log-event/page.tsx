@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
@@ -45,6 +46,7 @@ function toggleSelection(currentValues: string[], value: string) {
 }
 
 export default function ShenanigansLogEventPage() {
+  const { showToast } = useToast();
   const {
     games,
     selectedGame,
@@ -93,21 +95,45 @@ export default function ShenanigansLogEventPage() {
 
     if (!selectedPlayer) {
       setError("Select a player.");
+      showToast({
+        title: "Choose Player",
+        message: "Select who earned the points.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
     if (!selectedGameId) {
       setError("Select or start a Shenanigans game first.");
+      showToast({
+        title: "Choose Game",
+        message: "Start or select a Shenanigans game first.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
     if (selectedPoints === null) {
       setError("Select a point value.");
+      showToast({
+        title: "Choose Points",
+        message: "Select a point value before logging.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
     if (selectedTags.length === 0 && !optionalDescription) {
       setError("Select at least one tag or add an optional note.");
+      showToast({
+        title: "Add What Happened",
+        message: "Select a tag or add a note.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
@@ -129,10 +155,20 @@ export default function ShenanigansLogEventPage() {
 
       if (insertError) {
         setError(insertError.message || "Could not add event.");
+        showToast({
+          title: "Points Failed",
+          message: insertError.message || "Could not add event.",
+          tone: "error",
+        });
         return;
       }
 
       setMessage("Points logged.");
+      showToast({
+        title: "Points Logged",
+        message: `${selectedPlayer} ${signedPoints} on Hole ${selectedHole}.`,
+        accent: "#EB9C5C",
+      });
       const createdEventId = Array.isArray(data) ? data[0]?.id : null;
       await logActivityFeedItem({
         type: "shenanigans_event_logged",
@@ -165,6 +201,14 @@ export default function ShenanigansLogEventPage() {
           ? submitError.message
           : "Could not add event.",
       );
+      showToast({
+        title: "Points Failed",
+        message:
+          submitError instanceof Error
+            ? submitError.message
+            : "Could not add event.",
+        tone: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }

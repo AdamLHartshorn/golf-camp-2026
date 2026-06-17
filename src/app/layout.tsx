@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ToastProvider } from "@/components/ToastProvider";
 import "./globals.css";
 
 const appTitle = "Golf Camp 2026";
@@ -68,7 +69,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

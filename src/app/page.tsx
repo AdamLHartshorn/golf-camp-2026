@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { CSSProperties, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ToastProvider";
 import { supabase } from "@/lib/supabase";
 import { getPlayerSession, setPlayerSession } from "@/lib/playerSession";
 
@@ -15,6 +16,7 @@ type LoginPlayer = {
 };
 
 export default function LoginPage() {
+  const { showToast } = useToast();
   const [password, setPassword] = useState("");
   const [loginName, setLoginName] = useState("");
   const [pinCode, setPinCode] = useState("");
@@ -37,6 +39,11 @@ export default function LoginPage() {
     const normalizedPassword = password.trim().toUpperCase();
 
     if (normalizedPassword === "BALLS") {
+      showToast({
+        title: "Access Granted",
+        message: "Entering Golf Camp.",
+        accent: "#8fa66a",
+      });
       router.push("/home");
       return;
     }
@@ -48,11 +55,21 @@ export default function LoginPage() {
         login_name: "megaballs",
         is_admin: true,
       });
+      showToast({
+        title: "Admin Access Enabled",
+        message: "Fallback admin session started.",
+        accent: "#d7c8a4",
+      });
       router.push("/admin");
       return;
     }
 
     setFallbackError("Wrong password");
+    showToast({
+      title: "Wrong Password",
+      message: "Alternate access failed.",
+      tone: "error",
+    });
   }
 
   async function handlePlayerLogin(event: FormEvent<HTMLFormElement>) {
@@ -66,6 +83,12 @@ export default function LoginPage() {
 
     if (!normalizedLoginName || !normalizedPinCode) {
       setLoginError("Enter login name and PIN.");
+      showToast({
+        title: "Login Required",
+        message: "Enter login name and PIN.",
+        tone: "warning",
+        accent: "#8fa66a",
+      });
       return;
     }
 
@@ -87,6 +110,11 @@ export default function LoginPage() {
 
     if (loginError || !data) {
       setLoginError(loginError?.message || "Wrong login name or PIN.");
+      showToast({
+        title: "Wrong Login Or PIN",
+        message: "Check your Golf Camp login.",
+        tone: "error",
+      });
       setIsLoading(false);
       return;
     }
@@ -106,6 +134,11 @@ export default function LoginPage() {
       { remember: rememberMe },
     );
     setIsLoading(false);
+    showToast({
+      title: "Welcome Back",
+      message: player.display_name,
+      accent: "#8fa66a",
+    });
     router.push("/home");
   }
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
+import { useToast } from "@/components/ToastProvider";
 import {
   autoLockParimutuelMarketIfNeeded,
   linkParimutuelMarketToMoneyRoundIfPossible,
@@ -258,6 +259,7 @@ function PlayerSelect({
 }
 
 export default function EveningParimutuelPage() {
+  const { showToast } = useToast();
   const { players, isLoading: isLoadingPlayers, error: playersError } =
     useActivePlayers();
   const [session] = useState<PlayerSession | null>(() => getPlayerSession());
@@ -763,6 +765,12 @@ export default function EveningParimutuelPage() {
 
     if (winningSelections.length === 0) {
       setError("Choose at least one official winning selection.");
+      showToast({
+        title: "Choose Result",
+        message: "Select at least one winning option.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
@@ -792,6 +800,11 @@ export default function EveningParimutuelPage() {
           ? "Run the Parimutuel resolution SQL before saving official results."
           : saveError.message || "Could not save official result.",
       );
+      showToast({
+        title: "Could Not Resolve",
+        message: saveError.message || "Market result was not saved.",
+        tone: "error",
+      });
       return;
     }
 
@@ -836,6 +849,11 @@ export default function EveningParimutuelPage() {
 
     setIsSavingResults(false);
     setMessage(`${market} result saved.`);
+    showToast({
+      title: "Market Resolved",
+      message: `${market}: ${winningSelections.join(", ")}`,
+      accent: "#746a91",
+    });
   }
 
   function closeRules() {
@@ -942,10 +960,21 @@ export default function EveningParimutuelPage() {
 
     if (result.error) {
       setError(result.message);
+      showToast({
+        title: "Auto Resolve Failed",
+        message: result.message,
+        tone: "error",
+      });
       return;
     }
 
     setMessage(result.message);
+    showToast({
+      title: "Markets Resolved",
+      message: "Pulled from final Money Round.",
+      accent: "#746a91",
+      durationMs: 4000,
+    });
   }
 
   async function handleSetTeeTime() {
@@ -963,11 +992,21 @@ export default function EveningParimutuelPage() {
 
     if (result.error || !result.market) {
       setError(result.error?.message || "Could not set tee time.");
+      showToast({
+        title: "Tee Time Failed",
+        message: result.error?.message || "Could not set lock time.",
+        tone: "error",
+      });
       return;
     }
 
     setParimutuelMarket(result.market);
     setMessage(teeTime ? "Tee time set." : "Tee time cleared.");
+    showToast({
+      title: teeTime ? "Tee Time Set" : "Tee Time Cleared",
+      message: teeTime ? "Betting lock time updated." : "Manual lock still available.",
+      accent: "#746a91",
+    });
   }
 
   async function handleLockBetting() {
@@ -990,11 +1029,22 @@ export default function EveningParimutuelPage() {
 
     if (result.error || !result.market) {
       setError(result.error?.message || "Could not lock betting.");
+      showToast({
+        title: "Lock Failed",
+        message: result.error?.message || "Could not lock betting.",
+        tone: "error",
+      });
       return;
     }
 
     setParimutuelMarket(result.market);
     setMessage("Betting locked.");
+    showToast({
+      title: "Betting Locked",
+      message: "No more wagers accepted.",
+      accent: "#746a91",
+      durationMs: 4000,
+    });
   }
 
   async function handleDeleteBet(bet: EveningBet) {
@@ -1023,6 +1073,11 @@ export default function EveningParimutuelPage() {
 
     if (deleteError) {
       setError(deleteError.message || "Could not delete bet.");
+      showToast({
+        title: "Delete Failed",
+        message: deleteError.message || "Could not delete bet.",
+        tone: "error",
+      });
       return;
     }
 
@@ -1030,6 +1085,11 @@ export default function EveningParimutuelPage() {
       currentBets.filter((currentBet) => currentBet.id !== bet.id),
     );
     setMessage("Bet deleted.");
+    showToast({
+      title: "Bet Deleted",
+      message: `${bet.bettor_name}'s ${formatMoney(normalizeAmount(bet.amount))} bet removed.`,
+      accent: "#746a91",
+    });
 
     await logAuditEvent({
       actionType: "parimutuel_bet_deleted",
@@ -1080,6 +1140,11 @@ export default function EveningParimutuelPage() {
 
     if (deleteError) {
       setError(deleteError.message || "Could not clear selected night bets.");
+      showToast({
+        title: "Clear Failed",
+        message: deleteError.message || "Could not clear bets.",
+        tone: "error",
+      });
       return;
     }
 
@@ -1088,6 +1153,12 @@ export default function EveningParimutuelPage() {
       currentBets.filter((currentBet) => !deletedBetIds.has(currentBet.id)),
     );
     setMessage(`${selectedNightMeta.label} bets cleared.`);
+    showToast({
+      title: "Bets Cleared",
+      message: `${visibleBets.length} test wager${visibleBets.length === 1 ? "" : "s"} deleted.`,
+      accent: "#746a91",
+      durationMs: 4000,
+    });
 
     await logAuditEvent({
       actionType: "parimutuel_bets_cleared",
@@ -1112,36 +1183,78 @@ export default function EveningParimutuelPage() {
 
     if (!selectedPlayer) {
       setError("Choose a player before placing a bet.");
+      showToast({
+        title: "Choose Player",
+        message: "Select a player before betting.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (!trimmedSelection) {
       setError("Select an option for this market.");
+      showToast({
+        title: "Choose Option",
+        message: "Select a team or hole first.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       setError("Bet amount must be greater than $0.");
+      showToast({
+        title: "Invalid Amount",
+        message: "Bet amount must be greater than $0.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (currentMarketTotal + parsedAmount > 20) {
       setError("Max $20 per market.");
+      showToast({
+        title: "Max $20 Per Market",
+        message: "Reduce this wager amount.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (isMarketPending) {
       setError("Parimutuel Bets are not open yet.");
+      showToast({
+        title: "Not Open Yet",
+        message: "Betting opens after the draft.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (isMarketLocked) {
       setError("Parimutuel Bets are locked for this Money Round.");
+      showToast({
+        title: "Betting Locked",
+        message: "No more wagers accepted.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
     if (isMarketSettled) {
       setError("Parimutuel Bets are settled for this Money Round.");
+      showToast({
+        title: "Market Settled",
+        message: "This market is already settled.",
+        tone: "warning",
+        accent: "#746a91",
+      });
       return;
     }
 
@@ -1173,11 +1286,21 @@ export default function EveningParimutuelPage() {
 
     if (insertError) {
       setError(insertError.message || "Could not place bet.");
+      showToast({
+        title: "Bet Failed",
+        message: insertError.message || "Could not place bet.",
+        tone: "error",
+      });
       return;
     }
 
     setBets((currentBets) => [data as EveningBet, ...currentBets]);
     setMessage(`${formatMoney(parsedAmount)} bet placed on ${trimmedSelection}.`);
+    showToast({
+      title: "Bet Placed",
+      message: `${formatMoney(parsedAmount)} on ${trimmedSelection}.`,
+      accent: "#746a91",
+    });
   }
 
   return (

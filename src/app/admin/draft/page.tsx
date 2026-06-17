@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
 import {
@@ -106,6 +107,7 @@ function isCompletedDraftStatus(status: string | null | undefined) {
 }
 
 export default function AdminDraftPage() {
+  const { showToast } = useToast();
   const [players, setPlayers] = useState<DraftPlayer[]>([]);
   const [sessions, setSessions] = useState<DraftSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState("");
@@ -320,11 +322,23 @@ export default function AdminDraftPage() {
 
     if (!trimmedName) {
       setError("Draft name is required.");
+      showToast({
+        title: "Draft Name Required",
+        message: "Name the draft before creating it.",
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
     if (captains.length === 0) {
       setError(`No active ${captainRank} players found for captains.`);
+      showToast({
+        title: "No Captains Found",
+        message: `No active ${captainRank} players available.`,
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
@@ -344,6 +358,11 @@ export default function AdminDraftPage() {
 
     if (sessionError || !sessionData) {
       setError(sessionError?.message || "Could not create draft session.");
+      showToast({
+        title: "Draft Failed",
+        message: sessionError?.message || "Could not create draft.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -374,6 +393,13 @@ export default function AdminDraftPage() {
         getDraftTeamErrorMessage(teamError.message) ||
           "Could not create captain teams.",
       );
+      showToast({
+        title: "Captains Failed",
+        message:
+          getDraftTeamErrorMessage(teamError.message) ||
+          "Could not create captain teams.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -388,6 +414,11 @@ export default function AdminDraftPage() {
       .eq("id", session.id);
 
     setMessage("Draft session created.");
+    showToast({
+      title: "Draft Created",
+      message: `${captains.length} captain teams added.`,
+      accent: "#315f48",
+    });
     await logAuditEvent({
       actionType: "draft_session_created",
       entityType: "draft_session",
@@ -463,10 +494,20 @@ export default function AdminDraftPage() {
 
     if (updateError) {
       setError(updateError.message || "Could not update draft style.");
+      showToast({
+        title: "Style Failed",
+        message: updateError.message || "Could not update draft style.",
+        tone: "error",
+      });
       return;
     }
 
     setMessage(`Draft style set to ${nextDraftType === "straight" ? "Straight" : "Snake"}.`);
+    showToast({
+      title: "Draft Style Updated",
+      message: `${nextDraftType === "straight" ? "Straight" : "Snake"} draft selected.`,
+      accent: "#315f48",
+    });
     await fetchDraftState(selectedSession.id);
   }
 
@@ -741,10 +782,21 @@ export default function AdminDraftPage() {
 
     if (updateError) {
       setError(updateError.message || "Could not start draft.");
+      showToast({
+        title: "Start Failed",
+        message: updateError.message || "Could not start draft.",
+        tone: "error",
+      });
       return;
     }
 
     setMessage("Draft started.");
+    showToast({
+      title: "Draft Started",
+      message: "TV board is live.",
+      accent: "#315f48",
+      durationMs: 4000,
+    });
     await logActivityFeedItem({
       type: "draft_started",
       source: "Live Draft",
@@ -769,6 +821,12 @@ export default function AdminDraftPage() {
 
     if (picks.some((pick) => pick.player_id === player.id)) {
       setError(`${player.display_name} has already been drafted.`);
+      showToast({
+        title: "Already Drafted",
+        message: `${player.display_name} is already off the board.`,
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
@@ -788,6 +846,11 @@ export default function AdminDraftPage() {
 
     if (insertError) {
       setError(insertError.message || "Could not draft player.");
+      showToast({
+        title: "Pick Failed",
+        message: insertError.message || "Could not draft player.",
+        tone: "error",
+      });
       return;
     }
 
@@ -805,6 +868,11 @@ export default function AdminDraftPage() {
       .eq("id", selectedSession.id);
 
     setMessage(`${player.display_name} drafted by ${currentTeam.name}.`);
+    showToast({
+      title: "Pick Saved",
+      message: `${currentTeam.name} selected ${player.display_name}.`,
+      accent: "#315f48",
+    });
     await logAuditEvent({
       actionType: "draft_pick_made",
       entityType: "draft_pick",
@@ -850,6 +918,12 @@ export default function AdminDraftPage() {
         setMessage(
           `${player.display_name} drafted by ${currentTeam.name}. Parimutuel Bets are open.`,
         );
+        showToast({
+          title: "Draft Complete",
+          message: "Parimutuel Bets are open.",
+          accent: "#746a91",
+          durationMs: 4000,
+        });
       }
     }
     await fetchDraftState(selectedSession.id);
@@ -877,6 +951,11 @@ export default function AdminDraftPage() {
 
     if (deleteError) {
       setError(deleteError.message || "Could not undo pick.");
+      showToast({
+        title: "Undo Failed",
+        message: deleteError.message || "Could not undo pick.",
+        tone: "error",
+      });
       return;
     }
 
@@ -892,6 +971,11 @@ export default function AdminDraftPage() {
       .eq("id", selectedSession.id);
 
     setMessage("Last pick undone.");
+    showToast({
+      title: "Last Pick Undone",
+      message: "Draft board reset one pick.",
+      accent: "#315f48",
+    });
     await logAuditEvent({
       actionType: "draft_pick_undone",
       entityType: "draft_pick",
@@ -933,6 +1017,11 @@ export default function AdminDraftPage() {
 
     if (deleteError) {
       setError(deleteError.message || "Could not delete draft session.");
+      showToast({
+        title: "Delete Failed",
+        message: deleteError.message || "Could not delete draft.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -942,6 +1031,11 @@ export default function AdminDraftPage() {
     setTeams([]);
     setPicks([]);
     setMessage("Draft session deleted.");
+    showToast({
+      title: "Draft Deleted",
+      message: "Draft session removed.",
+      accent: "#315f48",
+    });
     await fetchSessions();
     setIsSaving(false);
   }

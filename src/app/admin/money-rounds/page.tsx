@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
 import { autoResolveParimutuelForMoneyRound } from "@/lib/parimutuelResolution";
@@ -155,6 +156,7 @@ function scoreStatusClasses(status: TeamScoreStatus) {
 }
 
 export default function AdminMoneyRoundsPage() {
+  const { showToast } = useToast();
   const [players, setPlayers] = useState<MoneyPlayer[]>([]);
   const [rounds, setRounds] = useState<MoneyRound[]>([]);
   const [selectedRoundId, setSelectedRoundId] = useState("");
@@ -401,6 +403,12 @@ export default function AdminMoneyRoundsPage() {
 
     if (!payload.name) {
       setError("Round name is required.");
+      showToast({
+        title: "Round Name Required",
+        message: "Name the Money Round before saving.",
+        tone: "warning",
+        accent: "#315f48",
+      });
       setIsSaving(false);
       return;
     }
@@ -421,6 +429,11 @@ export default function AdminMoneyRoundsPage() {
 
       if (updateError) {
         setError(updateError.message || "Could not update round.");
+        showToast({
+          title: "Round Update Failed",
+          message: updateError.message || "Could not update round.",
+          tone: "error",
+        });
         setIsSaving(false);
         return;
       }
@@ -431,6 +444,11 @@ export default function AdminMoneyRoundsPage() {
 
       setRound(updatedRound);
       setMessage("Round settings updated.");
+      showToast({
+        title: "Round Updated",
+        message: "Payout settings recalculated.",
+        accent: "#315f48",
+      });
       await logAuditEvent({
         actionType: "money_round_settings_updated",
         entityType: "money_round",
@@ -452,11 +470,21 @@ export default function AdminMoneyRoundsPage() {
 
     if (insertError || !data) {
       setError(insertError?.message || "Could not create round.");
+      showToast({
+        title: "Round Failed",
+        message: insertError?.message || "Could not create round.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
 
     setMessage("Round created.");
+    showToast({
+      title: "Money Round Created",
+      message: "Ready for teams.",
+      accent: "#315f48",
+    });
     await logAuditEvent({
       actionType: "money_round_created",
       entityType: "money_round",
@@ -472,6 +500,12 @@ export default function AdminMoneyRoundsPage() {
   async function handleCreateTeam() {
     if (!round) {
       setError("Select or create a round first.");
+      showToast({
+        title: "Choose Round",
+        message: "Select or create a round first.",
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
@@ -483,6 +517,12 @@ export default function AdminMoneyRoundsPage() {
 
     if (!finalTeamName || selectedPlayers.length === 0) {
       setError("Team name and at least one player are required.");
+      showToast({
+        title: "Team Incomplete",
+        message: "Add a team name and at least one player.",
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
@@ -495,18 +535,34 @@ export default function AdminMoneyRoundsPage() {
 
     if (insertError) {
       setError(insertError.message || "Could not create team.");
+      showToast({
+        title: "Team Failed",
+        message: insertError.message || "Could not create team.",
+        tone: "error",
+      });
       return;
     }
 
     setTeamName("");
     setSelectedPlayerIds([]);
     setMessage("Team created.");
+    showToast({
+      title: "Team Created",
+      message: finalTeamName,
+      accent: "#315f48",
+    });
     await fetchRoundState(round.id);
   }
 
   async function handleImportDraftTeams() {
     if (!round || !selectedDraftSessionId) {
       setError("Select a draft session to import.");
+      showToast({
+        title: "Choose Draft",
+        message: "Select a draft session to import.",
+        tone: "warning",
+        accent: "#315f48",
+      });
       return;
     }
 
@@ -549,6 +605,14 @@ export default function AdminMoneyRoundsPage() {
           draftPicksError?.message ||
           "Could not load draft teams.",
       );
+      showToast({
+        title: "Import Failed",
+        message:
+          draftTeamsError?.message ||
+          draftPicksError?.message ||
+          "Could not load draft teams.",
+        tone: "error",
+      });
       return;
     }
 
@@ -617,6 +681,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (insertError) {
       setError(insertError.message || "Could not import draft teams.");
+      showToast({
+        title: "Import Failed",
+        message: insertError.message || "Could not import teams.",
+        tone: "error",
+      });
       return;
     }
 
@@ -625,6 +694,12 @@ export default function AdminMoneyRoundsPage() {
         selectedDraftSession?.name || "selected draft"
       }.`,
     );
+    showToast({
+      title: "Teams Imported",
+      message: `${payload.length} teams from ${selectedDraftSession?.name || "selected draft"}.`,
+      accent: "#315f48",
+      durationMs: 4000,
+    });
     await fetchRoundState(round.id);
   }
 
@@ -821,6 +896,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (scoreFetchError) {
       setError(scoreFetchError.message || "Could not confirm persisted scores.");
+      showToast({
+        title: "Score Confirm Failed",
+        message: scoreFetchError.message || "Could not confirm saved scores.",
+        tone: "error",
+      });
       return false;
     }
 
@@ -841,6 +921,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (didPersist) {
       setMessage("Scores saved.");
+      showToast({
+        title: "Scores Saved",
+        message: "Leaderboard and previews updated.",
+        accent: "#315f48",
+      });
     }
   }
 
@@ -873,6 +958,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (updateError) {
       setError(updateError.message || "Could not update scorecard status.");
+      showToast({
+        title: "Status Failed",
+        message: updateError.message || "Could not update scorecard.",
+        tone: "error",
+      });
       return false;
     }
 
@@ -915,6 +1005,16 @@ export default function AdminMoneyRoundsPage() {
           ? `${team.name} marked unofficial.`
           : `${team.name} reset to pending.`,
     );
+    showToast({
+      title:
+        scoreStatus === "verified"
+          ? "Scorecard Verified"
+          : scoreStatus === "submitted"
+            ? "Marked Unofficial"
+            : "Reset To Pending",
+      message: team.name,
+      accent: "#315f48",
+    });
     return true;
   }
 
@@ -956,6 +1056,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (updateError) {
       setError(updateError.message || "Could not mark submitted scorecards.");
+      showToast({
+        title: "Submit Status Failed",
+        message: updateError.message || "Could not mark scorecards submitted.",
+        tone: "error",
+      });
       return;
     }
 
@@ -988,6 +1093,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (updateError) {
       setError(updateError.message || "Could not mark final.");
+      showToast({
+        title: "Final Failed",
+        message: updateError.message || "Could not mark final.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -1026,6 +1136,14 @@ export default function AdminMoneyRoundsPage() {
         ? `Round marked final. ${parimutuelResult.message}`
         : `Round marked final. ${parimutuelResult.message}`,
     );
+    showToast({
+      title: "Round Marked Final",
+      message: parimutuelResult.skipped
+        ? parimutuelResult.message
+        : "Results and Parimutuel updated.",
+      accent: "#315f48",
+      durationMs: 4000,
+    });
     setIsSaving(false);
   }
 
@@ -1060,6 +1178,11 @@ export default function AdminMoneyRoundsPage() {
 
     if (deleteError) {
       setError(deleteError.message || "Could not delete money round.");
+      showToast({
+        title: "Delete Failed",
+        message: deleteError.message || "Could not delete Money Round.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -1071,6 +1194,11 @@ export default function AdminMoneyRoundsPage() {
     setSelectedRoundId("");
     setRoundForm(defaultRound);
     setMessage("Money Round deleted.");
+    showToast({
+      title: "Money Round Deleted",
+      message: "Round and related rows removed.",
+      accent: "#315f48",
+    });
     await fetchRounds();
     setIsSaving(false);
   }

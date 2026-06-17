@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { supabase } from "@/lib/supabase";
 import { useActivePlayers } from "@/lib/useActivePlayers";
 
@@ -59,6 +60,7 @@ export function NightGolfSubmitPage({
   nightLabel,
   backHref,
 }: NightGolfSubmitPageProps) {
+  const { showToast } = useToast();
   const [chosenPlayerName, setChosenPlayerName] = useState("");
   const [scoresByTarget, setScoresByTarget] =
     useState<Record<string, string>>(emptyScores);
@@ -81,6 +83,12 @@ export function NightGolfSubmitPage({
 
     if (!trimmedPlayerName) {
       setError("Select a player before submitting.");
+      showToast({
+        title: "Choose a player",
+        message: "Select a player before submitting.",
+        tone: "warning",
+        accent: "#f472b6",
+      });
       return;
     }
 
@@ -97,11 +105,23 @@ export function NightGolfSubmitPage({
 
     if (hasMissingScore) {
       setError("Enter all 9 scores before submitting.");
+      showToast({
+        title: "Scorecard incomplete",
+        message: "Enter all 9 scores before submitting.",
+        tone: "warning",
+        accent: "#f472b6",
+      });
       return;
     }
 
     if (hasInvalidScore) {
       setError("Night Golf scores must be 0, 1, 3, or 5.");
+      showToast({
+        title: "Invalid score",
+        message: "Night Golf scores must be 0, 1, 3, or 5.",
+        tone: "error",
+        accent: "#f472b6",
+      });
       return;
     }
 
@@ -120,18 +140,37 @@ export function NightGolfSubmitPage({
         .insert(payload);
 
       if (insertError) {
-        setError(insertError.message || "Could not submit result.");
+        const nextError = insertError.message || "Could not submit result.";
+        setError(nextError);
+        showToast({
+          title: "Scorecard not submitted",
+          message: nextError,
+          tone: "error",
+          accent: "#f472b6",
+        });
         return;
       }
 
       setMessage("Scorecard submitted.");
+      showToast({
+        title: "Night Golf scorecard submitted",
+        message: `${trimmedPlayerName} is on the board.`,
+        tone: "success",
+        accent: "#f472b6",
+      });
       setScoresByTarget({ ...emptyScores });
     } catch (submitError) {
-      setError(
+      const nextError =
         submitError instanceof Error
           ? submitError.message
-          : "Could not submit result.",
-      );
+          : "Could not submit result.";
+      setError(nextError);
+      showToast({
+        title: "Scorecard not submitted",
+        message: nextError,
+        tone: "error",
+        accent: "#f472b6",
+      });
     } finally {
       setIsSubmitting(false);
     }

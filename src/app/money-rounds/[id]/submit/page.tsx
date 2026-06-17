@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
@@ -71,6 +72,7 @@ function sumDraftScores(scoreDrafts: ScoreDrafts, selectedHoles: number[]) {
 }
 
 export default function MoneyRoundSubmitPage() {
+  const { showToast } = useToast();
   const params = useParams<{ id: string }>();
   const [round, setRound] = useState<MoneyRound | null>(null);
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
@@ -189,6 +191,11 @@ export default function MoneyRoundSubmitPage() {
 
         if (deleteError) {
           setError(deleteError.message || "Could not clear score.");
+          showToast({
+            title: "Score Save Failed",
+            message: deleteError.message || "Could not clear score.",
+            tone: "error",
+          });
           setIsSaving(false);
           return;
         }
@@ -200,6 +207,12 @@ export default function MoneyRoundSubmitPage() {
 
       if (!Number.isInteger(parsedScore)) {
         setError("Scores must be whole numbers.");
+        showToast({
+          title: "Check Scores",
+          message: "Scores must be whole numbers.",
+          tone: "warning",
+          accent: "#315f48",
+        });
         setIsSaving(false);
         return;
       }
@@ -221,6 +234,11 @@ export default function MoneyRoundSubmitPage() {
 
       if (response.error) {
         setError(response.error.message || "Could not save score.");
+        showToast({
+          title: "Score Save Failed",
+          message: response.error.message || "Could not save score.",
+          tone: "error",
+        });
         setIsSaving(false);
         return;
       }
@@ -236,6 +254,11 @@ export default function MoneyRoundSubmitPage() {
 
     if (teamError) {
       setError(teamError.message || "Could not submit scorecard.");
+      showToast({
+        title: "Submit Failed",
+        message: teamError.message || "Could not submit scorecard.",
+        tone: "error",
+      });
       setIsSaving(false);
       return;
     }
@@ -263,6 +286,12 @@ export default function MoneyRoundSubmitPage() {
 
     await fetchRound();
     setMessage("Scorecard submitted. Awaiting commissioner verification.");
+    showToast({
+      title: "Scorecard Submitted",
+      message: `${selectedTeam.name} awaiting verification.`,
+      accent: "#315f48",
+      durationMs: 4000,
+    });
     setIsSaving(false);
   }
 

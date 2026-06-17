@@ -9,6 +9,7 @@ import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useToast } from "@/components/ToastProvider";
 import {
   clearPlayerSession,
   getPlayerSession,
@@ -87,6 +88,7 @@ async function getCroppedImageBlob(imageSrc: string, crop: Area) {
 }
 
 export default function MyProfilePage() {
+  const { showToast } = useToast();
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [player, setPlayer] = useState<ProfilePlayer | null>(null);
   const [currentPin, setCurrentPin] = useState("");
@@ -154,16 +156,31 @@ export default function MyProfilePage() {
 
     if (!player) {
       setError("Login required.");
+      showToast({
+        title: "Login Required",
+        message: "Log in before updating your profile.",
+        tone: "warning",
+      });
       return;
     }
 
     if (currentPin.trim() !== (player.pin_code || "")) {
       setError("Current PIN is incorrect.");
+      showToast({
+        title: "Wrong Current PIN",
+        message: "Check your current PIN and try again.",
+        tone: "warning",
+      });
       return;
     }
 
     if (!newPin.trim() || newPin.trim() !== confirmPin.trim()) {
       setError("New PIN and confirmation must match.");
+      showToast({
+        title: "PINs Do Not Match",
+        message: "Confirm your new PIN again.",
+        tone: "warning",
+      });
       return;
     }
 
@@ -185,6 +202,11 @@ export default function MyProfilePage() {
 
     if (updateError) {
       setError(updateError.message || "Could not update PIN.");
+      showToast({
+        title: "PIN Failed",
+        message: updateError.message || "Could not update PIN.",
+        tone: "error",
+      });
       return;
     }
 
@@ -193,6 +215,11 @@ export default function MyProfilePage() {
     setNewPin("");
     setConfirmPin("");
     setMessage("PIN updated.");
+    showToast({
+      title: "PIN Updated",
+      message: "Use it next login.",
+      accent: "#d7c8a4",
+    });
     await logAuditEvent({
       actionType: "player_pin_changed",
       entityType: "player",
@@ -207,6 +234,11 @@ export default function MyProfilePage() {
 
     if (!player) {
       setError("Login required.");
+      showToast({
+        title: "Login Required",
+        message: "Log in before updating contact info.",
+        tone: "warning",
+      });
       return;
     }
 
@@ -229,6 +261,11 @@ export default function MyProfilePage() {
 
     if (updateError) {
       setError(updateError.message || "Could not update contact info.");
+      showToast({
+        title: "Contact Failed",
+        message: updateError.message || "Could not update contact info.",
+        tone: "error",
+      });
       return;
     }
 
@@ -237,6 +274,11 @@ export default function MyProfilePage() {
     setPhoneNumber(updatedPlayer.phone_number || "");
     setEmailAddress(updatedPlayer.email_address || "");
     setMessage("Contact info updated.");
+    showToast({
+      title: "Contact Info Saved",
+      message: "Profile updated.",
+      accent: "#d7c8a4",
+    });
     await logAuditEvent({
       actionType: "player_contact_updated",
       entityType: "player",
@@ -259,6 +301,11 @@ export default function MyProfilePage() {
 
     if (!player) {
       setError("Login required.");
+      showToast({
+        title: "Login Required",
+        message: "Log in before updating Years Served.",
+        tone: "warning",
+      });
       return;
     }
 
@@ -272,6 +319,11 @@ export default function MyProfilePage() {
       (!Number.isInteger(parsedYearsServed) || parsedYearsServed < 0)
     ) {
       setError("Years Served must be a whole number.");
+      showToast({
+        title: "Check Years Served",
+        message: "Use zero or a whole number.",
+        tone: "warning",
+      });
       return;
     }
 
@@ -293,6 +345,11 @@ export default function MyProfilePage() {
 
     if (updateError) {
       setError(updateError.message || "Could not update Years Served.");
+      showToast({
+        title: "Years Failed",
+        message: updateError.message || "Could not update Years Served.",
+        tone: "error",
+      });
       return;
     }
 
@@ -304,6 +361,14 @@ export default function MyProfilePage() {
         : "",
     );
     setMessage("Years Served updated.");
+    showToast({
+      title: "Years Served Updated",
+      message:
+        updatedPlayer.years_served === 0
+          ? "Rookie status saved."
+          : "Camp identity saved.",
+      accent: "#d7c8a4",
+    });
     await logAuditEvent({
       actionType: "player_years_served_updated",
       entityType: "player",
@@ -363,11 +428,21 @@ export default function MyProfilePage() {
 
     if (!player) {
       setError("Login required.");
+      showToast({
+        title: "Login Required",
+        message: "Log in before uploading a photo.",
+        tone: "warning",
+      });
       return;
     }
 
     if (!cropImageUrl || !croppedAreaPixels) {
       setError("Position your photo before saving.");
+      showToast({
+        title: "Position Photo",
+        message: "Crop your photo before saving.",
+        tone: "warning",
+      });
       return;
     }
 
@@ -383,6 +458,14 @@ export default function MyProfilePage() {
           ? cropError.message
           : "Could not crop profile photo.",
       );
+      showToast({
+        title: "Crop Failed",
+        message:
+          cropError instanceof Error
+            ? cropError.message
+            : "Could not crop profile photo.",
+        tone: "error",
+      });
       setIsUploadingPhoto(false);
       return;
     }
@@ -405,6 +488,11 @@ export default function MyProfilePage() {
 
     if (uploadError) {
       setError(uploadError.message || "Could not upload profile photo.");
+      showToast({
+        title: "Upload Failed",
+        message: uploadError.message || "Could not upload photo.",
+        tone: "error",
+      });
       setIsUploadingPhoto(false);
       return;
     }
@@ -436,12 +524,22 @@ export default function MyProfilePage() {
 
     if (updateError) {
       setError(updateError.message || "Could not save profile photo.");
+      showToast({
+        title: "Photo Save Failed",
+        message: updateError.message || "Could not save profile photo.",
+        tone: "error",
+      });
       return;
     }
 
     setPlayer(data as ProfilePlayer);
     resetCropper();
     setMessage("Profile picture updated.");
+    showToast({
+      title: "Photo Saved",
+      message: "Profile picture updated.",
+      accent: "#d7c8a4",
+    });
     await logAuditEvent({
       actionType: "player_photo_updated",
       entityType: "player",
