@@ -120,6 +120,158 @@ export const appGuides: AppGuide[] = [
     ],
   },
   {
+    slug: "money-and-settlement",
+    title: "Money & Settlement",
+    kicker: "Banks • Bets • Payouts",
+    accent: "#d7c8a4",
+    icon: "bank",
+    summary:
+      "How the app tracks official winnings, casual side games, bets, point games, score totals, and who owes who.",
+    highlights: [
+      "Official Money Rounds stay separate from casual games.",
+      "Parimutuel is one final end-of-camp settlement.",
+      "The app is the ledger, not the banker.",
+    ],
+    sections: [
+      {
+        title: "The Big Picture",
+        body:
+          "The app keeps different kinds of camp money in separate lanes. That is the whole point. Official Money Rounds, Parimutuel Bets, Afternoon Rounds, Shenanigans, and Night Golf all have different jobs, so they should not be mixed into one messy pile.",
+        points: [
+          "Money Rounds Bank is official morning round money only.",
+          "Parimutuel Bets are tracked all week and settled one time at the end of camp.",
+          "Afternoon Rounds are player-created casual games with their own settlement.",
+          "Shenanigans is point-based and settles inside the selected game session.",
+          "Night Golf has its own score leaderboard and does not affect Money Rounds Bank.",
+        ],
+      },
+      {
+        title: "Money Rounds Bank",
+        body:
+          "Money Rounds are the official morning scramble rounds. The app uses team scores to calculate standings, skins, team payouts, and each player’s official round bank.",
+        points: [
+          "Teams are the scoring unit.",
+          "Placement payouts go to teams and split evenly among team members.",
+          "Skins are calculated by hole: exactly one team must have the lowest score to win a skin.",
+          "If two or more teams tie the low score on a hole, there is no skin on that hole.",
+          "The skins pot is divided evenly by the total number of skins won.",
+          "Each player’s round bank shows placement winnings, skins winnings, buy-in, and net this round.",
+          "The yearly Money Rounds Bank adds together scored/final official Money Rounds.",
+        ],
+      },
+      {
+        title: "Why Money Rounds Helps Nick",
+        body:
+          "The app takes the most annoying part of official camp money and makes it repeatable. Nick can still review and correct things, but he should not have to be a human spreadsheet.",
+        points: [
+          "Scorecards can be submitted live, then Nick verifies them.",
+          "Live standings can show before everything is final, but labels make that clear.",
+          "Finalized rounds feed public results, the yearly bank, and the results presentation.",
+          "Team imports from completed drafts reduce manual copying.",
+          "The same data drives scores, skins, payouts, bank rows, and presentation slides.",
+        ],
+      },
+      {
+        title: "Parimutuel Bets",
+        body:
+          "Parimutuel Bets are nightly betting markets for the next Money Round. No one collects money each night. The app tracks the ledger all week, then everyone settles one time at the very end of camp.",
+        points: [
+          "Each player can bet up to $20 per market per night.",
+          "Players select from drafted teams or controlled options, not free-typed guesses.",
+          "Markets can lock when Nick says betting is closed or tee time arrives.",
+          "When a linked Money Round is finalized, the app can resolve that round’s markets from official results.",
+          "Nightly results and Money Round presentations can show highlights and running standings.",
+          "Actual payment settlement waits until all camp markets are resolved.",
+        ],
+      },
+      {
+        title: "How Parimutuel Payouts Work",
+        body:
+          "Each market has its own pool. Winning bettors split that pool proportionally based on how much they bet on the winning selection.",
+        points: [
+          "A $20 winning bet earns twice the share of a $10 winning bet in the same market.",
+          "Losing bets stay in that market’s pool.",
+          "If a market has no winning bettors, the app treats it safely instead of inventing bad payouts.",
+          "Week To Date standings show the running ledger.",
+          "Final Settlement turns the full-week ledger into who pays who.",
+        ],
+      },
+      {
+        title: "Afternoon Rounds",
+        body:
+          "Afternoon Rounds are optional player-created golf games. They are intentionally separate from official Money Rounds so casual games do not pollute the official bank.",
+        points: [
+          "The creator owns that round and can manage only that round.",
+          "Admins can override any Afternoon Round if needed.",
+          "Participants, teams, scores, buy-ins, skins buy-ins, and payouts can be customized.",
+          "Pay-in and payout terms are locked by default after creation to prevent accidental pocket changes.",
+          "Once finalized, the settlement card tells that group who should pay or collect for that specific round.",
+          "Afternoon Round settlement does not affect Money Rounds Bank.",
+        ],
+      },
+      {
+        title: "Shenanigans",
+        body:
+          "Shenanigans is not official round money. It is a point-based side game system inside specific game sessions, usually for a foursome.",
+        points: [
+          "Each game session is separate.",
+          "Players start with 5 points.",
+          "Log Points, Wagers, Side Games, and custom entries move players up or down.",
+          "Settlement converts final points into money using the selected dollar-per-point multiplier.",
+          "The app creates minimized payments so people do not need a dozen little transactions.",
+          "Use the correct selected game before logging or settling anything.",
+        ],
+      },
+      {
+        title: "Night Golf",
+        body:
+          "Night Golf does score accounting, not money accounting. It tracks each player’s nine-box score grid, totals the score, and shows leaderboards for the night.",
+        points: [
+          "Blank boxes count as zero.",
+          "Hole-Out is worth 5 points.",
+          "The leaderboard is separate from Money Rounds and Parimutuel.",
+          "Admin can clean up bad entries.",
+          "Sudden Death handles ties outside the app.",
+        ],
+      },
+      {
+        title: "Draft As Source Of Truth",
+        body:
+          "Draft is not a payout system by itself, but it creates the team data other systems depend on. That makes it important for accounting accuracy.",
+        points: [
+          "Completed draft teams can be imported into Money Rounds.",
+          "Completed draft teams become Parimutuel team options.",
+          "When the draft completes, Parimutuel Bets can open automatically.",
+          "If finalized draft teams change after Parimutuel opens, the linked market should reset so old wagers do not point at stale teams.",
+        ],
+      },
+      {
+        title: "Transparency And Cleanup",
+        body:
+          "The app is built for a high-trust group, but money-adjacent things still need a trail. That is why activity feed, audit log, verification, and admin cleanup exist.",
+        points: [
+          "LIVE CAMP FEED shows important activity without becoming a chat.",
+          "Audit Log gives admins a record of who changed what and when.",
+          "Nick can verify Money Round scorecards before finalizing.",
+          "Admins can clean up bad feed items, feedback, players, scores, and test data where tools exist.",
+          "If something looks wrong, pause before settling and ask Adam or Nick depending on whether it is an app issue or commissioner decision.",
+        ],
+      },
+      {
+        title: "The Simple Rule",
+        body:
+          "If you remember nothing else, remember this: official morning round money, Parimutuel bets, casual Afternoon Rounds, Shenanigans, and Night Golf are separate systems.",
+        points: [
+          "Do not use Money Rounds Bank for side games.",
+          "Do not pay Parimutuel nightly; settle once at the end.",
+          "Do not assume an unofficial score is final.",
+          "Use the app ledger instead of memory.",
+          "When confused, ask before money moves.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "camp-office",
     title: "Camp Office",
     kicker: "Information Desk",
