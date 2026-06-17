@@ -19,7 +19,17 @@ function parseStoredSession(
   }
 
   try {
-    return JSON.parse(rawSession) as PlayerSession;
+    const session = JSON.parse(rawSession) as PlayerSession;
+
+    if (
+      session.id === "fallback-admin" ||
+      session.login_name === "megaballs"
+    ) {
+      storage.removeItem(key);
+      return null;
+    }
+
+    return session;
   } catch {
     storage.removeItem(key);
     return null;

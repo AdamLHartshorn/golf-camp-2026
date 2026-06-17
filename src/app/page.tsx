@@ -17,14 +17,11 @@ type LoginPlayer = {
 
 export default function LoginPage() {
   const { showToast } = useToast();
-  const [password, setPassword] = useState("");
   const [loginName, setLoginName] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [showFallbackAccess, setShowFallbackAccess] = useState(false);
   const [loginError, setLoginError] = useState("");
-  const [fallbackError, setFallbackError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -33,45 +30,6 @@ export default function LoginPage() {
     }
   }, [router]);
 
-  function handleEnter(event?: FormEvent<HTMLFormElement>) {
-    event?.preventDefault();
-
-    const normalizedPassword = password.trim().toUpperCase();
-
-    if (normalizedPassword === "BALLS") {
-      showToast({
-        title: "Access Granted",
-        message: "Entering Golf Camp.",
-        accent: "#8fa66a",
-      });
-      router.push("/home");
-      return;
-    }
-
-    if (normalizedPassword === "MEGABALLS") {
-      setPlayerSession({
-        id: "fallback-admin",
-        display_name: "Fallback Admin",
-        login_name: "megaballs",
-        is_admin: true,
-      });
-      showToast({
-        title: "Admin Access Enabled",
-        message: "Fallback admin session started.",
-        accent: "#d7c8a4",
-      });
-      router.push("/admin");
-      return;
-    }
-
-    setFallbackError("Wrong password");
-    showToast({
-      title: "Wrong Password",
-      message: "Alternate access failed.",
-      tone: "error",
-    });
-  }
-
   async function handlePlayerLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -79,7 +37,6 @@ export default function LoginPage() {
     const normalizedPinCode = pinCode.trim();
 
     setLoginError("");
-    setFallbackError("");
 
     if (!normalizedLoginName || !normalizedPinCode) {
       setLoginError("Enter login name and PIN.");
@@ -175,7 +132,6 @@ export default function LoginPage() {
                 onChange={(event) => {
                   setLoginName(event.target.value.toLowerCase());
                   setLoginError("");
-                  setFallbackError("");
                 }}
                 placeholder="Login Name"
                 autoComplete="username"
@@ -198,7 +154,6 @@ export default function LoginPage() {
                 onChange={(event) => {
                   setPinCode(event.target.value);
                   setLoginError("");
-                  setFallbackError("");
                 }}
                 placeholder="PIN"
                 autoComplete="current-password"
@@ -231,68 +186,6 @@ export default function LoginPage() {
             {isLoading ? "Entering..." : "Enter"}
           </button>
         </form>
-
-        <div className="space-y-3 text-center">
-          {!showFallbackAccess && (
-            <button
-              type="button"
-              onClick={() => {
-                setShowFallbackAccess(true);
-                setLoginError("");
-                setFallbackError("");
-              }}
-              className="text-xs font-semibold text-[#756f66] underline-offset-4 transition hover:text-[#c8bfae] hover:underline"
-            >
-              Alternate access
-            </button>
-          )}
-
-          {showFallbackAccess && (
-            <form
-              onSubmit={handleEnter}
-              className="gc-edge-card space-y-3 p-4"
-            >
-              <input
-                type="text"
-                value={password}
-                onChange={(event) => {
-                  setPassword(event.target.value);
-                  setLoginError("");
-                  setFallbackError("");
-                }}
-                placeholder="Enter Password"
-                enterKeyHint="go"
-                className="login-field w-full rounded-xl border px-4 py-3 text-center text-sm tracking-[0.18em] outline-none"
-              />
-
-              {fallbackError && (
-                <p className="text-center text-sm text-[#ff8a8a]">
-                  {fallbackError}
-                </p>
-              )}
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowFallbackAccess(false);
-                    setPassword("");
-                    setFallbackError("");
-                  }}
-                  className="rounded-xl border border-[#242424] py-3 text-sm font-semibold text-[#756f66] transition hover:border-[#34312a] hover:text-[#c8bfae]"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="rounded-xl border border-[#34312a] py-3 text-sm font-semibold text-[#c8bfae] transition hover:border-[#8fa66a] hover:text-[#f5f5f5]"
-                >
-                  Enter
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
       </div>
     </main>
   );

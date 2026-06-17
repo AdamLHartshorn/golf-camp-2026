@@ -44,8 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               Admin access required
             </h1>
             <p className="mt-3 text-sm leading-6 text-[#a3a3a3]">
-              Log in with an admin player account or use the admin fallback from
-              the launch screen.
+              Log in with an admin player account to use commissioner tools.
             </p>
           </section>
 
