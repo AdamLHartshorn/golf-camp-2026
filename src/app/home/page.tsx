@@ -240,7 +240,7 @@ export default function HomePage() {
       {showWelcome && session && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 py-5 backdrop-blur-sm sm:items-center">
           <section className="welcome-card w-full max-w-md overflow-hidden rounded-[0.75rem] border p-5 shadow-[0_24px_80px_rgba(0,0,0,0.48)]">
-            <div className="mb-5 flex items-start justify-between gap-4">
+            <div className="mb-5">
               <div>
                 <p className="font-mono text-[11px] font-black uppercase tracking-[0.22em] text-[#c93a4d]">
                   Golf Camp App 101
@@ -249,13 +249,6 @@ export default function HomePage() {
                   Welcome to Golf Camp
                 </h2>
               </div>
-              <button
-                type="button"
-                onClick={dismissWelcome}
-                className="rounded-[0.45rem] border border-[#f4f1ea]/18 px-3 py-2 font-mono text-xs font-black uppercase tracking-[0.12em] text-[#c8bfae] transition hover:border-[#c93a4d]/60 hover:text-[#f4f1ea]"
-              >
-                Skip
-              </button>
             </div>
 
             <div className="space-y-3">
