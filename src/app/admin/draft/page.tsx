@@ -16,6 +16,7 @@ import {
   DraftPlayer,
   DraftSession,
   DraftTeam,
+  DraftType,
   getAvailablePlayers,
   getCurrentDraftTeam,
   getOrderedTeams,
@@ -24,6 +25,22 @@ import {
 } from "@/app/draft/_lib/draftUtils";
 
 const ranks = ["A", "B", "C", "D"] as const;
+const draftTypes: Array<{
+  value: DraftType;
+  label: string;
+  description: string;
+}> = [
+  {
+    value: "snake",
+    label: "Snake",
+    description: "Draft order reverses each round.",
+  },
+  {
+    value: "straight",
+    label: "Straight",
+    description: "Same draft order every round.",
+  },
+];
 
 function getCaptainTeamName(captain: DraftPlayer) {
   const lastName = captain.last_name?.trim();
@@ -99,6 +116,7 @@ export default function AdminDraftPage() {
   const [picks, setPicks] = useState<DraftPick[]>([]);
   const [sessionName, setSessionName] = useState("Wednesday Morning Draft");
   const [captainRank, setCaptainRank] = useState<"A" | "B" | "C" | "D">("A");
+  const [draftType, setDraftType] = useState<DraftType>("snake");
   const [manualCaptainPlayerId, setManualCaptainPlayerId] = useState("");
   const [teamNameEdits, setTeamNameEdits] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -224,8 +242,8 @@ export default function AdminDraftPage() {
   );
   const picksByTeam = useMemo(() => getPicksByTeam(picks), [picks]);
   const currentTeam = useMemo(
-    () => getCurrentDraftTeam(orderedTeams, picks.length),
-    [orderedTeams, picks.length],
+    () => getCurrentDraftTeam(orderedTeams, picks.length, selectedSession?.draft_type),
+    [orderedTeams, picks.length, selectedSession?.draft_type],
   );
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
@@ -317,7 +335,7 @@ export default function AdminDraftPage() {
       .insert({
         name: trimmedName,
         captain_rank: captainRank,
-        draft_type: "snake",
+        draft_type: draftType,
         status: "pending",
         current_pick_number: 1,
       })
@@ -424,6 +442,31 @@ export default function AdminDraftPage() {
       return;
     }
 
+    await fetchDraftState(selectedSession.id);
+  }
+
+  async function handleUpdateDraftType(nextDraftType: DraftType) {
+    if (!selectedSession || !isPendingDraft) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+
+    const { error: updateError } = await supabase
+      .from("draft_sessions")
+      .update({
+        draft_type: nextDraftType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", selectedSession.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not update draft style.");
+      return;
+    }
+
+    setMessage(`Draft style set to ${nextDraftType === "straight" ? "Straight" : "Snake"}.`);
     await fetchDraftState(selectedSession.id);
   }
 
@@ -687,7 +730,7 @@ export default function AdminDraftPage() {
       .from("draft_sessions")
       .update({
         status: "active",
-        draft_type: "snake",
+        draft_type: selectedSession.draft_type || draftType,
         draft_order: orderedTeams.map((team) => team.id),
         current_pick_number: picks.length + 1,
         current_pick_started_at: new Date().toISOString(),
@@ -960,6 +1003,41 @@ export default function AdminDraftPage() {
           <div className="space-y-3 rounded-xl border border-[#242424] bg-black/40 p-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                Draft Style
+              </p>
+              <p className="mt-1 text-xs text-[#737373]">
+                Choose whether the order reverses each round or stays straight.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {draftTypes.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => setDraftType(type.value)}
+                  className={`rounded-xl border px-3 py-3 text-left transition ${
+                    draftType === type.value
+                      ? "border-[#f5f5f5] bg-[#f5f5f5] text-black"
+                      : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#f5f5f5]"
+                  }`}
+                >
+                  <span className="block text-sm font-black">{type.label}</span>
+                  <span
+                    className={`mt-1 block text-[11px] font-semibold ${
+                      draftType === type.value ? "text-black/65" : "text-[#737373]"
+                    }`}
+                  >
+                    {type.description}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-[#242424] bg-black/40 p-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
                 Auto Captains
               </p>
               <p className="mt-1 text-xs text-[#737373]">
@@ -1010,7 +1088,10 @@ export default function AdminDraftPage() {
                     {selectedSession.name}
                   </h2>
                   <p className="mt-1 text-sm text-[#a3a3a3]">
-                    Captains: {selectedSession.captain_rank || "-"} · Snake
+                    Captains: {selectedSession.captain_rank || "-"} ·{" "}
+                    {(selectedSession.draft_type || "snake") === "straight"
+                      ? "Straight"
+                      : "Snake"}
                   </p>
                 </div>
 
@@ -1036,6 +1117,50 @@ export default function AdminDraftPage() {
               >
                 Delete Draft Session
               </button>
+
+              {isPendingDraft && (
+                <div className="space-y-3 rounded-xl border border-[#242424] bg-black/40 p-4">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a3a3a3]">
+                      Draft Style
+                    </p>
+                    <p className="mt-1 text-xs text-[#737373]">
+                      You can change this until the draft starts.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    {draftTypes.map((type) => {
+                      const isSelected =
+                        (selectedSession.draft_type || "snake") === type.value;
+
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => handleUpdateDraftType(type.value)}
+                          className={`rounded-xl border px-3 py-3 text-left transition ${
+                            isSelected
+                              ? "border-[#f5f5f5] bg-[#f5f5f5] text-black"
+                              : "border-[#242424] bg-black text-[#a3a3a3] hover:border-[#f5f5f5]"
+                          }`}
+                        >
+                          <span className="block text-sm font-black">
+                            {type.label}
+                          </span>
+                          <span
+                            className={`mt-1 block text-[11px] font-semibold ${
+                              isSelected ? "text-black/65" : "text-[#737373]"
+                            }`}
+                          >
+                            {type.description}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </section>
 
             <section className="space-y-4 rounded-2xl border border-[#242424] bg-[#111111] p-5">

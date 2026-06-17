@@ -1,6 +1,7 @@
 import { getDisplayRankSortValue } from "@/lib/playerRanks";
 
 export type DraftStatus = "pending" | "active" | "complete";
+export type DraftType = "snake" | "straight";
 
 export type DraftSession = {
   id: string;
@@ -90,6 +91,7 @@ export function getOrderedTeams(teams: DraftTeam[], draftOrder?: string[] | null
 export function getCurrentDraftTeam(
   orderedTeams: DraftTeam[],
   completedPickCount: number,
+  draftType: string | null = "snake",
 ) {
   if (orderedTeams.length === 0) {
     return null;
@@ -97,6 +99,12 @@ export function getCurrentDraftTeam(
 
   const roundIndex = Math.floor(completedPickCount / orderedTeams.length);
   const indexInRound = completedPickCount % orderedTeams.length;
+  const normalizedDraftType = (draftType || "snake").toLowerCase();
+
+  if (normalizedDraftType === "straight") {
+    return orderedTeams[indexInRound] || null;
+  }
+
   const teamIndex =
     roundIndex % 2 === 0
       ? indexInRound

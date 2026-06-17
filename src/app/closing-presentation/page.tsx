@@ -15,6 +15,13 @@ import {
   MoneyTeam,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
 import {
+  aggregateParimutuelStandings,
+  calculateParimutuelSettlements,
+  createParimutuelPaymentRows,
+  ParimutuelBetLike,
+  ParimutuelResultLike,
+} from "@/lib/parimutuelSettlement";
+import {
   CampYear,
   currentCampYear,
   getCampYear,
@@ -25,12 +32,27 @@ import { supabase } from "@/lib/supabase";
 
 type EveningBet = {
   id: string;
+  betting_night: string | null;
+  money_round_day: string | null;
   market: string;
   selection: string;
   amount: number | string;
+  bettor_player_id: string;
   bettor_name: string;
   status: string | null;
   created_at: string | null;
+  parimutuel_market_id?: string | null;
+};
+
+type EveningResult = {
+  id: string;
+  parimutuel_market_id: string;
+  betting_night: string | null;
+  money_round_day: string | null;
+  market: string;
+  winning_selections: string[] | unknown;
+  resolved_at: string | null;
+  resolved_by_player_id: string | null;
 };
 
 type ShenanigansEvent = {
@@ -52,7 +74,8 @@ type ActivityFeedRow = {
 type PresentationSlide =
   | "opening"
   | "money_bank"
-  | "parimutuel"
+  | "parimutuel_summary"
+  | "parimutuel_settlement"
   | "money_rounds"
   | "skins"
   | "shenanigans"
@@ -62,7 +85,8 @@ type PresentationSlide =
 const slides: { id: PresentationSlide; label: string }[] = [
   { id: "opening", label: "Opening" },
   { id: "money_bank", label: "Money Bank" },
-  { id: "parimutuel", label: "Parimutuel" },
+  { id: "parimutuel_summary", label: "Parimutuel Summary" },
+  { id: "parimutuel_settlement", label: "Parimutuel Settlement" },
   { id: "money_rounds", label: "Money Rounds" },
   { id: "skins", label: "Skins" },
   { id: "shenanigans", label: "Shenanigans" },
@@ -102,6 +126,9 @@ export default function ClosingPresentationPage() {
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
   const [scores, setScores] = useState<MoneyScore[]>([]);
   const [bets, setBets] = useState<EveningBet[]>([]);
+  const [parimutuelResults, setParimutuelResults] = useState<EveningResult[]>(
+    [],
+  );
   const [shenanigansEvents, setShenanigansEvents] = useState<ShenanigansEvent[]>(
     [],
   );
@@ -148,6 +175,7 @@ export default function ClosingPresentationPage() {
       const [
         { data: roundData, error: roundError },
         { data: betData, error: betError },
+        { data: resultData, error: resultError },
         { data: shenanigansData, error: shenanigansError },
         { data: feedData },
       ] = await Promise.all([
@@ -160,6 +188,10 @@ export default function ClosingPresentationPage() {
           .from("evening_parimutuel_bets")
           .select("*")
           .order("created_at", { ascending: false }),
+        supabase
+          .from("evening_parimutuel_results")
+          .select("*")
+          .order("resolved_at", { ascending: false }),
         supabase
           .from("shenanigans_events")
           .select("*")
@@ -220,6 +252,9 @@ export default function ClosingPresentationPage() {
       setTeams(roundTeams);
       setScores(roundScores);
       setBets(betError ? [] : (betData as EveningBet[]) || []);
+      setParimutuelResults(
+        resultError ? [] : (resultData as EveningResult[]) || [],
+      );
       setShenanigansEvents(
         shenanigansError ? [] : (shenanigansData as ShenanigansEvent[]) || [],
       );
@@ -325,6 +360,35 @@ export default function ClosingPresentationPage() {
         .sort((a, b) => b.total - a.total || a.player.localeCompare(b.player)),
     };
   }, [bets]);
+  const parimutuelSettlements = useMemo(
+    () =>
+      calculateParimutuelSettlements(
+        bets as ParimutuelBetLike[],
+        parimutuelResults as ParimutuelResultLike[],
+      ),
+    [bets, parimutuelResults],
+  );
+  const parimutuelStandings = useMemo(
+    () => aggregateParimutuelStandings(parimutuelSettlements),
+    [parimutuelSettlements],
+  );
+  const parimutuelPaymentRows = useMemo(
+    () => createParimutuelPaymentRows(parimutuelStandings),
+    [parimutuelStandings],
+  );
+  const biggestParimutuelWinner = parimutuelStandings.find(
+    (row) => row.net > 0,
+  );
+  const totalParimutuelWinnings = parimutuelStandings.reduce(
+    (total, row) => total + row.winnings,
+    0,
+  );
+  const resolvedParimutuelMarkets = parimutuelSettlements.filter(
+    (settlement) => settlement.winningSelections.length > 0,
+  );
+  const topParimutuelStandings = parimutuelStandings
+    .slice()
+    .sort((a, b) => b.net - a.net || a.player.localeCompare(b.player));
   const shenanigansTotals = useMemo(() => {
     const playerTotals = new Map<string, number>();
 
@@ -463,21 +527,17 @@ export default function ClosingPresentationPage() {
           <div key={currentSlide} className="closing-slide w-full">
             {currentSlide === "opening" && (
               <div className="mx-auto max-w-6xl text-center">
-                <p className="closing-kicker">The Final Chapter</p>
+                <p className="closing-kicker closing-slide-kicker">The Final Chapter</p>
                 <h1 className="closing-title mt-6 text-7xl font-black tracking-[-0.08em] lg:text-9xl">
                   Golf Camp {currentCampYear} Complete
                 </h1>
-                <p className="mx-auto mt-8 max-w-3xl text-3xl font-semibold leading-tight text-[#d7c8a4]">
-                  The rounds are in. The side games are settled. The week has a
-                  story now.
-                </p>
               </div>
             )}
 
             {currentSlide === "money_bank" && (
               <div className="space-y-7">
                 <div>
-                  <p className="closing-kicker">Final Money Rounds Bank</p>
+                  <p className="closing-kicker closing-slide-kicker">Final Money Rounds Bank</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
                     Biggest Winners
                   </h1>
@@ -516,29 +576,98 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "parimutuel" && (
+            {currentSlide === "parimutuel_summary" && (
               <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
                 <div>
-                  <p className="closing-kicker">Parimutuel Bets</p>
+                  <p className="closing-kicker closing-slide-kicker">Parimutuel Bets</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
-                    Final Ledger
+                    Week Summary
                   </h1>
                   <p className="mt-6 text-3xl font-black text-[#d7c8a4]">
                     {money(parimutuelTotals.total)} backed
                   </p>
                   <p className="mt-3 text-xl text-[#b8b0a1]">
-                    Settlement results will appear here once markets are
-                    resolved.
+                    One camp-wide ledger. One final settlement.
                   </p>
                 </div>
 
                 {bets.length === 0 ? (
                   <EmptyState>No Parimutuel Bets ledger activity yet.</EmptyState>
                 ) : (
-                  <div className="closing-card rounded-[0.9rem] border p-6">
-                    <p className="closing-kicker text-[11px]">Top Markets</p>
-                    <div className="mt-5 space-y-3">
-                      {parimutuelTotals.markets.slice(0, 6).map((row) => (
+                  <div className="grid gap-4">
+                    <div className="grid gap-4 sm:grid-cols-3">
+                      <div className="closing-card rounded-[0.9rem] border p-5">
+                        <p className="closing-kicker text-[10px]">Markets</p>
+                        <p className="mt-3 text-4xl font-black text-[#d7c8a4]">
+                          {resolvedParimutuelMarkets.length}
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[#9b958b]">
+                          resolved
+                        </p>
+                      </div>
+
+                      <div className="closing-card rounded-[0.9rem] border p-5">
+                        <p className="closing-kicker text-[10px]">Paid Out</p>
+                        <p className="mt-3 text-4xl font-black text-[#d7c8a4]">
+                          {money(totalParimutuelWinnings)}
+                        </p>
+                        <p className="mt-2 text-sm font-semibold text-[#9b958b]">
+                          through pools
+                        </p>
+                      </div>
+
+                      <div className="closing-card rounded-[0.9rem] border p-5">
+                        <p className="closing-kicker text-[10px]">Top Net</p>
+                        <p className="mt-3 truncate text-2xl font-black text-[#f4f1ea]">
+                          {biggestParimutuelWinner?.player || "TBD"}
+                        </p>
+                        <p className="mt-1 text-3xl font-black text-[#d7c8a4]">
+                          {biggestParimutuelWinner
+                            ? money(biggestParimutuelWinner.net)
+                            : money(0)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="closing-card rounded-[0.9rem] border p-6">
+                      <p className="closing-kicker text-[11px]">Leaderboard</p>
+                      <div className="mt-5 space-y-3">
+                        {topParimutuelStandings.slice(0, 6).map((row, index) => (
+                          <div
+                            key={row.playerId}
+                            className="closing-stat-row grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-[0.6rem] border px-4 py-3"
+                          >
+                            <span className="font-mono text-lg font-black text-[#d7c8a4]">
+                              {index + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-xl font-black">
+                                {row.player}
+                              </p>
+                              <p className="mt-1 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#9b958b]">
+                                Bet {money(row.wagered)} · Won{" "}
+                                {money(row.winnings)}
+                              </p>
+                            </div>
+                            <p
+                              className={`text-2xl font-black ${
+                                row.net >= 0
+                                  ? "text-[#d7c8a4]"
+                                  : "text-[#ff8a8a]"
+                              }`}
+                            >
+                              {row.net >= 0 ? "+" : ""}
+                              {money(row.net)}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="closing-card rounded-[0.9rem] border p-6">
+                      <p className="closing-kicker text-[11px]">Top Markets</p>
+                      <div className="mt-5 space-y-3">
+                        {parimutuelTotals.markets.slice(0, 4).map((row) => (
                         <div
                           key={row.market}
                           className="closing-stat-row flex items-center justify-between gap-4 rounded-[0.6rem] border px-4 py-3"
@@ -546,6 +675,57 @@ export default function ClosingPresentationPage() {
                           <p className="text-xl font-black">{row.market}</p>
                           <p className="text-2xl font-black text-[#d7c8a4]">
                             {money(row.total)}
+                          </p>
+                        </div>
+                      ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {currentSlide === "parimutuel_settlement" && (
+              <div className="space-y-7">
+                <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
+                  <div>
+                    <p className="closing-kicker closing-slide-kicker">Parimutuel Settlement</p>
+                    <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
+                      Who Pays Who
+                    </h1>
+                  </div>
+
+                  <div className="closing-card max-w-md rounded-[0.9rem] border p-5 text-right">
+                    <p className="closing-kicker text-[10px]">Action Item</p>
+                    <p className="mt-2 text-2xl font-black text-[#d7c8a4]">
+                      Take a picture of this.
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-[#b8b0a1]">
+                      Make or collect payments after the presentation.
+                    </p>
+                  </div>
+                </div>
+
+                {parimutuelPaymentRows.length === 0 ? (
+                  <EmptyState>No Parimutuel settlement payments yet.</EmptyState>
+                ) : (
+                  <div className="closing-card rounded-[0.9rem] border p-6">
+                    <div className="grid gap-3 lg:grid-cols-2">
+                      {parimutuelPaymentRows.map((row) => (
+                        <div
+                          key={`${row.from}-${row.to}-${row.amount}`}
+                          className="closing-stat-row grid grid-cols-[1fr_auto] items-center gap-4 rounded-[0.6rem] border px-4 py-4"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-2xl font-black">
+                              {row.from}
+                            </p>
+                            <p className="mt-1 font-mono text-[10px] font-black uppercase tracking-[0.16em] text-[#9b958b]">
+                              pays {row.to}
+                            </p>
+                          </div>
+                          <p className="text-3xl font-black text-[#d7c8a4]">
+                            {money(row.amount)}
                           </p>
                         </div>
                       ))}
@@ -558,7 +738,7 @@ export default function ClosingPresentationPage() {
             {currentSlide === "money_rounds" && (
               <div className="space-y-7">
                 <div>
-                  <p className="closing-kicker">Money Rounds Summary</p>
+                  <p className="closing-kicker closing-slide-kicker">Money Rounds Summary</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
                     Official Winners
                   </h1>
@@ -611,7 +791,7 @@ export default function ClosingPresentationPage() {
             {currentSlide === "skins" && (
               <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
                 <div>
-                  <p className="closing-kicker">Skins Highlights</p>
+                  <p className="closing-kicker closing-slide-kicker">Skins Highlights</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
                     Hole Winners
                   </h1>
@@ -654,9 +834,9 @@ export default function ClosingPresentationPage() {
             {currentSlide === "shenanigans" && (
               <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
                 <div>
-                  <p className="closing-kicker">Shenanigans</p>
+                  <p className="closing-kicker closing-slide-kicker">Shenanigans</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
-                    Points & Lore
+                    Shenanigans Points
                   </h1>
                   <p className="mt-6 text-3xl font-black text-[#d7c8a4]">
                     {shenanigansEvents.length} logged events
@@ -689,7 +869,7 @@ export default function ClosingPresentationPage() {
             {currentSlide === "settlement" && (
               <div className="space-y-7">
                 <div>
-                  <p className="closing-kicker">Final Settlement</p>
+                  <p className="closing-kicker closing-slide-kicker">Final Settlement</p>
                   <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
                     What We Know
                   </h1>
@@ -714,7 +894,7 @@ export default function ClosingPresentationPage() {
                       {money(parimutuelTotals.total)}
                     </p>
                     <p className="mt-3 text-[#b8b0a1]">
-                      Total ledgered bets. Payout settlement can plug in later.
+                      Total ledgered bets tracked through the week.
                     </p>
                   </div>
 
@@ -733,13 +913,10 @@ export default function ClosingPresentationPage() {
 
             {currentSlide === "closing" && (
               <div className="mx-auto max-w-6xl text-center">
-                <p className="closing-kicker">Longview Invitational</p>
+                <p className="closing-kicker closing-slide-kicker">Longview Invitational</p>
                 <h1 className="closing-title mt-6 text-7xl font-black tracking-[-0.08em] lg:text-9xl">
                   See You Next Year
                 </h1>
-                <p className="mx-auto mt-8 max-w-3xl text-3xl font-semibold leading-tight text-[#d7c8a4]">
-                  Same place. Same people. Better stories.
-                </p>
               </div>
             )}
           </div>
@@ -882,6 +1059,12 @@ export default function ClosingPresentationPage() {
         .closing-kicker {
           color: var(--closing-accent);
           text-shadow: 0 0 24px color-mix(in srgb, var(--closing-accent) 18%, transparent);
+        }
+
+        .closing-slide-kicker {
+          font-size: clamp(1.05rem, 1.4vw, 1.65rem);
+          letter-spacing: 0.2em;
+          line-height: 1;
         }
 
         .closing-pill {

@@ -167,16 +167,22 @@ export default function DraftLivePage() {
   const isCompleteDraft =
     session && completedDraftStatuses.includes(String(session.status));
   const currentTeam = useMemo(
-    () => getCurrentDraftTeam(orderedTeams, picks.length),
-    [orderedTeams, picks.length],
+    () => getCurrentDraftTeam(orderedTeams, picks.length, session?.draft_type),
+    [orderedTeams, picks.length, session?.draft_type],
   );
   const onDeckTeam = useMemo(() => {
     if (availablePlayers.length <= 1 || isCompleteDraft) {
       return null;
     }
 
-    return getCurrentDraftTeam(orderedTeams, picks.length + 1);
-  }, [availablePlayers.length, isCompleteDraft, orderedTeams, picks.length]);
+    return getCurrentDraftTeam(orderedTeams, picks.length + 1, session?.draft_type);
+  }, [
+    availablePlayers.length,
+    isCompleteDraft,
+    orderedTeams,
+    picks.length,
+    session?.draft_type,
+  ]);
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
     [players],

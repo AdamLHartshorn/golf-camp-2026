@@ -134,8 +134,8 @@ export default function DraftMobilePage() {
   );
   const picksByTeam = useMemo(() => getPicksByTeam(picks), [picks]);
   const currentTeam = useMemo(
-    () => getCurrentDraftTeam(orderedTeams, picks.length),
-    [orderedTeams, picks.length],
+    () => getCurrentDraftTeam(orderedTeams, picks.length, session?.draft_type),
+    [orderedTeams, picks.length, session?.draft_type],
   );
   const playersById = useMemo(
     () => new Map(players.map((player) => [player.id, player])),
