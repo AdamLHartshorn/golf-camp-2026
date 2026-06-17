@@ -106,11 +106,18 @@ const modules = [
   lightAccent?: string;
 })[];
 
+const welcomeSeenKey = "golfCampWelcomeSeen:v1";
+
 export default function HomePage() {
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [feedItems, setFeedItems] = useState<ActivityFeedItem[]>([]);
   const [isLoadingFeed, setIsLoadingFeed] = useState(true);
   const [campYear, setCampYear] = useState<CampYear | null>(null);
+  const [showWelcome, setShowWelcome] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      !window.localStorage.getItem(welcomeSeenKey),
+  );
   const router = useRouter();
 
   useEffect(() => {
@@ -126,6 +133,11 @@ export default function HomePage() {
   function handleLogout() {
     clearPlayerSession();
     router.push("/");
+  }
+
+  function dismissWelcome() {
+    window.localStorage.setItem(welcomeSeenKey, "true");
+    setShowWelcome(false);
   }
 
   useEffect(() => {
@@ -224,6 +236,76 @@ export default function HomePage() {
           onLogout={handleLogout}
         />
       </div>
+
+      {showWelcome && session && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/72 px-4 py-5 backdrop-blur-sm sm:items-center">
+          <section className="welcome-card w-full max-w-md overflow-hidden rounded-[0.75rem] border p-5 shadow-[0_24px_80px_rgba(0,0,0,0.48)]">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="font-mono text-[11px] font-black uppercase tracking-[0.22em] text-[#c93a4d]">
+                  Golf Camp App 101
+                </p>
+                <h2 className="mt-2 font-mono text-[1.65rem] font-black uppercase leading-none tracking-[0.08em] text-[#f4f1ea]">
+                  Welcome to Golf Camp
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={dismissWelcome}
+                className="rounded-[0.45rem] border border-[#f4f1ea]/18 px-3 py-2 font-mono text-xs font-black uppercase tracking-[0.12em] text-[#c8bfae] transition hover:border-[#c93a4d]/60 hover:text-[#f4f1ea]"
+              >
+                Skip
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                {
+                  title: "Start with Camp Office",
+                  body: "Roster, schedule, rooms, App 101, and feedback live there.",
+                },
+                {
+                  title: "Money stays simple",
+                  body: "Money Rounds, Parimutuel Bets, Afternoon Rounds, and Shenanigans all track who paid, who won, who owes, and how to settle.",
+                },
+                {
+                  title: "Watch LIVE CAMP FEED",
+                  body: "Important camp updates, results, and app activity roll through Home.",
+                },
+                {
+                  title: "Use the modules as events happen",
+                  body: "Draft, Money Rounds, Parimutuel Bets, Shenanigans, Afternoon Rounds, and Night Golf each have their own lane.",
+                },
+              ].map((item, index) => (
+                <div
+                  key={item.title}
+                  className="welcome-step grid grid-cols-[2.25rem_1fr] gap-3 rounded-[0.55rem] border p-3"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-[0.45rem] border font-mono text-sm font-black text-[#f4f1ea]">
+                    {index + 1}
+                  </span>
+                  <span>
+                    <span className="block font-mono text-[13px] font-black uppercase tracking-[0.12em] text-[#f4f1ea]">
+                      {item.title}
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold leading-5 text-[#c8bfae]">
+                      {item.body}
+                    </span>
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={dismissWelcome}
+              className="mt-5 w-full rounded-[0.55rem] border border-[#c93a4d]/65 bg-[#c93a4d]/18 px-4 py-4 font-mono text-sm font-black uppercase tracking-[0.14em] text-[#f4f1ea] shadow-[0_0_34px_rgba(201,58,77,0.2)] transition hover:bg-[#c93a4d]/26"
+            >
+              Got it
+            </button>
+          </section>
+        </div>
+      )}
     </CinematicHomeShell>
   );
 }
