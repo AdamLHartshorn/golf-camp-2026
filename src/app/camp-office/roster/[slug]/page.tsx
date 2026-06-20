@@ -190,7 +190,9 @@ export default function PlayerProfilePage() {
                   {typeof player.years_served === "number"
                     ? player.years_served === 0
                       ? "Rookie"
-                      : `${player.years_served} Years Served`
+                      : `${player.years_served} ${
+                          player.years_served === 1 ? "Year" : "Years"
+                        } Served`
                     : `Room ${player.room || "-"}`}
                 </p>
               </div>

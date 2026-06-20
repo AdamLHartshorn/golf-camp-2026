@@ -87,7 +87,7 @@ export default function CampRosterPage() {
         <div className="gc-edge-card text-[#f5f5f5]">
           <div className="gc-section-head">
             <p className="gc-card-kicker">
-              Players, rooms, arrivals
+              Players, rooms, years served
             </p>
           </div>
           <div className="grid grid-cols-[5rem_1fr_3rem] border-b border-[#2a2925] px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#b8b0a1]">
@@ -144,8 +144,10 @@ export default function CampRosterPage() {
                   {typeof player.years_served === "number"
                     ? player.years_served === 0
                       ? "Rookie"
-                      : `${player.years_served} Years Served`
-                    : player.arrival || "Arrival TBD"}
+                      : `${player.years_served} ${
+                          player.years_served === 1 ? "Year" : "Years"
+                        } Served`
+                    : "Years TBD"}
                 </p>
               </div>
 
