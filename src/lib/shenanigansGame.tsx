@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 const currentGameKey = "shenanigansCurrentGameId";
@@ -77,10 +76,14 @@ export function useShenanigansGame() {
     }
 
     const nextGames = (gamesData as ShenanigansGame[]) || [];
+    const activeGames = nextGames.filter(
+      (game) =>
+        !game.status || game.status === "active" || game.status === "open",
+    );
     const storedGameId = getCurrentShenanigansGameId();
     const selectedGame =
-      nextGames.find((game) => game.id === storedGameId) ||
-      nextGames.find((game) => game.status === "active") ||
+      activeGames.find((game) => game.id === storedGameId) ||
+      activeGames[0] ||
       null;
 
     setGames(nextGames);
@@ -173,13 +176,11 @@ export function useShenanigansGame() {
 }
 
 export function ShenanigansGameBar({
-  selectedGame,
   games,
   selectedGameId,
   isLoadingGame,
   gameError,
   onSwitchGame,
-  onEndGame,
 }: {
   selectedGame: ShenanigansGame | null;
   games: ShenanigansGame[];
@@ -189,30 +190,25 @@ export function ShenanigansGameBar({
   onSwitchGame: (gameId: string) => void;
   onEndGame: () => void;
 }) {
+  const activeGames = games.filter(
+    (game) => !game.status || game.status === "active" || game.status === "open",
+  );
+
   return (
     <section className="overflow-hidden rounded-2xl border border-[#242424] bg-[linear-gradient(90deg,rgba(235,156,92,0.18),rgba(17,17,17,0.98)_42%,rgba(17,17,17,0.92))] shadow-[0_0_28px_rgba(235,156,92,0.1)]">
       <div className="flex items-center justify-between gap-3 border-b border-[#242424] px-4 py-3">
         <div className="min-w-0">
-          <p className="font-mono text-[9px] font-black uppercase tracking-[0.2em] text-[#EB9C5C]">
-            Current Game
-          </p>
-          <p className="mt-1 truncate text-sm font-black text-[#f5f5f5]">
-            {selectedGame?.name || (isLoadingGame ? "Loading..." : "No game selected")}
-          </p>
+          <h2 className="font-mono text-sm font-black uppercase tracking-[0.22em] text-[#f5f5f5]">
+            Active Games
+          </h2>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          {selectedGame && (
+          {activeGames.length > 0 && (
             <span className="rounded-full border border-[#EB9C5C]/70 bg-black/35 px-2.5 py-1 font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#EB9C5C]">
-              {selectedGame.status || "active"}
+              {activeGames.length} active
             </span>
           )}
-          <Link
-            href="/shenanigans"
-            className="rounded-full border border-[#EB9C5C]/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#d4d4d4] transition hover:border-[#EB9C5C] hover:text-[#f5f5f5]"
-          >
-            New
-          </Link>
         </div>
       </div>
 
@@ -224,46 +220,44 @@ export function ShenanigansGameBar({
         <p className="px-4 py-3 text-sm text-[#fca5a5]">{gameError}</p>
       )}
 
-      {!isLoadingGame && !selectedGame && (
+      {!isLoadingGame && !gameError && activeGames.length === 0 && (
         <div className="space-y-3 px-4 py-3">
           <p className="text-sm text-[#a3a3a3]">
-            Start or select a Shenanigans game before logging live activity.
+            No active Shenanigans games yet. Use Start New Game on the Shenanigans home page when the group is ready.
           </p>
-          <Link
-            href="/shenanigans"
-            className="block rounded-xl border border-[#b91c1c] px-4 py-3 text-center text-sm font-bold text-[#b91c1c]"
-          >
-            Start Game
-          </Link>
         </div>
       )}
 
-      {selectedGame && (
-        <div className="grid gap-2 px-4 py-3 sm:grid-cols-[1fr_auto]">
-          <select
-            value={selectedGameId}
-            onChange={(event) => onSwitchGame(event.target.value)}
-            aria-label="Switch Shenanigans game"
-            className="min-w-0 rounded-xl border border-[#242424] bg-black/70 px-3 py-2 text-sm outline-none focus:border-[#EB9C5C]"
-          >
-            {games.map((game) => (
-              <option key={game.id} value={game.id}>
-                {game.name} ({game.status || "active"})
-              </option>
-            ))}
-          </select>
+      {!isLoadingGame && !gameError && activeGames.length > 0 && (
+        <div className="space-y-2 px-4 py-3">
+          {activeGames.map((game) => {
+            const isSelected = game.id === selectedGameId;
 
-          <div className="flex gap-2">
-            {selectedGame.status === "active" && (
+            return (
               <button
+                key={game.id}
                 type="button"
-                onClick={onEndGame}
-                className="shrink-0 rounded-xl border border-[#242424] px-3 py-2 text-xs font-bold text-[#a3a3a3] transition hover:border-[#EB9C5C]"
+                onClick={() => onSwitchGame(game.id)}
+                className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left transition ${
+                  isSelected
+                    ? "border-[#EB9C5C] bg-[#EB9C5C]/14 shadow-[0_0_18px_rgba(235,156,92,0.12)]"
+                    : "border-[#242424] bg-black/35 hover:border-[#EB9C5C]/70"
+                }`}
               >
-                End Game
+                <span className="min-w-0">
+                  <span className="block truncate text-sm font-black text-[#f5f5f5]">
+                    {game.name}
+                  </span>
+                  <span className="mt-0.5 block font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#a3a3a3]">
+                    {isSelected ? "Selected" : "Tap to select"}
+                  </span>
+                </span>
+                <span className="font-mono text-[9px] font-black uppercase tracking-[0.14em] text-[#EB9C5C]">
+                  {game.status || "active"}
+                </span>
               </button>
-            )}
-          </div>
+            );
+          })}
         </div>
       )}
     </section>

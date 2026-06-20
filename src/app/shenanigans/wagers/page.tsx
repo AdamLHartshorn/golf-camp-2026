@@ -301,6 +301,21 @@ export default function ShenanigansWagersPage() {
     });
 
     try {
+      const { data: eventData, error: eventError } = await supabase
+        .from("shenanigans_events")
+        .insert(ledgerEvents)
+        .select();
+
+      console.log("shenanigans_events wager settlement insert result:", {
+        data: eventData,
+        error: eventError,
+      });
+
+      if (eventError) {
+        setError(eventError.message || "Could not write wager points to the ledger.");
+        return;
+      }
+
       const { data: updateData, error: updateError } = await supabase
         .from("shenanigans_wagers")
         .update(updatePayload)
@@ -313,22 +328,15 @@ export default function ShenanigansWagersPage() {
       });
 
       if (updateError) {
-        setError(updateError.message || "Could not settle wager.");
-        return;
-      }
+        const eventIds = (eventData || [])
+          .map((event) => event.id)
+          .filter((eventId): eventId is string => Boolean(eventId));
 
-      const { data: eventData, error: eventError } = await supabase
-        .from("shenanigans_events")
-        .insert(ledgerEvents)
-        .select();
+        if (eventIds.length > 0) {
+          await supabase.from("shenanigans_events").delete().in("id", eventIds);
+        }
 
-      console.log("shenanigans_events wager settlement insert result:", {
-        data: eventData,
-        error: eventError,
-      });
-
-      if (eventError) {
-        setError(eventError.message || "Wager settled, but ledger insert failed.");
+        setError(updateError.message || "Could not mark wager settled.");
         return;
       }
 

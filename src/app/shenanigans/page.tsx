@@ -83,7 +83,7 @@ export default function ShenanigansPage() {
     refreshGameState,
   } = useShenanigansGame();
   const { players, isLoading: isLoadingPlayers } = useActivePlayers();
-  const [gameName, setGameName] = useState("New Shenanigans Game");
+  const [gameName, setGameName] = useState("");
   const [selectedPlayerNames, setSelectedPlayerNames] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [message, setMessage] = useState("");
@@ -192,6 +192,45 @@ export default function ShenanigansPage() {
     setIsCreating(false);
   }
 
+  async function handleEndSelectedGame() {
+    if (!selectedGame) {
+      return;
+    }
+
+    const confirmed = window.confirm(`End ${selectedGame.name}?`);
+
+    if (!confirmed) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    const selectedName = selectedGame.name;
+    const { error: endError } = await supabase
+      .from("shenanigans_games")
+      .update({ status: "ended", ended_at: new Date().toISOString() })
+      .eq("id", selectedGame.id);
+
+    if (endError) {
+      setError(endError.message || "Could not end game.");
+      showToast({
+        title: "Game Not Ended",
+        message: endError.message || "Could not end game.",
+        tone: "error",
+        accent: "#EB9C5C",
+      });
+      return;
+    }
+
+    await refreshGameState();
+    setMessage("Game ended.");
+    showToast({
+      title: "Game Ended",
+      message: `${selectedName} has been closed.`,
+      accent: "#EB9C5C",
+    });
+  }
+
   return (
     <main className="gc-mobile-shell" style={{ "--page-accent": "#EB9C5C" } as CSSProperties}>
       <div className="gc-mobile-stage">
@@ -217,32 +256,27 @@ export default function ShenanigansPage() {
           onEndGame={endGame}
         />
 
-        <div className="gc-edge-list">
-          {cards.map((card) => (
-            <Link
-              key={card.name}
-              href={card.href}
-              className="gc-edge-row"
-            >
-              <span className="gc-edge-mark">
-                <GolfCampIcon name={card.icon} className="h-6 w-6" />
-              </span>
-                <div className="min-w-0">
-                  <h2 className="gc-edge-title">
-                    {card.name}
-                  </h2>
-
-                  <p className="gc-edge-meta">
-                    {card.description}
-                  </p>
-                </div>
-
-                <span className="gc-edge-arrow">
-                  →
-                </span>
-            </Link>
-          ))}
-        </div>
+        {selectedGame && selectedGame.status === "active" && (
+          <section className="gc-edge-card">
+            <div className="flex items-center justify-between gap-3 p-4">
+              <div className="min-w-0">
+                <p className="font-mono text-[9px] font-black uppercase tracking-[0.18em] text-[#EB9C5C]">
+                  Selected Game
+                </p>
+                <h2 className="mt-1 truncate text-lg font-black text-[#f5f5f5]">
+                  {selectedGame.name}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={handleEndSelectedGame}
+                className="shrink-0 rounded-xl border border-[#EB9C5C]/60 px-3 py-2 text-xs font-black uppercase tracking-[0.12em] text-[#EB9C5C] transition hover:border-[#EB9C5C] hover:bg-[#EB9C5C]/10"
+              >
+                End Game
+              </button>
+            </div>
+          </section>
+        )}
 
         <section className="gc-edge-card">
           <div className="gc-section-head">
@@ -294,6 +328,33 @@ export default function ShenanigansPage() {
 
         {message && <p className="text-center text-sm">{message}</p>}
         {error && <p className="text-center text-sm text-[#fca5a5]">{error}</p>}
+
+        <div className="gc-edge-list">
+          {cards.map((card) => (
+            <Link
+              key={card.name}
+              href={card.href}
+              className="gc-edge-row"
+            >
+              <span className="gc-edge-mark">
+                <GolfCampIcon name={card.icon} className="h-6 w-6" />
+              </span>
+                <div className="min-w-0">
+                  <h2 className="gc-edge-title">
+                    {card.name}
+                  </h2>
+
+                  <p className="gc-edge-meta">
+                    {card.description}
+                  </p>
+                </div>
+
+                <span className="gc-edge-arrow">
+                  →
+                </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </main>
   );
