@@ -82,23 +82,23 @@ export default function RulesPage() {
             <h2 className="text-2xl font-bold">Scoring</h2>
 
             <div className="mt-4 space-y-3">
-              <div className="flex items-center justify-between rounded-xl bg-black p-4">
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
                 <span>Missed both shots</span>
 
-                <span className="font-bold text-[#a3a3a3]">
+                <span className="font-bold text-[#f472b6]">
                   0
                 </span>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-black p-4">
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
                 <span>Stuck one shot</span>
 
-                <span className="font-bold text-[#f5f5f5]">
+                <span className="font-bold text-[#f472b6]">
                   1
                 </span>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl bg-black p-4">
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
                 <span>Stuck both shots</span>
 
                 <span className="font-bold text-[#f472b6]">
@@ -106,11 +106,27 @@ export default function RulesPage() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between rounded-xl border border-[#ec4899] bg-black p-4">
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
                 <span>Hole-Out</span>
 
                 <span className="font-bold text-[#f472b6]">
                   5
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
+                <span>Hole-Out + one stuck shot</span>
+
+                <span className="font-bold text-[#f472b6]">
+                  6
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-[#ec4899]/55 bg-[#140812] p-4">
+                <span>Double Hole-Out</span>
+
+                <span className="font-bold text-[#f472b6]">
+                  10
                 </span>
               </div>
             </div>

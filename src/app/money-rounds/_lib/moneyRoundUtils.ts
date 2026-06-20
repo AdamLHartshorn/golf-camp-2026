@@ -67,6 +67,26 @@ export type MoneyPlayer = {
   first_name: string;
   last_name: string;
   display_name: string;
+  photo_url?: string | null;
+};
+
+export type HoleInOnePlayer = {
+  id?: string | null;
+  name: string;
+  photoUrl?: string | null;
+};
+
+export type HoleInOneHighlight = {
+  id: string;
+  roundId?: string | null;
+  roundName?: string;
+  team: MoneyTeam;
+  hole: number;
+  par: number;
+  handicap: number | null;
+  averageScore: number | null;
+  averageRelativeToPar: number | null;
+  players: HoleInOnePlayer[];
 };
 
 export type TeamStanding = {
@@ -506,6 +526,82 @@ export function calculateRoundMoney(round: MoneyRound | null, teams: MoneyTeam[]
       (teamScores) => Object.keys(teamScores).length > 0,
     ),
   };
+}
+
+export function getHoleAverage(scores: MoneyScore[], hole: number) {
+  const holeScores = scores
+    .filter((score) => Number(score.hole_number) === hole)
+    .map((score) => validScoreNumber(score.score))
+    .filter((score): score is number => score !== null);
+
+  if (holeScores.length === 0) {
+    return null;
+  }
+
+  return holeScores.reduce((total, score) => total + score, 0) / holeScores.length;
+}
+
+export function buildHoleInOneHighlights(
+  teams: MoneyTeam[],
+  scores: MoneyScore[],
+  players: MoneyPlayer[] = [],
+  round?: Pick<MoneyRound, "id" | "name"> | null,
+) {
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  const playersByName = new Map(
+    players.map((player) => [player.display_name.toLowerCase(), player]),
+  );
+  const teamsById = new Map(teams.map((team) => [team.id, team]));
+
+  return scores
+    .filter((score) => Number(score.score) === 1)
+    .map((score): HoleInOneHighlight | null => {
+      const hole = Number(score.hole_number);
+      const team = teamsById.get(score.money_round_team_id);
+      const metadata = moneyRoundScorecard.find((item) => item.hole === hole);
+
+      if (!team || !metadata) {
+        return null;
+      }
+
+      const averageScore = getHoleAverage(scores, hole);
+      const teamPlayers =
+        team.player_ids?.length > 0
+          ? team.player_ids.map((playerId, index) => {
+              const matchedPlayer = playersById.get(playerId);
+              const fallbackName = team.player_names?.[index] || matchedPlayer?.display_name;
+
+              return {
+                id: playerId,
+                name: matchedPlayer?.display_name || fallbackName || "Unknown Player",
+                photoUrl: matchedPlayer?.photo_url || null,
+              };
+            })
+          : (team.player_names || []).map((playerName) => {
+              const matchedPlayer = playersByName.get(playerName.toLowerCase());
+
+              return {
+                id: matchedPlayer?.id || null,
+                name: matchedPlayer?.display_name || playerName,
+                photoUrl: matchedPlayer?.photo_url || null,
+              };
+            });
+
+      return {
+        id: `${round?.id || score.money_round_id || "round"}-${team.id}-${hole}`,
+        roundId: round?.id || score.money_round_id || null,
+        roundName: round?.name,
+        team,
+        hole,
+        par: metadata.par,
+        handicap: metadata.handicap,
+        averageScore,
+        averageRelativeToPar:
+          averageScore === null ? null : averageScore - metadata.par,
+        players: teamPlayers,
+      };
+    })
+    .filter((highlight): highlight is HoleInOneHighlight => Boolean(highlight));
 }
 
 export function isScoredOrFinalRound(round: MoneyRound) {

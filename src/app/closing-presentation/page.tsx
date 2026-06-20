@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
+  buildHoleInOneHighlights,
   buildYearlyMoneyBank,
   calculateRoundMoney,
   compareTeamStandingsBestFirst,
@@ -10,7 +12,9 @@ import {
   isCurrentYearRound,
   isScoredOrFinalRound,
   money,
+  moneyRoundScorecard,
   MoneyRound,
+  MoneyPlayer,
   MoneyScore,
   MoneyTeam,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
@@ -71,6 +75,42 @@ type ActivityFeedRow = {
   created_at: string | null;
 };
 
+type AfternoonRound = {
+  id: string;
+  name: string;
+  round_date: string | null;
+  status: string | null;
+};
+
+type AfternoonRoundTeam = {
+  id: string;
+  afternoon_round_id: string;
+  name: string;
+  player_ids: string[];
+  player_names: string[];
+};
+
+type AfternoonRoundScore = {
+  id: string;
+  afternoon_round_id: string;
+  afternoon_round_team_id: string;
+  hole_number: number | null;
+  score: number;
+};
+
+type ClosingHoleInOneHighlight = {
+  id: string;
+  source: string;
+  roundName: string;
+  teamName: string;
+  hole: number;
+  par: number;
+  handicap: number | null;
+  averageScore: number | null;
+  averageRelativeToPar: number | null;
+  players: { id?: string | null; name: string; photoUrl?: string | null }[];
+};
+
 type PresentationSlide =
   | "opening"
   | "money_bank"
@@ -78,6 +118,7 @@ type PresentationSlide =
   | "parimutuel_settlement"
   | "money_rounds"
   | "skins"
+  | "hole_in_ones"
   | "shenanigans"
   | "settlement"
   | "closing";
@@ -89,6 +130,7 @@ const slides: { id: PresentationSlide; label: string }[] = [
   { id: "parimutuel_settlement", label: "Parimutuel Settlement" },
   { id: "money_rounds", label: "Money Rounds" },
   { id: "skins", label: "Skins" },
+  { id: "hole_in_ones", label: "Hole-In-Ones" },
   { id: "shenanigans", label: "Shenanigans" },
   { id: "settlement", label: "Settlement" },
   { id: "closing", label: "Closing" },
@@ -111,6 +153,86 @@ function formatDate(value: string | null) {
   });
 }
 
+function isFinalAfternoonRound(round: AfternoonRound) {
+  const status = String(round.status || "").trim().toLowerCase();
+  return status === "final" || status === "finalized";
+}
+
+function buildAfternoonHoleInOneHighlights(
+  rounds: AfternoonRound[],
+  teams: AfternoonRoundTeam[],
+  scores: AfternoonRoundScore[],
+  players: MoneyPlayer[],
+) {
+  const roundsById = new Map(rounds.map((round) => [round.id, round]));
+  const teamsById = new Map(teams.map((team) => [team.id, team]));
+  const playersById = new Map(players.map((player) => [player.id, player]));
+  const playersByName = new Map(
+    players.map((player) => [player.display_name.toLowerCase(), player]),
+  );
+
+  return scores
+    .filter((score) => Number(score.score) === 1)
+    .map((score): ClosingHoleInOneHighlight | null => {
+      const hole = Number(score.hole_number);
+      const round = roundsById.get(score.afternoon_round_id);
+      const team = teamsById.get(score.afternoon_round_team_id);
+      const metadata = moneyRoundScorecard.find((item) => item.hole === hole);
+
+      if (!round || !team || !metadata) {
+        return null;
+      }
+
+      const holeScores = scores
+        .filter(
+          (item) =>
+            item.afternoon_round_id === round.id && Number(item.hole_number) === hole,
+        )
+        .map((item) => Number(item.score))
+        .filter((scoreValue) => Number.isFinite(scoreValue));
+      const averageScore =
+        holeScores.length > 0
+          ? holeScores.reduce((total, scoreValue) => total + scoreValue, 0) /
+            holeScores.length
+          : null;
+      const teamPlayers =
+        team.player_ids?.length > 0
+          ? team.player_ids.map((playerId, index) => {
+              const matchedPlayer = playersById.get(playerId);
+              const fallbackName = team.player_names?.[index] || matchedPlayer?.display_name;
+
+              return {
+                id: playerId,
+                name: matchedPlayer?.display_name || fallbackName || "Unknown Player",
+                photoUrl: matchedPlayer?.photo_url || null,
+              };
+            })
+          : (team.player_names || []).map((playerName) => {
+              const matchedPlayer = playersByName.get(playerName.toLowerCase());
+
+              return {
+                id: matchedPlayer?.id || null,
+                name: matchedPlayer?.display_name || playerName,
+                photoUrl: matchedPlayer?.photo_url || null,
+              };
+            });
+
+      return {
+        id: `afternoon-${round.id}-${team.id}-${hole}`,
+        source: "Afternoon Round",
+        roundName: round.name,
+        teamName: team.name,
+        hole,
+        par: metadata.par,
+        handicap: metadata.handicap,
+        averageScore,
+        averageRelativeToPar: averageScore === null ? null : averageScore - metadata.par,
+        players: teamPlayers,
+      };
+    })
+    .filter((highlight): highlight is ClosingHoleInOneHighlight => Boolean(highlight));
+}
+
 function EmptyState({ children }: { children: string }) {
   return (
     <div className="closing-card rounded-[0.8rem] border p-8 text-center text-2xl font-bold text-[#b8b0a1]">
@@ -125,6 +247,10 @@ export default function ClosingPresentationPage() {
   const [rounds, setRounds] = useState<MoneyRound[]>([]);
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
   const [scores, setScores] = useState<MoneyScore[]>([]);
+  const [players, setPlayers] = useState<MoneyPlayer[]>([]);
+  const [afternoonRounds, setAfternoonRounds] = useState<AfternoonRound[]>([]);
+  const [afternoonTeams, setAfternoonTeams] = useState<AfternoonRoundTeam[]>([]);
+  const [afternoonScores, setAfternoonScores] = useState<AfternoonRoundScore[]>([]);
   const [bets, setBets] = useState<EveningBet[]>([]);
   const [parimutuelResults, setParimutuelResults] = useState<EveningResult[]>(
     [],
@@ -138,8 +264,6 @@ export default function ClosingPresentationPage() {
   const [error, setError] = useState("");
   const [schemaMissing, setSchemaMissing] = useState(false);
 
-  const slideIndex = slides.findIndex((slide) => slide.id === currentSlide);
-  const slide = slides[slideIndex] || slides[0];
   const isAdminPreview = Boolean(session?.is_admin && !isCampYearFinalized(campYear));
   const canView = isCampYearFinalized(campYear) || Boolean(session?.is_admin);
 
@@ -177,6 +301,8 @@ export default function ClosingPresentationPage() {
         { data: betData, error: betError },
         { data: resultData, error: resultError },
         { data: shenanigansData, error: shenanigansError },
+        { data: playerData, error: playerError },
+        { data: afternoonRoundData, error: afternoonRoundError },
         { data: feedData },
       ] = await Promise.all([
         supabase
@@ -197,6 +323,12 @@ export default function ClosingPresentationPage() {
           .select("*")
           .order("created_at", { ascending: false })
           .limit(200),
+        supabase.from("players").select("id, display_name, photo_url"),
+        supabase
+          .from("afternoon_rounds")
+          .select("id, name, round_date, status")
+          .in("status", ["final", "finalized"])
+          .order("round_date", { ascending: true }),
         supabase
           .from("activity_feed")
           .select("id, source, message, created_at")
@@ -220,6 +352,12 @@ export default function ClosingPresentationPage() {
       const roundIds = currentYearRounds.map((round) => round.id);
       let roundTeams: MoneyTeam[] = [];
       let roundScores: MoneyScore[] = [];
+      const finalizedAfternoonRounds = afternoonRoundError
+        ? []
+        : ((afternoonRoundData as AfternoonRound[]) || [])
+            .filter((round) => isFinalAfternoonRound(round));
+      let nextAfternoonTeams: AfternoonRoundTeam[] = [];
+      let nextAfternoonScores: AfternoonRoundScore[] = [];
 
       if (roundIds.length > 0) {
         const [
@@ -248,9 +386,45 @@ export default function ClosingPresentationPage() {
         roundScores = (scoreData as MoneyScore[]) || [];
       }
 
+      const afternoonRoundIds = finalizedAfternoonRounds.map((round) => round.id);
+
+      if (afternoonRoundIds.length > 0) {
+        const [
+          { data: afternoonTeamData, error: afternoonTeamError },
+          { data: afternoonScoreData, error: afternoonScoreError },
+        ] = await Promise.all([
+          supabase
+            .from("afternoon_round_teams")
+            .select("*")
+            .in("afternoon_round_id", afternoonRoundIds),
+          supabase
+            .from("afternoon_round_scores")
+            .select("*")
+            .in("afternoon_round_id", afternoonRoundIds),
+        ]);
+
+        if (!isCurrent) {
+          return;
+        }
+
+        if (afternoonTeamError || afternoonScoreError) {
+          console.warn(
+            "Could not load Afternoon Round hole-in-one data:",
+            afternoonTeamError?.message || afternoonScoreError?.message,
+          );
+        } else {
+          nextAfternoonTeams = (afternoonTeamData as AfternoonRoundTeam[]) || [];
+          nextAfternoonScores = (afternoonScoreData as AfternoonRoundScore[]) || [];
+        }
+      }
+
       setRounds(currentYearRounds);
       setTeams(roundTeams);
       setScores(roundScores);
+      setPlayers(playerError ? [] : (playerData as MoneyPlayer[]) || []);
+      setAfternoonRounds(finalizedAfternoonRounds);
+      setAfternoonTeams(nextAfternoonTeams);
+      setAfternoonScores(nextAfternoonScores);
       setBets(betError ? [] : (betData as EveningBet[]) || []);
       setParimutuelResults(
         resultError ? [] : (resultData as EveningResult[]) || [],
@@ -337,6 +511,48 @@ export default function ClosingPresentationPage() {
       (a, b) => b.count - a.count || b.value - a.value || a.teamName.localeCompare(b.teamName),
     );
   }, [roundSummaries]);
+  const closingHoleInOnes = useMemo<ClosingHoleInOneHighlight[]>(() => {
+    const moneyHighlights = rounds.flatMap((round) =>
+      buildHoleInOneHighlights(
+        teamsByRound[round.id] || [],
+        scoresByRound[round.id] || [],
+        players,
+        round,
+      ).map((highlight) => ({
+        id: `money-${highlight.id}`,
+        source: "Money Round",
+        roundName: highlight.roundName || round.name,
+        teamName: highlight.team.name,
+        hole: highlight.hole,
+        par: highlight.par,
+        handicap: highlight.handicap,
+        averageScore: highlight.averageScore,
+        averageRelativeToPar: highlight.averageRelativeToPar,
+        players: highlight.players,
+      })),
+    );
+    const afternoonHighlights = buildAfternoonHoleInOneHighlights(
+      afternoonRounds,
+      afternoonTeams,
+      afternoonScores,
+      players,
+    );
+
+    return [...moneyHighlights, ...afternoonHighlights].sort(
+      (a, b) =>
+        a.roundName.localeCompare(b.roundName) ||
+        a.hole - b.hole ||
+        a.teamName.localeCompare(b.teamName),
+    );
+  }, [
+    afternoonRounds,
+    afternoonScores,
+    afternoonTeams,
+    players,
+    rounds,
+    scoresByRound,
+    teamsByRound,
+  ]);
   const parimutuelTotals = useMemo(() => {
     const marketTotals = new Map<string, number>();
     const bettorTotals = new Map<string, number>();
@@ -404,13 +620,22 @@ export default function ClosingPresentationPage() {
       .map(([player, points]) => ({ player, points }))
       .sort((a, b) => b.points - a.points || a.player.localeCompare(b.player));
   }, [shenanigansEvents]);
+  const visibleSlides = slides.filter(
+    (item) => item.id !== "hole_in_ones" || closingHoleInOnes.length > 0,
+  );
+  const slideIndex = Math.max(
+    visibleSlides.findIndex((slideItem) => slideItem.id === currentSlide),
+    0,
+  );
+  const slide = visibleSlides[slideIndex] || visibleSlides[0];
+  const activeSlideId = slide.id;
 
   function advance(direction: -1 | 1) {
     const nextIndex = Math.min(
       Math.max(slideIndex + direction, 0),
-      slides.length - 1,
+      visibleSlides.length - 1,
     );
-    setCurrentSlide(slides[nextIndex].id);
+    setCurrentSlide(visibleSlides[nextIndex].id);
   }
 
   async function enterTvMode() {
@@ -510,7 +735,7 @@ export default function ClosingPresentationPage() {
               )}
             </div>
             <p className="mt-1 text-sm text-[#9b958b]">
-              {slide.label} · {slideIndex + 1}/{slides.length}
+              {slide.label} · {slideIndex + 1}/{visibleSlides.length}
             </p>
           </div>
 
@@ -524,8 +749,8 @@ export default function ClosingPresentationPage() {
         </header>
 
         <section className="flex flex-1 items-center">
-          <div key={currentSlide} className="closing-slide w-full">
-            {currentSlide === "opening" && (
+          <div key={activeSlideId} className="closing-slide w-full">
+            {activeSlideId === "opening" && (
               <div className="mx-auto max-w-6xl text-center">
                 <p className="closing-kicker closing-slide-kicker">The Final Chapter</p>
                 <h1 className="closing-title mt-6 text-7xl font-black tracking-[-0.08em] lg:text-9xl">
@@ -534,7 +759,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "money_bank" && (
+            {activeSlideId === "money_bank" && (
               <div className="space-y-7">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Final Money Rounds Bank</p>
@@ -576,7 +801,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "parimutuel_summary" && (
+            {activeSlideId === "parimutuel_summary" && (
               <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Parimutuel Bets</p>
@@ -685,7 +910,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "parimutuel_settlement" && (
+            {activeSlideId === "parimutuel_settlement" && (
               <div className="space-y-7">
                 <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-end">
                   <div>
@@ -735,7 +960,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "money_rounds" && (
+            {activeSlideId === "money_rounds" && (
               <div className="space-y-7">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Money Rounds Summary</p>
@@ -788,7 +1013,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "skins" && (
+            {activeSlideId === "skins" && (
               <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Skins Highlights</p>
@@ -831,7 +1056,98 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "shenanigans" && (
+            {activeSlideId === "hole_in_ones" && (
+              <div className="space-y-7">
+                <div>
+                  <p className="closing-kicker closing-slide-kicker">Hole-In-Ones</p>
+                  <h1 className="closing-title mt-4 text-6xl font-black lg:text-8xl">
+                    Ace Board
+                  </h1>
+                </div>
+
+                {closingHoleInOnes.length === 0 ? (
+                  <EmptyState>No Money Round or Afternoon Round hole-in-ones recorded yet.</EmptyState>
+                ) : (
+                  <div className="closing-card rounded-[0.9rem] border p-6">
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      {closingHoleInOnes.slice(0, 8).map((highlight) => (
+                        <div
+                          key={highlight.id}
+                          className="closing-stat-row rounded-[0.6rem] border px-4 py-4"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="min-w-0">
+                              <p className="closing-kicker text-[10px]">
+                                {highlight.source} · Hole {highlight.hole}
+                              </p>
+                              <h2 className="mt-2 truncate text-3xl font-black text-[#f4f1ea]">
+                                {highlight.teamName}
+                              </h2>
+                              <p className="mt-1 truncate text-sm font-bold text-[#9b958b]">
+                                {highlight.roundName}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-3xl font-black text-[#d7c8a4]">
+                                Par {highlight.par}
+                              </p>
+                              <p className="mt-1 text-sm font-bold text-[#9b958b]">
+                                Avg{" "}
+                                {highlight.averageScore === null
+                                  ? "-"
+                                  : highlight.averageScore.toFixed(1)}
+                                {highlight.averageRelativeToPar !== null && (
+                                  <>
+                                    {" "}
+                                    (
+                                    {Math.abs(highlight.averageRelativeToPar) < 0.05
+                                      ? "E"
+                                      : highlight.averageRelativeToPar > 0
+                                        ? `+${highlight.averageRelativeToPar.toFixed(1)}`
+                                        : highlight.averageRelativeToPar.toFixed(1)}
+                                    )
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mt-4 flex flex-wrap gap-3">
+                            {highlight.players.map((player) => (
+                              <div
+                                key={`${highlight.id}-${player.name}`}
+                                className="flex items-center gap-2 rounded-full border border-[#4a4337] bg-black/25 px-2.5 py-2"
+                              >
+                                <div className="h-9 w-9 overflow-hidden rounded-full border border-[#d7c8a4]/40 bg-black/45">
+                                  {player.photoUrl ? (
+                                    <div
+                                      className="h-full w-full bg-cover bg-center"
+                                      style={{
+                                        backgroundImage: `url(${player.photoUrl})`,
+                                      }}
+                                    />
+                                  ) : (
+                                    <PlayerSilhouette
+                                      label={`${player.name} profile placeholder`}
+                                      className="h-full w-full"
+                                    />
+                                  )}
+                                </div>
+                                <span className="max-w-[10rem] truncate text-sm font-black">
+                                  {player.name}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeSlideId === "shenanigans" && (
               <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Shenanigans</p>
@@ -866,7 +1182,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "settlement" && (
+            {activeSlideId === "settlement" && (
               <div className="space-y-7">
                 <div>
                   <p className="closing-kicker closing-slide-kicker">Final Settlement</p>
@@ -911,7 +1227,7 @@ export default function ClosingPresentationPage() {
               </div>
             )}
 
-            {currentSlide === "closing" && (
+            {activeSlideId === "closing" && (
               <div className="mx-auto max-w-6xl text-center">
                 <p className="closing-kicker closing-slide-kicker">Longview Invitational</p>
                 <h1 className="closing-title mt-6 text-7xl font-black tracking-[-0.08em] lg:text-9xl">
@@ -933,13 +1249,13 @@ export default function ClosingPresentationPage() {
           </button>
 
           <div className="hidden items-center gap-2 sm:flex">
-            {slides.map((item) => (
+            {visibleSlides.map((item) => (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setCurrentSlide(item.id)}
                 className={`h-2.5 rounded-full transition ${
-                  item.id === currentSlide
+                  item.id === activeSlideId
                     ? "w-8 bg-[#d7c8a4]"
                     : "w-2.5 bg-[#4a4337]"
                 }`}
@@ -951,7 +1267,7 @@ export default function ClosingPresentationPage() {
           <button
             type="button"
             onClick={() => advance(1)}
-            disabled={slideIndex === slides.length - 1}
+            disabled={slideIndex === visibleSlides.length - 1}
             className="closing-button disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next

@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
 import { useToast } from "@/components/ToastProvider";
+import { logActivityFeedItem } from "@/lib/activityFeed";
 import { supabase } from "@/lib/supabase";
 import { useActivePlayers } from "@/lib/useActivePlayers";
 
@@ -18,6 +19,7 @@ const targets = [
   "3Y",
   "3R",
 ];
+const allowedScores = [0, 1, 3, 5, 6, 10];
 
 const scoreRows = ["1", "2", "3"] as const;
 const scoreColumns = [
@@ -115,7 +117,7 @@ export function NightGolfSubmitPage({
       ({ score }) => !Number.isFinite(score),
     );
     const hasInvalidScore = parsedScores.some(
-      ({ score }) => ![0, 1, 3, 5].includes(score),
+      ({ score }) => !allowedScores.includes(score),
     );
 
     if (hasMissingScore) {
@@ -130,10 +132,10 @@ export function NightGolfSubmitPage({
     }
 
     if (hasInvalidScore) {
-      setError("Night Golf scores must be 0, 1, 3, or 5.");
+      setError("Night Golf scores must be 0, 1, 3, 5, 6, or 10.");
       showToast({
         title: "Invalid score",
-        message: "Night Golf scores must be 0, 1, 3, or 5.",
+        message: "Night Golf scores must be 0, 1, 3, 5, 6, or 10.",
         tone: "error",
         accent: "#f472b6",
       });
@@ -183,7 +185,36 @@ export function NightGolfSubmitPage({
         return;
       }
 
+      const submittedTotal = parsedScores.reduce(
+        (total, { score }) => total + score,
+        0,
+      );
+      const doubleHoleOutTargets = parsedScores
+        .filter(({ score }) => score >= 10)
+        .map(({ target }) => target);
+      const holeOutTargets = parsedScores
+        .filter(({ score }) => score >= 5 && score < 10)
+        .map(({ target }) => target);
+      const holeOutParts = [
+        holeOutTargets.length > 0
+          ? `${holeOutTargets.length === 1 ? "a hole out" : "hole outs"} on ${holeOutTargets.join(", ")}`
+          : "",
+        doubleHoleOutTargets.length > 0
+          ? `${doubleHoleOutTargets.length === 1 ? "a double hole out" : "double hole outs"} on ${doubleHoleOutTargets.join(", ")}`
+          : "",
+      ].filter(Boolean);
+      const holeOutMessage =
+        holeOutParts.length > 0 ? ` with ${holeOutParts.join(" and ")}` : "";
+
       setMessage("Scorecard submitted.");
+      await logActivityFeedItem({
+        type: "night_golf_score_submitted",
+        source: "night_golf",
+        sourceId: null,
+        linkUrl: `/night-golf/${night}/leaderboard`,
+        message: `${trimmedPlayerName} shoots ${submittedTotal}${holeOutMessage}.`,
+      });
+
       showToast({
         title: "Night Golf scorecard submitted",
         message: `${trimmedPlayerName} is on the board.`,
@@ -209,7 +240,7 @@ export function NightGolfSubmitPage({
   }
 
   function updateScore(target: string, value: string) {
-    const normalizedValue = value.replace(/[^0-9]/g, "").slice(0, 1);
+    const normalizedValue = value.replace(/[^0-9]/g, "").slice(0, 2);
 
     setScoresByTarget((currentScores) => ({
       ...currentScores,
@@ -297,7 +328,7 @@ export function NightGolfSubmitPage({
                   Scorecard Grid
                 </p>
                 <p className="mt-1 text-xs font-semibold text-[#a3a3a3]">
-                  Enter 0, 1, 3, or 5 for each target.
+                  Enter 0, 1, 3, 5, 6, or 10 for each target.
                 </p>
               </div>
               <div className="rounded-[0.65rem] border border-[#ec4899]/35 bg-[#2a111f] px-3 py-2 text-right">
@@ -330,7 +361,7 @@ export function NightGolfSubmitPage({
                       <input
                         type="text"
                         inputMode="numeric"
-                        pattern="[0135]*"
+                        pattern="[0-9]*"
                         value={scoresByTarget[target]}
                         onChange={(event) => updateScore(target, event.target.value)}
                         aria-label={`${row} ${column.label} score`}

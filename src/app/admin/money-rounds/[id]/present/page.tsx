@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import {
+  buildHoleInOneHighlights,
   calculateRoundMoney,
   compareTeamStandingsWorstFirst,
   MoneyRound,
@@ -16,6 +17,7 @@ const sections = [
   { id: "intro", label: "Intro" },
   { id: "easiest_hole", label: "Easiest Hole" },
   { id: "hardest_hole", label: "Hardest Hole" },
+  { id: "hole_in_ones", label: "Hole-In-Ones" },
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Player Bank" },
@@ -41,13 +43,6 @@ export default function MoneyRoundPresentationControllerPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const currentSectionIndex = useMemo(() => {
-    const index = sections.findIndex(
-      (section) => section.id === presentationState?.current_section,
-    );
-    return index >= 0 ? index : 0;
-  }, [presentationState?.current_section]);
-  const currentSection = sections[currentSectionIndex];
   const calculation = useMemo(
     () => calculateRoundMoney(round, teams, scores),
     [round, scores, teams],
@@ -55,6 +50,17 @@ export default function MoneyRoundPresentationControllerPage() {
   const placementSlides = calculation.standings
     .slice()
     .sort(compareTeamStandingsWorstFirst);
+  const holeInOneSlides = buildHoleInOneHighlights(teams, scores);
+  const visibleSections = sections.filter(
+    (section) => section.id !== "hole_in_ones" || holeInOneSlides.length > 0,
+  );
+  const currentSectionIndex = Math.max(
+    visibleSections.findIndex(
+      (section) => section.id === presentationState?.current_section,
+    ),
+    0,
+  );
+  const currentSection = visibleSections[currentSectionIndex] || visibleSections[0];
   const payoutSlides = calculation.bankRows
     .filter((row) => row.net > 0 || row.totalWinnings > 0)
     .sort(
@@ -66,6 +72,8 @@ export default function MoneyRoundPresentationControllerPage() {
   const slideCount =
     currentSection.id === "placements"
       ? placementSlides.length
+      : currentSection.id === "hole_in_ones"
+        ? holeInOneSlides.length
       : currentSection.id === "skins"
         ? calculation.skins.length
         : 1;
@@ -178,10 +186,12 @@ export default function MoneyRoundPresentationControllerPage() {
       return;
     }
 
-    const previousSection = sections[Math.max(currentSectionIndex - 1, 0)];
+    const previousSection = visibleSections[Math.max(currentSectionIndex - 1, 0)];
     const previousCount =
       previousSection.id === "placements"
         ? placementSlides.length
+        : previousSection.id === "hole_in_ones"
+          ? holeInOneSlides.length
         : previousSection.id === "skins"
           ? calculation.skins.length
           : 1;
@@ -194,12 +204,24 @@ export default function MoneyRoundPresentationControllerPage() {
       return;
     }
 
+    if (
+      currentSection.id === "hole_in_ones" &&
+      currentIndex < holeInOneSlides.length - 1
+    ) {
+      setSection(currentSection.id, currentIndex + 1);
+      return;
+    }
+
     if (currentSection.id === "skins" && currentIndex < calculation.skins.length - 1) {
       setSection(currentSection.id, currentIndex + 1);
       return;
     }
 
-    setSection(sections[Math.min(currentSectionIndex + 1, sections.length - 1)].id);
+    setSection(
+      visibleSections[
+        Math.min(currentSectionIndex + 1, visibleSections.length - 1)
+      ].id,
+    );
   }
 
   return (

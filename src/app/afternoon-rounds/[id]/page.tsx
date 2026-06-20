@@ -938,12 +938,22 @@ export default function AfternoonRoundDetailPage() {
     }
 
     setIsSaving(false);
+    const holeInOneHoles = holes.filter(
+      (hole) => Number(drafts[hole]?.trim()) === 1,
+    );
+    const holeInOneMessage =
+      holeInOneHoles.length > 0
+        ? ` ${team.name} records ${
+            holeInOneHoles.length === 1 ? "a hole-in-one" : "hole-in-ones"
+          } on ${holeInOneHoles.map((hole) => `Hole ${hole}`).join(", ")}.`
+        : "";
+
     await logActivityFeedItem({
       type: "afternoon_round_score_submitted",
       source: "Afternoon Rounds",
       sourceId: round.id,
       createdByPlayerId: session?.id || null,
-      message: `${team.name} posts a score in ${round.name}.`,
+      message: `${team.name} posts a score in ${round.name}.${holeInOneMessage}`,
     });
     await logAuditEvent({
       actionType: "afternoon_round_score_edited",

@@ -973,12 +973,27 @@ export default function AdminMoneyRoundsPage() {
       ),
     );
     if (round && scoreStatus === "verified") {
+      const holeInOneHoles = scores
+        .filter(
+          (score) =>
+            score.money_round_team_id === team.id && Number(score.score) === 1,
+        )
+        .map((score) => Number(score.hole_number))
+        .filter((hole) => hole >= 1 && hole <= 18)
+        .sort((a, b) => a - b);
+      const holeInOneMessage =
+        holeInOneHoles.length > 0
+          ? ` ${team.name} records ${
+              holeInOneHoles.length === 1 ? "a hole-in-one" : "hole-in-ones"
+            } on ${holeInOneHoles.map((hole) => `Hole ${hole}`).join(", ")}.`
+          : "";
+
       await logActivityFeedItem({
         type: "money_round_score_verified",
         source: "Money Rounds",
         sourceId: round.id,
         linkUrl: `/money-rounds/${round.id}`,
-        message: `${team.name} verified in ${round.name}.`,
+        message: `${team.name} verified in ${round.name}.${holeInOneMessage}`,
       });
     }
     if (round) {

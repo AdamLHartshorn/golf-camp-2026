@@ -228,7 +228,7 @@ export const appGuides: AppGuide[] = [
           "Night Golf does score accounting, not money accounting. It tracks each player’s nine-box score grid, totals the score, and shows leaderboards for the night.",
         points: [
           "Blank boxes count as zero.",
-          "Hole-Out is worth 5 points.",
+          "Hole-Out is worth 5 points, Hole-Out plus one stuck shot is 6, and Double Hole-Out is 10.",
           "The leaderboard is separate from Money Rounds and Parimutuel.",
           "Admin can clean up bad entries.",
           "Sudden Death handles ties outside the app.",
@@ -731,7 +731,7 @@ export const appGuides: AppGuide[] = [
       {
         title: "Scoring Rules",
         body:
-          "Night Golf has its own scoring rules and target colors. Hole-Out is worth 5 points.",
+          "Night Golf has its own scoring rules and target colors. Hole-Out is worth 5 points, Hole-Out plus one stuck shot is 6, and Double Hole-Out is 10.",
         points: [
           "Green, orange, and red boxes match the target color columns.",
           "Maximum possible score is intentionally not emphasized.",

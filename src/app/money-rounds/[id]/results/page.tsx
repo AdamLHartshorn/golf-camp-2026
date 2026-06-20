@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
   aggregateParimutuelStandings,
   calculateParimutuelSettlements,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/parimutuelSettlement";
 import { supabase } from "@/lib/supabase";
 import {
+  buildHoleInOneHighlights,
   calculateRoundMoney,
   compareTeamStandingsWorstFirst,
   formatRelativeToPar,
@@ -19,6 +21,7 @@ import {
   getTeamScoreStatus,
   moneyRoundScorecard,
   MoneyRound,
+  MoneyPlayer,
   MoneyScore,
   MoneyTeam,
   money,
@@ -30,6 +33,7 @@ const sections = [
   { id: "intro", label: "Intro" },
   { id: "easiest_hole", label: "Easiest Hole" },
   { id: "hardest_hole", label: "Hardest Hole" },
+  { id: "hole_in_ones", label: "Hole-In-Ones" },
   { id: "placements", label: "Placements" },
   { id: "skins", label: "Skins" },
   { id: "player_bank", label: "Round Bank" },
@@ -113,6 +117,7 @@ export default function MoneyRoundResultsPage() {
   const [round, setRound] = useState<MoneyRound | null>(null);
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
   const [scores, setScores] = useState<MoneyScore[]>([]);
+  const [players, setPlayers] = useState<MoneyPlayer[]>([]);
   const [parimutuelMarket, setParimutuelMarket] =
     useState<ParimutuelMarketRow | null>(null);
   const [parimutuelBets, setParimutuelBets] = useState<ParimutuelBetLike[]>([]);
@@ -134,6 +139,7 @@ export default function MoneyRoundResultsPage() {
         { data: roundData, error: roundError },
         { data: teamData, error: teamError },
         { data: scoreData, error: scoreError },
+        { data: playerData, error: playerError },
       ] = await Promise.all([
         supabase.from("money_rounds").select("*").eq("id", params.id).single(),
         supabase
@@ -146,17 +152,19 @@ export default function MoneyRoundResultsPage() {
           .select("*")
           .eq("money_round_id", params.id)
           .order("hole_number", { ascending: true }),
+        supabase.from("players").select("id, display_name, photo_url"),
       ]);
 
       if (!isCurrent) {
         return;
       }
 
-      if (roundError || teamError || scoreError) {
+      if (roundError || teamError || scoreError || playerError) {
         setError(
           roundError?.message ||
             teamError?.message ||
             scoreError?.message ||
+            playerError?.message ||
             "Could not load Money Round results.",
         );
         setIsLoading(false);
@@ -166,6 +174,7 @@ export default function MoneyRoundResultsPage() {
       setRound(roundData as MoneyRound);
       setTeams((teamData as MoneyTeam[]) || []);
       setScores((scoreData as MoneyScore[]) || []);
+      setPlayers((playerData as MoneyPlayer[]) || []);
 
       const { data: marketData, error: marketError } = await supabase
         .from("evening_parimutuel_markets")
@@ -337,8 +346,14 @@ export default function MoneyRoundResultsPage() {
   const placementSlides = standings
     .slice()
     .sort(compareTeamStandingsWorstFirst);
+  const holeInOneSlides = useMemo(
+    () => buildHoleInOneHighlights(teams, scores, players, round),
+    [players, round, scores, teams],
+  );
   const currentPlacement =
     placementSlides[Math.min(currentIndex, Math.max(placementSlides.length - 1, 0))];
+  const currentHoleInOne =
+    holeInOneSlides[Math.min(currentIndex, Math.max(holeInOneSlides.length - 1, 0))];
   const currentSkin = skins[Math.min(currentIndex, Math.max(skins.length - 1, 0))];
   const payoutSlides = bankRows
     .filter((row) => row.net > 0 || row.totalWinnings > 0)
@@ -373,16 +388,26 @@ export default function MoneyRoundResultsPage() {
       ([teamNameA, totalsA], [teamNameB, totalsB]) =>
         totalsB.total - totalsA.total || teamNameA.localeCompare(teamNameB),
     )[0];
-  const section = sections.find((item) => item.id === currentSection) || sections[0];
-  const sectionPosition = sections.findIndex((item) => item.id === currentSection);
+  const visibleSections = sections.filter(
+    (item) => item.id !== "hole_in_ones" || holeInOneSlides.length > 0,
+  );
+  const section =
+    visibleSections.find((item) => item.id === currentSection) ||
+    visibleSections[0];
+  const activeSectionId = section.id;
+  const sectionPosition = visibleSections.findIndex(
+    (item) => item.id === activeSectionId,
+  );
   const slideCount =
-    currentSection === "placements"
+    activeSectionId === "placements"
       ? placementSlides.length
-      : currentSection === "skins"
+      : activeSectionId === "hole_in_ones"
+        ? holeInOneSlides.length
+      : activeSectionId === "skins"
         ? skins.length
         : 1;
-  const hasPrevious = !(currentSection === "intro" && currentIndex === 0);
-  const hasNext = currentSection !== "complete";
+  const hasPrevious = !(activeSectionId === "intro" && currentIndex === 0);
+  const hasNext = activeSectionId !== "complete";
 
   function renderHoleHighlightSlide(
     label: string,
@@ -428,17 +453,28 @@ export default function MoneyRoundResultsPage() {
 
   function advanceLocal(direction: -1 | 1) {
     if (direction > 0) {
-      if (currentSection === "placements" && currentIndex < placementSlides.length - 1) {
+      if (activeSectionId === "placements" && currentIndex < placementSlides.length - 1) {
         setCurrentIndex((value) => value + 1);
         return;
       }
 
-      if (currentSection === "skins" && currentIndex < skins.length - 1) {
+      if (
+        activeSectionId === "hole_in_ones" &&
+        currentIndex < holeInOneSlides.length - 1
+      ) {
         setCurrentIndex((value) => value + 1);
         return;
       }
 
-      const nextSection = sections[Math.min(sectionPosition + 1, sections.length - 1)];
+      if (activeSectionId === "skins" && currentIndex < skins.length - 1) {
+        setCurrentIndex((value) => value + 1);
+        return;
+      }
+
+      const nextSection =
+        visibleSections[
+          Math.min(sectionPosition + 1, visibleSections.length - 1)
+        ];
       setCurrentSection(nextSection.id);
       setCurrentIndex(0);
       return;
@@ -449,11 +485,16 @@ export default function MoneyRoundResultsPage() {
       return;
     }
 
-    const previousSection = sections[Math.max(sectionPosition - 1, 0)];
+    const previousSection = visibleSections[Math.max(sectionPosition - 1, 0)];
     setCurrentSection(previousSection.id);
 
     if (previousSection.id === "placements") {
       setCurrentIndex(Math.max(placementSlides.length - 1, 0));
+      return;
+    }
+
+    if (previousSection.id === "hole_in_ones") {
+      setCurrentIndex(Math.max(holeInOneSlides.length - 1, 0));
       return;
     }
 
@@ -570,6 +611,90 @@ export default function MoneyRoundResultsPage() {
               round &&
               section.id === "hardest_hole" &&
               renderHoleHighlightSlide("Hardest Hole", courseHighlights.hardest)}
+
+            {!isLoading && !error && round && section.id === "hole_in_ones" && (
+              <div className="space-y-8">
+                {holeInOneSlides.length === 0 || !currentHoleInOne ? (
+                  <p className="results-empty-state rounded-[0.9rem] border border-[#24452f] bg-black/45 p-8 text-3xl text-[#a3a3a3]">
+                    No hole-in-ones recorded this round.
+                  </p>
+                ) : (
+                  <>
+                    <p className="results-section-label text-xl font-semibold uppercase tracking-[0.28em] text-[#86efac]">
+                      Hole-In-One {currentIndex + 1} of {holeInOneSlides.length}
+                    </p>
+                    <div className="results-spotlight-card rounded-[0.9rem] border border-[#22c55e]/75 bg-[radial-gradient(circle_at_top_right,rgba(49,95,72,0.18),transparent_54%),linear-gradient(180deg,rgba(7,18,12,0.98),rgba(0,0,0,0.72))] p-10 shadow-[0_0_58px_rgba(49,95,72,0.13),0_28px_90px_rgba(0,0,0,0.5)]">
+                      <div className="grid gap-10 lg:grid-cols-[0.72fr_1fr] lg:items-center">
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[#86efac]">
+                            Ace Alert
+                          </p>
+                          <h1 className="mt-5 text-8xl font-black tracking-[-0.08em] lg:text-9xl">
+                            Hole {currentHoleInOne.hole}
+                          </h1>
+                          <p className="mt-4 text-3xl text-[#a3a3a3]">
+                            Par {currentHoleInOne.par} · Hcp{" "}
+                            {currentHoleInOne.handicap || "-"}
+                          </p>
+                          <p className="mt-8 text-4xl font-black text-[#86efac]">
+                            Avg{" "}
+                            {currentHoleInOne.averageScore === null
+                              ? "-"
+                              : formatAverage(currentHoleInOne.averageScore)}
+                            {currentHoleInOne.averageRelativeToPar !== null && (
+                              <span className="text-[#f5f5f5]">
+                                {" "}
+                                (
+                                {formatAverageRelativeToPar(
+                                  currentHoleInOne.averageRelativeToPar,
+                                )}
+                                )
+                              </span>
+                            )}
+                          </p>
+                        </div>
+
+                        <div>
+                          <h2 className="text-6xl font-black tracking-[-0.07em] lg:text-7xl">
+                            {currentHoleInOne.team.name}
+                          </h2>
+                          <p className="mt-3 text-2xl font-semibold text-[#a3a3a3]">
+                            Team scorecard recorded a 1.
+                          </p>
+                          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                            {currentHoleInOne.players.map((player) => (
+                              <div
+                                key={`${currentHoleInOne.id}-${player.name}`}
+                                className="results-stat-card flex items-center gap-4 rounded-[0.75rem] border border-[#22c55e]/40 bg-black/35 p-4"
+                              >
+                                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full border border-[#22c55e]/55 bg-black/50">
+                                  {player.photoUrl ? (
+                                    <div
+                                      className="h-full w-full bg-cover bg-center"
+                                      style={{
+                                        backgroundImage: `url(${player.photoUrl})`,
+                                      }}
+                                    />
+                                  ) : (
+                                    <PlayerSilhouette
+                                      label={`${player.name} profile placeholder`}
+                                      className="h-full w-full"
+                                    />
+                                  )}
+                                </div>
+                                <p className="min-w-0 truncate text-2xl font-black">
+                                  {player.name}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
 
             {!isLoading && !error && round && section.id === "placements" && (
               <div className="space-y-8">

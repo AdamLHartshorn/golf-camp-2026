@@ -263,6 +263,16 @@ export default function MoneyRoundSubmitPage() {
       return;
     }
 
+    const holeInOneHoles = holes.filter(
+      (hole) => Number(scoreDrafts[hole]?.trim()) === 1,
+    );
+    const holeInOneMessage =
+      holeInOneHoles.length > 0
+        ? ` ${selectedTeam.name} records ${
+            holeInOneHoles.length === 1 ? "a hole-in-one" : "hole-in-ones"
+          } on ${holeInOneHoles.map((hole) => `Hole ${hole}`).join(", ")}.`
+        : "";
+
     await logActivityFeedItem({
       type: "money_round_score_submitted",
       source: "Money Rounds",
@@ -271,7 +281,7 @@ export default function MoneyRoundSubmitPage() {
       message: `${selectedTeam.name} submits ${formatScoreToCompletedPar(
         total,
         draftedScoresByHole,
-      )} in ${round.name}.`,
+      )} in ${round.name}.${holeInOneMessage}`,
     });
     await logAuditEvent({
       actionType: "money_round_score_submitted",
