@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 import { useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
 import { supabase } from "@/lib/supabase";
@@ -70,6 +71,7 @@ const cards = [
 }[];
 
 export default function ShenanigansPage() {
+  const { showToast } = useToast();
   const {
     games,
     selectedGame,
@@ -98,11 +100,23 @@ export default function ShenanigansPage() {
 
     if (!trimmedName) {
       setError("Game name is required.");
+      showToast({
+        title: "Name The Game",
+        message: "Add a Shenanigans game name.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
     if (selectedPlayers.length < 2 || selectedPlayers.length > 4) {
       setError("Select 2 to 4 players.");
+      showToast({
+        title: "Choose Players",
+        message: "Select 2 to 4 players before starting.",
+        tone: "warning",
+        accent: "#EB9C5C",
+      });
       return;
     }
 
@@ -116,6 +130,12 @@ export default function ShenanigansPage() {
 
     if (gameInsertError || !gameData) {
       setError(gameInsertError?.message || "Could not start game.");
+      showToast({
+        title: "Game Not Started",
+        message: gameInsertError?.message || "Could not start game.",
+        tone: "error",
+        accent: "#EB9C5C",
+      });
       setIsCreating(false);
       return;
     }
@@ -127,25 +147,20 @@ export default function ShenanigansPage() {
       player_name: player.display_name,
       starting_points: 5,
     }));
-    const startingEvents = selectedPlayers.map((player) => ({
-      game_id: gameId,
-      player_name: player.display_name,
-      event_type: "Starting Points",
-      description: "Starting points",
-      points: 5,
-    }));
-    const [{ error: playersInsertError }, { error: eventsInsertError }] =
-      await Promise.all([
-        supabase.from("shenanigans_game_players").insert(playerRows),
-        supabase.from("shenanigans_events").insert(startingEvents),
-      ]);
 
-    if (playersInsertError || eventsInsertError) {
-      setError(
-        playersInsertError?.message ||
-          eventsInsertError?.message ||
-          "Game started, but setup failed.",
-      );
+    const { error: playersInsertError } = await supabase
+      .from("shenanigans_game_players")
+      .insert(playerRows);
+
+    if (playersInsertError) {
+      await supabase.from("shenanigans_games").delete().eq("id", gameId);
+      setError(playersInsertError.message || "Game started, but setup failed.");
+      showToast({
+        title: "Game Setup Failed",
+        message: playersInsertError.message || "Could not add players.",
+        tone: "error",
+        accent: "#EB9C5C",
+      });
       setIsCreating(false);
       return;
     }
@@ -169,6 +184,11 @@ export default function ShenanigansPage() {
     await switchGame(gameId);
     setSelectedPlayerNames([]);
     setMessage("Game started.");
+    showToast({
+      title: "Game Started",
+      message: `${trimmedName} is ready.`,
+      accent: "#EB9C5C",
+    });
     setIsCreating(false);
   }
 
@@ -263,8 +283,7 @@ export default function ShenanigansPage() {
             onClick={handleStartGame}
             disabled={
               isCreating ||
-              selectedPlayerNames.length < 2 ||
-              selectedPlayerNames.length > 4
+              isLoadingPlayers
             }
             className="gc-primary-button mt-4 transition disabled:opacity-50"
           >

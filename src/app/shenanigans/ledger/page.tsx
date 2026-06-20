@@ -50,6 +50,7 @@ export default function ShenanigansLedgerPage() {
     games,
     selectedGame,
     selectedGameId,
+    selectedGamePlayers,
     isLoadingGame,
     gameError,
     switchGame,
@@ -106,17 +107,32 @@ export default function ShenanigansLedgerPage() {
   }, [selectedGameId]);
 
   const players = useMemo(() => {
-    const totals = events.reduce<Record<string, number>>((accumulator, event) => {
+    const totals = selectedGamePlayers.reduce<Record<string, number>>(
+      (accumulator, player) => {
+        const playerName = player.player_name?.trim();
+
+        if (playerName) {
+          accumulator[playerName] = Number(player.starting_points || 0);
+        }
+
+        return accumulator;
+      },
+      {},
+    );
+
+    events.forEach((event) => {
       const playerName = event.player_name.trim();
 
       if (!playerName) {
-        return accumulator;
+        return;
       }
 
-      accumulator[playerName] = (accumulator[playerName] || 0) + event.points;
+      if (event.event_type === "Starting Points") {
+        return;
+      }
 
-      return accumulator;
-    }, {});
+      totals[playerName] = (totals[playerName] || 0) + event.points;
+    });
 
     const aggregatedTotals = Object.entries(totals)
       .map(([name, points]) => ({ name, points }))
@@ -125,7 +141,7 @@ export default function ShenanigansLedgerPage() {
     console.log("shenanigans_events aggregated totals:", aggregatedTotals);
 
     return aggregatedTotals;
-  }, [events]);
+  }, [events, selectedGamePlayers]);
 
   return (
     <main

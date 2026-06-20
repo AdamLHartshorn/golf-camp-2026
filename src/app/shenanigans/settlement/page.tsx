@@ -123,7 +123,7 @@ export default function ShenanigansSettlementPage() {
         const playerName = player.player_name?.trim();
 
         if (playerName) {
-          accumulator[playerName] = 0;
+          accumulator[playerName] = Number(player.starting_points || 0);
         }
 
         return accumulator;
@@ -136,6 +136,10 @@ export default function ShenanigansSettlementPage() {
       const points = Number(event.points || 0);
 
       if (!playerName || !Number.isFinite(points)) {
+        return;
+      }
+
+      if (event.event_type === "Starting Points") {
         return;
       }
 
