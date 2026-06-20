@@ -49,6 +49,21 @@ const emptyScores = targets.reduce<Record<string, string>>((values, target) => {
   return values;
 }, {});
 
+function createAttemptId() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random()}`;
+}
+
+function isMissingAttemptColumn(errorMessage: string) {
+  return (
+    errorMessage.toLowerCase().includes("attempt_id") &&
+    errorMessage.toLowerCase().includes("column")
+  );
+}
+
 type NightGolfSubmitPageProps = {
   night: string;
   nightLabel: string;
@@ -127,17 +142,34 @@ export function NightGolfSubmitPage({
 
     setIsSubmitting(true);
 
+    const attemptId = createAttemptId();
     const payload = parsedScores.map(({ target, score }) => ({
       night,
       player_name: trimmedPlayerName,
       target,
       score,
+      attempt_id: attemptId,
     }));
 
     try {
-      const { error: insertError } = await supabase
+      let { error: insertError } = await supabase
         .from("night_golf_scores")
         .insert(payload);
+
+      if (insertError && isMissingAttemptColumn(insertError.message || "")) {
+        const fallbackPayload = payload.map(
+          ({ night, player_name, target, score }) => ({
+            night,
+            player_name,
+            target,
+            score,
+          }),
+        );
+        const { error: fallbackError } = await supabase
+          .from("night_golf_scores")
+          .insert(fallbackPayload);
+        insertError = fallbackError;
+      }
 
       if (insertError) {
         const nextError = insertError.message || "Could not submit result.";

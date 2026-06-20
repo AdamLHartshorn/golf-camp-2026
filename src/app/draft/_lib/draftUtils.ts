@@ -25,6 +25,7 @@ export type DraftPlayer = {
   rank: "A" | "B" | "C" | "D" | null;
   display_rank: string | null;
   internal_rank_order: string | null;
+  photo_url?: string | null;
 };
 
 export type DraftTeam = {

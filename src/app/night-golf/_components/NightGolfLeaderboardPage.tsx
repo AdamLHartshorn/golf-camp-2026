@@ -2,17 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import {
+  buildNightGolfAttempts,
+  getNightGolfAttemptLabels,
+  NightGolfAttempt,
+  NightGolfScoreRow,
+} from "@/lib/nightGolfAttempts";
 import { supabase } from "@/lib/supabase";
-
-type ScoreRow = {
-  player_name: string | null;
-  score: number | null;
-};
-
-type LeaderboardPlayer = {
-  name: string;
-  total: number;
-};
 
 type NightGolfLeaderboardPageProps = {
   night: string;
@@ -25,15 +21,31 @@ export function NightGolfLeaderboardPage({
   nightLabel,
   backHref,
 }: NightGolfLeaderboardPageProps) {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardPlayer[]>([]);
+  const [leaderboard, setLeaderboard] = useState<NightGolfAttempt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLeaderboard() {
-      const { data, error } = await supabase
+      const initialResponse = await supabase
         .from("night_golf_scores")
-        .select("player_name, score")
+        .select("id, player_name, target, score, created_at, attempt_id")
         .eq("night", night);
+      let data = initialResponse.data as NightGolfScoreRow[] | null;
+      let error = initialResponse.error;
+
+      if (
+        error &&
+        error.message.toLowerCase().includes("attempt_id") &&
+        error.message.toLowerCase().includes("column")
+      ) {
+        const fallbackResponse = await supabase
+          .from("night_golf_scores")
+          .select("id, player_name, target, score, created_at")
+          .eq("night", night);
+
+        data = fallbackResponse.data as NightGolfScoreRow[] | null;
+        error = fallbackResponse.error;
+      }
 
       if (error) {
         setLeaderboard([]);
@@ -41,32 +53,14 @@ export function NightGolfLeaderboardPage({
         return;
       }
 
-      const totals = (data as ScoreRow[]).reduce<Record<string, number>>(
-        (accumulator, row) => {
-          const playerName = row.player_name?.trim();
-
-          if (!playerName) {
-            return accumulator;
-          }
-
-          accumulator[playerName] =
-            (accumulator[playerName] || 0) + (row.score || 0);
-
-          return accumulator;
-        },
-        {},
-      );
-
-      const aggregatedTotals = Object.entries(totals)
-        .map(([name, total]) => ({ name, total }))
-        .sort((a, b) => b.total - a.total);
-
-      setLeaderboard(aggregatedTotals);
+      setLeaderboard(buildNightGolfAttempts(data || []));
       setIsLoading(false);
     }
 
     fetchLeaderboard();
   }, [night, nightLabel]);
+
+  const attemptLabels = getNightGolfAttemptLabels(leaderboard);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(236,72,153,0.11),transparent_34%),#050505] p-5 text-[#f5f5f5]">
@@ -112,7 +106,7 @@ export function NightGolfLeaderboardPage({
           {!isLoading &&
             leaderboard.map((player, index) => (
               <div
-                key={player.name}
+                key={player.id}
                 className="flex items-center justify-between border-b border-[#d8d1c4]/80 px-5 py-4 last:border-b-0"
               >
                 <div className="flex min-w-0 items-center gap-4">
@@ -128,11 +122,12 @@ export function NightGolfLeaderboardPage({
 
                   <div className="min-w-0">
                     <p className="truncate text-lg font-semibold tracking-[-0.02em]">
-                      {player.name}
+                      {player.playerName}
                     </p>
 
                     <p className="text-xs uppercase tracking-[0.18em] text-[#7a6f60]">
-                      Total Score
+                      {attemptLabels[player.id]} · {player.targetCount}/9
+                      targets
                     </p>
                   </div>
                 </div>

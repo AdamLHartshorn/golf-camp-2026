@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import { supabase } from "@/lib/supabase";
 import { getPublicDisplayRank } from "@/lib/playerRanks";
 import {
@@ -19,6 +20,13 @@ import {
 const completedDraftStatuses = ["complete", "completed", "final", "finalized"];
 const draftClockSeconds = 60;
 const draftCompleteDelayMs = 8000;
+const pickRevealDurationMs = 5000;
+
+type PickReveal = {
+  pickId: string;
+  playerId: string;
+  teamId: string;
+};
 
 export default function DraftLivePage() {
   const [session, setSession] = useState<DraftSession | null>(null);
@@ -27,8 +35,13 @@ export default function DraftLivePage() {
   const [picks, setPicks] = useState<DraftPick[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [completeReadySessionId, setCompleteReadySessionId] = useState<string | null>(null);
+  const [activePickReveal, setActivePickReveal] = useState<PickReveal | null>(null);
+  const [timerDelayPickId, setTimerDelayPickId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const hasObservedInitialPickRef = useRef(false);
+  const lastObservedPickIdRef = useRef<string | null>(null);
+  const revealTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -97,7 +110,7 @@ export default function DraftLivePage() {
     ] = await Promise.all([
       supabase
         .from("players")
-        .select("id, first_name, last_name, display_name, rank, display_rank, internal_rank_order")
+        .select("id, first_name, last_name, display_name, rank, display_rank, internal_rank_order, photo_url")
         .eq("active", true),
       supabase
         .from("draft_teams")
@@ -215,12 +228,22 @@ export default function DraftLivePage() {
   const recentPickTeam = recentPick
     ? teamsById.get(recentPick.draft_team_id)
     : null;
+  const pickRevealPlayer = activePickReveal
+    ? playersById.get(activePickReveal.playerId)
+    : null;
+  const pickRevealTeam = activePickReveal
+    ? teamsById.get(activePickReveal.teamId)
+    : null;
   const pickStartedAt =
     session?.current_pick_started_at ||
     recentPick?.created_at ||
     session?.started_at ||
     null;
-  const pickStartedTime = pickStartedAt ? new Date(pickStartedAt).getTime() : now;
+  const pickStartedTime =
+    (pickStartedAt ? new Date(pickStartedAt).getTime() : now) +
+    (recentPick?.id && timerDelayPickId === recentPick.id
+      ? pickRevealDurationMs
+      : 0);
   const elapsedSeconds = Math.max(
     0,
     Math.floor((now - pickStartedTime) / 1000),
@@ -246,6 +269,47 @@ export default function DraftLivePage() {
     [orderedTeams],
   );
   const teamRailDurationSeconds = Math.max(orderedTeams.length * 6.5, 32);
+
+  useEffect(() => {
+    const latestPick = picks[picks.length - 1] || null;
+    const latestPickId = latestPick?.id || null;
+
+    if (!hasObservedInitialPickRef.current) {
+      hasObservedInitialPickRef.current = true;
+      lastObservedPickIdRef.current = latestPickId;
+      return;
+    }
+
+    if (!latestPickId || latestPickId === lastObservedPickIdRef.current) {
+      return;
+    }
+
+    lastObservedPickIdRef.current = latestPickId;
+    setActivePickReveal({
+      pickId: latestPick.id,
+      playerId: latestPick.player_id,
+      teamId: latestPick.draft_team_id,
+    });
+    setTimerDelayPickId(latestPick.id);
+
+    if (revealTimeoutRef.current) {
+      window.clearTimeout(revealTimeoutRef.current);
+    }
+
+    revealTimeoutRef.current = window.setTimeout(() => {
+      setActivePickReveal((currentReveal) =>
+        currentReveal?.pickId === latestPick.id ? null : currentReveal,
+      );
+    }, pickRevealDurationMs);
+  }, [picks]);
+
+  useEffect(() => {
+    return () => {
+      if (revealTimeoutRef.current) {
+        window.clearTimeout(revealTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!session?.id || !shouldStartCompletePresentation) {
@@ -623,6 +687,46 @@ export default function DraftLivePage() {
           </div>
         </section>
       </div>
+
+      {activePickReveal && pickRevealPlayer && pickRevealTeam && (
+        <div className="draft-pick-reveal-overlay" aria-live="polite">
+          <section className="draft-pick-reveal-card">
+            <div className="draft-pick-reveal-photo-wrap">
+              {pickRevealPlayer.photo_url ? (
+                <div
+                  className="draft-pick-reveal-photo"
+                  role="img"
+                  aria-label={`${pickRevealPlayer.display_name} profile photo`}
+                  style={{
+                    backgroundImage: `url(${pickRevealPlayer.photo_url})`,
+                  }}
+                />
+              ) : (
+                <PlayerSilhouette
+                  className="draft-pick-reveal-photo"
+                  label={`${pickRevealPlayer.display_name} profile placeholder`}
+                />
+              )}
+            </div>
+
+            <div className="min-w-0 text-center">
+              <p className="draft-reveal-kicker">Selection Is In</p>
+              <p className="draft-reveal-team">
+                {pickRevealTeam.name} Selects
+              </p>
+              <h2 className="draft-reveal-player">
+                {pickRevealPlayer.display_name}
+              </h2>
+              <p className="draft-reveal-rank">
+                {getPublicDisplayRank(
+                  pickRevealPlayer.display_rank,
+                  pickRevealPlayer.rank,
+                )}
+              </p>
+            </div>
+          </section>
+        </div>
+      )}
       <style>{draftTvStyles}</style>
     </main>
   );
@@ -1319,6 +1423,173 @@ const draftTvStyles = `
             0 18px 44px rgba(0, 0, 0, 0.28) !important;
         }
 
+        .draft-pick-reveal-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 30;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 4rem;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 50% 42%, rgba(23, 32, 51, 0.14), transparent 26rem),
+            radial-gradient(circle at 50% 50%, rgba(31, 81, 54, 0.14), transparent 34rem),
+            rgba(232, 236, 223, 0.2);
+          backdrop-filter: blur(2px);
+          animation: draftRevealOverlay 5s ease both;
+        }
+
+        .draft-pick-reveal-card {
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(10rem, 16vw) minmax(0, 1fr);
+          align-items: center;
+          gap: clamp(1.5rem, 3vw, 3rem);
+          width: min(76vw, 78rem);
+          min-height: clamp(20rem, 42vh, 30rem);
+          border: clamp(0.22rem, 0.36vw, 0.34rem) solid rgba(23, 32, 51, 0.82);
+          border-radius: 1.15rem;
+          padding: clamp(1.6rem, 3.2vw, 3.2rem);
+          overflow: hidden;
+          color: #172033;
+          background:
+            radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.9), transparent 18rem),
+            radial-gradient(circle at 100% 100%, rgba(31, 81, 54, 0.18), transparent 25rem),
+            repeating-linear-gradient(-2deg, rgba(23, 32, 51, 0.036) 0 1px, transparent 1px 10px),
+            linear-gradient(180deg, #fbfcf5, #e8ecdf);
+          box-shadow:
+            inset 0 0 0 0.18rem rgba(255, 255, 255, 0.68),
+            inset 0 0 4rem rgba(31, 81, 54, 0.06),
+            0 3rem 8rem rgba(0, 0, 0, 0.5),
+            0 0 0 0.08rem rgba(23, 32, 51, 0.42);
+          animation: draftRevealCard 5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .draft-pick-reveal-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(90deg, rgba(31, 81, 54, 0.18), transparent 16%, transparent 84%, rgba(200, 30, 30, 0.11)),
+            linear-gradient(180deg, rgba(255, 255, 255, 0.48), transparent 38%);
+          opacity: 0.8;
+        }
+
+        .draft-pick-reveal-card::after {
+          content: "";
+          position: absolute;
+          left: 6%;
+          right: 6%;
+          bottom: 13%;
+          height: clamp(0.28rem, 0.5vw, 0.48rem);
+          border-radius: 999px;
+          background:
+            linear-gradient(90deg, transparent, rgba(31, 81, 54, 0.86) 9%, rgba(31, 81, 54, 0.72) 91%, transparent);
+          transform: rotate(-1.1deg);
+          opacity: 0.78;
+          box-shadow: 0 0 1.4rem rgba(31, 81, 54, 0.22);
+        }
+
+        .draft-pick-reveal-photo-wrap {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .draft-pick-reveal-photo-wrap::before {
+          content: "";
+          position: absolute;
+          inset: -0.75rem;
+          border-radius: 999px;
+          border: 0.22rem solid rgba(31, 81, 54, 0.5);
+          transform: rotate(-4deg);
+          box-shadow:
+            0 0 2rem rgba(31, 81, 54, 0.18),
+            inset 0 0 1.5rem rgba(255, 255, 255, 0.18);
+        }
+
+        .draft-pick-reveal-photo {
+          position: relative;
+          z-index: 1;
+          width: clamp(10rem, 16vw, 17rem);
+          height: clamp(10rem, 16vw, 17rem);
+          border: 0.28rem solid rgba(23, 32, 51, 0.86) !important;
+          border-radius: 999px;
+          background-color: #172033 !important;
+          background-position: center;
+          background-size: cover;
+          color: #f8faf4 !important;
+          box-shadow:
+            inset 0 0 0 0.16rem rgba(255, 255, 255, 0.68),
+            0 1.5rem 3.5rem rgba(0, 0, 0, 0.36),
+            0 0 2.5rem rgba(31, 81, 54, 0.22);
+        }
+
+        .draft-reveal-kicker,
+        .draft-reveal-team,
+        .draft-reveal-player,
+        .draft-reveal-rank {
+          position: relative;
+          z-index: 1;
+        }
+
+        .draft-reveal-kicker {
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: clamp(0.9rem, 1.15vw, 1.2rem);
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.26em;
+          color: #1f5136;
+        }
+
+        .draft-reveal-team {
+          margin-top: 0.7rem;
+          font-size: clamp(2.2rem, 4.5vw, 5rem);
+          font-weight: 950;
+          text-transform: uppercase;
+          line-height: 0.82;
+          letter-spacing: -0.07em;
+          color: #172033;
+          text-shadow:
+            0.035em 0.025em 0 rgba(31, 81, 54, 0.1),
+            -0.018em 0.018em 0 rgba(200, 30, 30, 0.08);
+        }
+
+        .draft-reveal-player {
+          margin-top: 0.8rem;
+          font-size: clamp(4.2rem, 8.4vw, 9.4rem);
+          font-weight: 950;
+          text-transform: uppercase;
+          line-height: 0.78;
+          letter-spacing: -0.085em;
+          color: #172033;
+          text-shadow:
+            0.035em 0.025em 0 rgba(31, 81, 54, 0.13),
+            -0.018em 0.018em 0 rgba(200, 30, 30, 0.09);
+        }
+
+        .draft-reveal-rank {
+          display: inline-flex;
+          margin-top: 1.1rem;
+          border: 0.18rem solid rgba(31, 81, 54, 0.54);
+          border-radius: 0.45rem;
+          background: rgba(31, 81, 54, 0.1);
+          padding: 0.35rem 0.85rem;
+          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+          font-size: clamp(1rem, 1.45vw, 1.6rem);
+          font-weight: 950;
+          color: #1f5136;
+          letter-spacing: 0.16em;
+          text-transform: uppercase;
+          box-shadow:
+            inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+            0 0 1.4rem rgba(31, 81, 54, 0.13);
+        }
+
         @keyframes draftAmbientDrift {
           from {
             transform: translate3d(-0.7%, -0.5%, 0) scale(1);
@@ -1532,6 +1803,41 @@ const draftTvStyles = `
           }
         }
 
+        @keyframes draftRevealOverlay {
+          0% {
+            opacity: 0;
+          }
+          8%, 86% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
+        }
+
+        @keyframes draftRevealCard {
+          0% {
+            opacity: 0;
+            transform: translateY(2rem) scale(0.94) rotate(-0.4deg);
+            filter: blur(0.45rem);
+          }
+          11% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(-0.2deg);
+            filter: blur(0);
+          }
+          80% {
+            opacity: 1;
+            transform: translateY(0) scale(1) rotate(-0.2deg);
+            filter: blur(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-0.9rem) scale(0.985) rotate(-0.2deg);
+            filter: blur(0.2rem);
+          }
+        }
+
         @keyframes draftExpiredPulse {
           from {
             transform: scale(1);
@@ -1554,7 +1860,9 @@ const draftTvStyles = `
           .draft-main-pool,
           .draft-team-marquee,
           .draft-available-row,
-          .draft-pick-row {
+          .draft-pick-row,
+          .draft-pick-reveal-overlay,
+          .draft-pick-reveal-card {
             animation: none;
           }
         }

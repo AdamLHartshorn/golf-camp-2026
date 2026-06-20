@@ -546,11 +546,13 @@ export default function EveningParimutuelPage() {
   const isBettingClosed = isMarketPending || isMarketLocked || isMarketSettled;
   const marketStatusLabel = parimutuelMarket
     ? `${parimutuelMarket.status || "pending"}`
-    : "draft-linked";
+    : "Waiting For Draft";
   const marketLinkNotice =
-    parimutuelMarket && !parimutuelMarket.money_round_id
-      ? "Money Round link needed"
-      : "Linked to Money Round";
+    parimutuelMarket && parimutuelMarket.money_round_id
+      ? "Linked to Money Round"
+      : parimutuelMarket
+        ? "Money Round link needed"
+        : "Market opens after the draft is complete";
 
   const visibleBets = bets.filter((bet) => bet.betting_night === selectedNight);
   const teamOptions = useMemo(
