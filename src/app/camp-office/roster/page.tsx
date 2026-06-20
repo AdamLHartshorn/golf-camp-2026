@@ -143,7 +143,11 @@ export default function CampRosterPage() {
                   Room {player.room || "-"} ·{" "}
                   {typeof player.years_served === "number"
                     ? player.years_served === 0
-                      ? "Rookie"
+                      ? (
+                          <span className="font-extrabold uppercase tracking-[0.18em] text-[#f5f5f5] drop-shadow-[0_0_10px_rgba(245,245,245,0.45)]">
+                            Rookie
+                          </span>
+                        )
                       : `${player.years_served} ${
                           player.years_served === 1 ? "Year" : "Years"
                         } Served`
