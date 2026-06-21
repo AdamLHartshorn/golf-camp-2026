@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { GolfCampIcon } from "@/components/GolfCampIcons";
 import {
+  compareScheduleItems,
   DailyScheduleItem,
   formatScheduleTime,
   getScheduleDayIndex,
@@ -46,7 +47,7 @@ export default function CampOfficeSchedulePage() {
         ((data as DailyScheduleItem[]) || []).sort(
           (a, b) =>
             getScheduleDayIndex(a.day) - getScheduleDayIndex(b.day) ||
-            String(a.start_time || "").localeCompare(String(b.start_time || "")),
+            compareScheduleItems(a, b),
         ),
       );
       setError("");

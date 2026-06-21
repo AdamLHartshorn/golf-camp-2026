@@ -45,6 +45,13 @@ const roundDayToBettingNight: Record<string, string> = {
   saturday: "friday",
 };
 
+const draftNightToRoundDay: Record<string, string> = {
+  tuesday: "wednesday",
+  wednesday: "thursday",
+  thursday: "friday",
+  friday: "saturday",
+};
+
 function isMissingParimutuelSchema(error: { code?: string; message?: string } | null) {
   if (!error) {
     return false;
@@ -60,6 +67,20 @@ function isMissingParimutuelSchema(error: { code?: string; message?: string } | 
 
 function getRoundDayFromDraftName(name: string) {
   const lowerName = name.toLowerCase();
+
+  const draftNight = Object.keys(draftNightToRoundDay).find((night) =>
+    lowerName.includes(`${night} night`),
+  );
+
+  if (draftNight) {
+    const roundDay = draftNightToRoundDay[draftNight];
+
+    return {
+      bettingNight: draftNight,
+      moneyRoundDay: `${roundDay.charAt(0).toUpperCase()}${roundDay.slice(1)}`,
+    };
+  }
+
   const roundDay = Object.keys(roundDayToBettingNight).find((day) =>
     lowerName.includes(day),
   );

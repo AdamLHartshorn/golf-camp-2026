@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
+import { importDraftTeamsToMoneyRound } from "@/lib/moneyRoundDraftImport";
 import { autoResolveParimutuelForMoneyRound } from "@/lib/parimutuelResolution";
 import { supabase } from "@/lib/supabase";
 import {
@@ -31,18 +32,6 @@ type DraftSession = {
   id: string;
   name: string;
   status: string | null;
-};
-
-type DraftTeam = {
-  id: string;
-  name: string;
-  captain_player_id: string | null;
-};
-
-type DraftPick = {
-  draft_team_id: string;
-  player_id: string;
-  pick_number: number;
 };
 
 const defaultRound = {
@@ -584,119 +573,36 @@ export default function AdminMoneyRoundsPage() {
       }
     }
 
-    const [
-      { data: draftTeams, error: draftTeamsError },
-      { data: draftPicks, error: draftPicksError },
-    ] = await Promise.all([
-      supabase
-        .from("draft_teams")
-        .select("id, name, captain_player_id")
-        .eq("draft_session_id", selectedDraftSessionId),
-      supabase
-        .from("draft_picks")
-        .select("draft_team_id, player_id, pick_number")
-        .eq("draft_session_id", selectedDraftSessionId)
-        .order("pick_number", { ascending: true }),
-    ]);
+    const result = await importDraftTeamsToMoneyRound(
+      selectedDraftSessionId,
+      round.id,
+    );
 
-    if (draftTeamsError || draftPicksError) {
-      setError(
-        draftTeamsError?.message ||
-          draftPicksError?.message ||
-          "Could not load draft teams.",
-      );
+    if (result.error) {
+      setError(result.error.message || "Could not import draft teams.");
       showToast({
         title: "Import Failed",
-        message:
-          draftTeamsError?.message ||
-          draftPicksError?.message ||
-          "Could not load draft teams.",
+        message: result.error.message || "Could not import teams.",
         tone: "error",
       });
       return;
     }
 
-    const picksByTeam = ((draftPicks as DraftPick[]) || []).reduce<
-      Record<string, string[]>
-    >((groups, pick) => {
-      groups[pick.draft_team_id] = [...(groups[pick.draft_team_id] || []), pick.player_id];
-      return groups;
-    }, {});
-    const draftTeamRows = (draftTeams as DraftTeam[]) || [];
-    const allDraftPlayerIds = Array.from(
-      new Set(
-        draftTeamRows.flatMap((team) =>
-          [
-            team.captain_player_id,
-            ...(picksByTeam[team.id] || []),
-          ].filter((playerId): playerId is string => Boolean(playerId)),
-        ),
-      ),
-    );
-    const { data: draftPlayers } =
-      allDraftPlayerIds.length > 0
-        ? await supabase
-            .from("players")
-            .select("id, first_name, last_name, display_name")
-            .in("id", allDraftPlayerIds)
-        : { data: [] };
-    const draftPlayersById = new Map(
-      ((draftPlayers as MoneyPlayer[]) || []).map((player) => [
-        player.id,
-        player,
-      ]),
-    );
-    const existingTeamNames = new Set(teams.map((team) => team.name));
-    const payload = draftTeamRows
-      .filter((team) => !existingTeamNames.has(team.name))
-      .map((team) => {
-        const playerIds = [
-          team.captain_player_id,
-          ...(picksByTeam[team.id] || []),
-        ].filter((playerId): playerId is string => Boolean(playerId));
-      const playerNames = playerIds
-        .map((playerId) => draftPlayersById.get(playerId)?.display_name)
-        .filter((name): name is string => Boolean(name));
-
-      return {
-        money_round_id: round.id,
-        name: team.name,
-        player_ids: playerIds,
-        player_names: playerNames,
-      };
-      });
-
-    if (payload.length === 0) {
+    if (result.importedCount === 0) {
       setError(
-        draftTeamRows.length === 0
-          ? "No draft teams found to import."
-          : "Teams already exist for this round.",
+        result.skipped ? "Teams already exist for this round." : "No draft teams found to import.",
       );
-      return;
-    }
-
-    const { error: insertError } = await supabase
-      .from("money_round_teams")
-      .insert(payload);
-
-    if (insertError) {
-      setError(insertError.message || "Could not import draft teams.");
-      showToast({
-        title: "Import Failed",
-        message: insertError.message || "Could not import teams.",
-        tone: "error",
-      });
       return;
     }
 
     setMessage(
-      `Imported ${payload.length} teams from ${
+      `Imported ${result.importedCount} teams from ${
         selectedDraftSession?.name || "selected draft"
       }.`,
     );
     showToast({
       title: "Teams Imported",
-      message: `${payload.length} teams from ${selectedDraftSession?.name || "selected draft"}.`,
+      message: `${result.importedCount} teams from ${selectedDraftSession?.name || "selected draft"}.`,
       accent: "#315f48",
       durationMs: 4000,
     });

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
+import { importDraftTeamsToMoneyRound } from "@/lib/moneyRoundDraftImport";
 import {
   getParimutuelMarketForDraft,
   openParimutuelMarketForDraft,
@@ -915,12 +916,51 @@ export default function AdminDraftPage() {
             "Draft completed, but Parimutuel Bets could not be opened.",
         );
       } else {
+        let autoImportMessage = "";
+
+        if (marketResult.market?.money_round_id) {
+          const importResult = await importDraftTeamsToMoneyRound(
+            selectedSession.id,
+            marketResult.market.money_round_id,
+            { skipIfTeamsExist: true },
+          );
+
+          if (importResult.error) {
+            console.warn(
+              "Draft completed, but Money Round teams could not auto-import:",
+              importResult.error.message,
+            );
+            autoImportMessage =
+              " Money Round team import needs manual review.";
+          } else if (importResult.importedCount > 0) {
+            autoImportMessage = ` Imported ${importResult.importedCount} teams into the linked Money Round.`;
+            await logAuditEvent({
+              actionType: "money_round_teams_auto_imported",
+              entityType: "money_round_team",
+              summary: `${importResult.importedCount} draft teams auto-imported into linked Money Round.`,
+              metadata: {
+                draft_session_id: selectedSession.id,
+                money_round_id: marketResult.market.money_round_id,
+              },
+            });
+          } else if (importResult.skipped) {
+            autoImportMessage =
+              " Linked Money Round already has teams; auto-import skipped.";
+          }
+        } else {
+          autoImportMessage =
+            " Link the Money Round before teams can auto-import.";
+        }
+
         setMessage(
-          `${player.display_name} drafted by ${currentTeam.name}. Parimutuel Bets are open.`,
+          `${player.display_name} drafted by ${currentTeam.name}. Parimutuel Bets are open.${autoImportMessage}`,
         );
         showToast({
           title: "Draft Complete",
-          message: "Parimutuel Bets are open.",
+          message:
+            marketResult.market?.money_round_id
+              ? "Parimutuel Bets are open. Money Round bridge checked."
+              : "Parimutuel Bets are open. Money Round link needed.",
           accent: "#746a91",
           durationMs: 4000,
         });

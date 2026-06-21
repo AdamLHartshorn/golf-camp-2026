@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { logAuditEvent } from "@/lib/auditLog";
 import {
+  compareScheduleItems,
   DailyScheduleItem,
   formatScheduleTime,
   getScheduleDayIndex,
@@ -86,7 +87,7 @@ export default function AdminDailySchedulePage() {
       ((data as DailyScheduleItem[]) || []).sort(
         (a, b) =>
           getScheduleDayIndex(a.day) - getScheduleDayIndex(b.day) ||
-          String(a.start_time || "").localeCompare(String(b.start_time || "")),
+          compareScheduleItems(a, b),
       ),
     );
     setError("");
@@ -241,6 +242,81 @@ export default function AdminDailySchedulePage() {
     await fetchItems();
   }
 
+  async function persistDayOrder(day: string, orderedItems: DailyScheduleItem[]) {
+    setMessage("");
+    setError("");
+    setIsSaving(true);
+
+    const updates = orderedItems.map((item, index) =>
+      supabase
+        .from("daily_schedule_items")
+        .update({ sort_order: index + 1 })
+        .eq("id", item.id)
+        .select("id, sort_order")
+        .single(),
+    );
+
+    const results = await Promise.all(updates);
+    const updateError = results.find((result) => result.error)?.error;
+
+    setIsSaving(false);
+
+    if (updateError) {
+      setError(
+        updateError.message ||
+          "Could not update schedule order. The sort_order column may need to be added in Supabase.",
+      );
+      return;
+    }
+
+    setItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.day !== day) {
+          return item;
+        }
+
+        const updatedIndex = orderedItems.findIndex(
+          (orderedItem) => orderedItem.id === item.id,
+        );
+
+        return updatedIndex === -1
+          ? item
+          : { ...item, sort_order: updatedIndex + 1 };
+      }),
+    );
+    setMessage("Schedule order updated.");
+
+    await logAuditEvent({
+      actionType: "daily_schedule_order_updated",
+      entityType: "daily_schedule_item",
+      summary: `Updated ${day} schedule order.`,
+      newValue: orderedItems.map((item, index) => ({
+        id: item.id,
+        title: item.title,
+        sort_order: index + 1,
+      })),
+    });
+  }
+
+  async function handleMoveItem(
+    groupItems: DailyScheduleItem[],
+    itemIndex: number,
+    direction: "up" | "down",
+  ) {
+    const targetIndex = direction === "up" ? itemIndex - 1 : itemIndex + 1;
+
+    if (targetIndex < 0 || targetIndex >= groupItems.length) {
+      return;
+    }
+
+    const orderedItems = [...groupItems];
+    const currentItem = orderedItems[itemIndex];
+    orderedItems[itemIndex] = orderedItems[targetIndex];
+    orderedItems[targetIndex] = currentItem;
+
+    await persistDayOrder(currentItem.day, orderedItems);
+  }
+
   const groupedDays = groupScheduleItems(items);
 
   return (
@@ -365,7 +441,7 @@ export default function AdminDailySchedulePage() {
                   </p>
                 ) : (
                   <div className="mt-3 space-y-3">
-                    {group.items.map((item) => (
+                    {group.items.map((item, itemIndex) => (
                       <article
                         key={item.id}
                         className="rounded-2xl border border-[#34312a] bg-[#11110f] p-4"
@@ -386,7 +462,23 @@ export default function AdminDailySchedulePage() {
                           </div>
                         </div>
 
-                        <div className="mt-3 grid grid-cols-2 gap-2">
+                        <div className="mt-3 grid grid-cols-4 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveItem(group.items, itemIndex, "up")}
+                            disabled={isSaving || itemIndex === 0}
+                            className="rounded-xl border border-[#34312a] px-3 py-2 text-xs font-black text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-35"
+                          >
+                            Up
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveItem(group.items, itemIndex, "down")}
+                            disabled={isSaving || itemIndex === group.items.length - 1}
+                            className="rounded-xl border border-[#34312a] px-3 py-2 text-xs font-black text-[#f5f5f5] transition hover:border-[#f5f5f5] disabled:cursor-not-allowed disabled:opacity-35"
+                          >
+                            Down
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleEdit(item)}
