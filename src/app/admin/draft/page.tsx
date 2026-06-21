@@ -815,6 +815,140 @@ export default function AdminDraftPage() {
     await fetchDraftState(selectedSession.id);
   }
 
+  async function completeDraft(
+    completionPrefix = "Draft completed.",
+    nextCurrentPickNumber = picks.length + 1,
+  ) {
+    if (!selectedSession) {
+      return;
+    }
+
+    const completedAt = new Date().toISOString();
+
+    const { error: updateError } = await supabase
+      .from("draft_sessions")
+      .update({
+        status: "complete",
+        completed_at: selectedSession.completed_at || completedAt,
+        current_pick_number: nextCurrentPickNumber,
+        current_pick_started_at: completedAt,
+        updated_at: completedAt,
+      })
+      .eq("id", selectedSession.id);
+
+    if (updateError) {
+      setError(updateError.message || "Could not complete draft.");
+      showToast({
+        title: "Complete Failed",
+        message: updateError.message || "Could not complete draft.",
+        tone: "error",
+      });
+      return;
+    }
+
+    await logActivityFeedItem({
+      type: "draft_completed",
+      source: "Live Draft",
+      sourceId: selectedSession.id,
+      linkUrl: "/draft/live",
+      message: `${selectedSession.name} completed.`,
+    });
+    await logAuditEvent({
+      actionType: "draft_completed",
+      entityType: "draft_session",
+      entityId: selectedSession.id,
+      summary: `${selectedSession.name} completed.`,
+    });
+    const marketResult = await openParimutuelMarketForDraft({
+      id: selectedSession.id,
+      name: selectedSession.name,
+      status: "complete",
+    });
+
+    if (marketResult.schemaMissing) {
+      setError(
+        "Draft completed, but Parimutuel automation needs the Supabase setup SQL.",
+      );
+      return;
+    }
+
+    if (marketResult.error) {
+      setError(
+        marketResult.error.message ||
+          "Draft completed, but Parimutuel Bets could not be opened.",
+      );
+      return;
+    }
+
+    let autoImportMessage = "";
+
+    if (marketResult.market?.money_round_id) {
+      const importResult = await importDraftTeamsToMoneyRound(
+        selectedSession.id,
+        marketResult.market.money_round_id,
+        { skipIfTeamsExist: true },
+      );
+
+      if (importResult.error) {
+        console.warn(
+          "Draft completed, but Money Round teams could not auto-import:",
+          importResult.error.message,
+        );
+        autoImportMessage = " Money Round team import needs manual review.";
+      } else if (importResult.importedCount > 0) {
+        autoImportMessage = ` Imported ${importResult.importedCount} teams into the linked Money Round.`;
+        await logAuditEvent({
+          actionType: "money_round_teams_auto_imported",
+          entityType: "money_round_team",
+          summary: `${importResult.importedCount} draft teams auto-imported into linked Money Round.`,
+          metadata: {
+            draft_session_id: selectedSession.id,
+            money_round_id: marketResult.market.money_round_id,
+          },
+        });
+      } else if (importResult.skipped) {
+        autoImportMessage =
+          " Linked Money Round already has teams; auto-import skipped.";
+      }
+    } else {
+      autoImportMessage = " Link the Money Round before teams can auto-import.";
+    }
+
+    setMessage(
+      `${completionPrefix} Parimutuel Bets are open.${autoImportMessage}`,
+    );
+    showToast({
+      title: "Draft Complete",
+      message:
+        marketResult.market?.money_round_id
+          ? "Parimutuel Bets are open. Money Round bridge checked."
+          : "Parimutuel Bets are open. Money Round link needed.",
+      accent: "#746a91",
+      durationMs: 4000,
+    });
+  }
+
+  async function handleCompleteDraft() {
+    if (!selectedSession) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Complete ${selectedSession.name} with ${picks.length} pick${
+        picks.length === 1 ? "" : "s"
+      }? This will open Parimutuel Bets and bridge teams to the linked Money Round.`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setMessage("");
+    setError("");
+    await completeDraft("Draft manually completed.");
+    await fetchDraftState(selectedSession.id);
+  }
+
   async function handleDraftPlayer(player: DraftPlayer) {
     if (!selectedSession || !currentTeam) {
       return;
@@ -887,84 +1021,10 @@ export default function AdminDraftPage() {
       },
     });
     if (remainingAfterPick <= 0) {
-      await logActivityFeedItem({
-        type: "draft_completed",
-        source: "Live Draft",
-        sourceId: selectedSession.id,
-        linkUrl: "/draft/live",
-        message: `${selectedSession.name} completed.`,
-      });
-      await logAuditEvent({
-        actionType: "draft_completed",
-        entityType: "draft_session",
-        entityId: selectedSession.id,
-        summary: `${selectedSession.name} completed.`,
-      });
-      const marketResult = await openParimutuelMarketForDraft({
-        id: selectedSession.id,
-        name: selectedSession.name,
-        status: "complete",
-      });
-
-      if (marketResult.schemaMissing) {
-        setError(
-          "Draft completed, but Parimutuel automation needs the Supabase setup SQL.",
-        );
-      } else if (marketResult.error) {
-        setError(
-          marketResult.error.message ||
-            "Draft completed, but Parimutuel Bets could not be opened.",
-        );
-      } else {
-        let autoImportMessage = "";
-
-        if (marketResult.market?.money_round_id) {
-          const importResult = await importDraftTeamsToMoneyRound(
-            selectedSession.id,
-            marketResult.market.money_round_id,
-            { skipIfTeamsExist: true },
-          );
-
-          if (importResult.error) {
-            console.warn(
-              "Draft completed, but Money Round teams could not auto-import:",
-              importResult.error.message,
-            );
-            autoImportMessage =
-              " Money Round team import needs manual review.";
-          } else if (importResult.importedCount > 0) {
-            autoImportMessage = ` Imported ${importResult.importedCount} teams into the linked Money Round.`;
-            await logAuditEvent({
-              actionType: "money_round_teams_auto_imported",
-              entityType: "money_round_team",
-              summary: `${importResult.importedCount} draft teams auto-imported into linked Money Round.`,
-              metadata: {
-                draft_session_id: selectedSession.id,
-                money_round_id: marketResult.market.money_round_id,
-              },
-            });
-          } else if (importResult.skipped) {
-            autoImportMessage =
-              " Linked Money Round already has teams; auto-import skipped.";
-          }
-        } else {
-          autoImportMessage =
-            " Link the Money Round before teams can auto-import.";
-        }
-
-        setMessage(
-          `${player.display_name} drafted by ${currentTeam.name}. Parimutuel Bets are open.${autoImportMessage}`,
-        );
-        showToast({
-          title: "Draft Complete",
-          message:
-            marketResult.market?.money_round_id
-              ? "Parimutuel Bets are open. Money Round bridge checked."
-              : "Parimutuel Bets are open. Money Round link needed.",
-          accent: "#746a91",
-          durationMs: 4000,
-        });
-      }
+      await completeDraft(
+        `${player.display_name} drafted by ${currentTeam.name}.`,
+        nextPickNumber + 1,
+      );
     }
     await fetchDraftState(selectedSession.id);
   }
@@ -1489,6 +1549,17 @@ export default function AdminDraftPage() {
                 >
                   Undo Last Pick
                 </button>
+
+                {selectedSession.status === "active" && (
+                  <button
+                    type="button"
+                    onClick={handleCompleteDraft}
+                    disabled={picks.length === 0}
+                    className="w-full rounded-xl border border-[#746a91]/70 bg-[#746a91]/18 px-4 py-3 font-bold text-[#d8d0ea] transition hover:border-[#d8d0ea] hover:bg-[#746a91]/28 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Complete Draft
+                  </button>
+                )}
 
                 <div className="space-y-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a3a3a3]">

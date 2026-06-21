@@ -89,6 +89,14 @@ export type HoleInOneHighlight = {
   players: HoleInOnePlayer[];
 };
 
+export type HoleDifficultyHighlight = {
+  hole: number;
+  par: number;
+  handicap: number;
+  averageScore: number;
+  averageRelativeToPar: number;
+};
+
 export type TeamStanding = {
   team: MoneyTeam;
   total: number;
@@ -539,6 +547,72 @@ export function getHoleAverage(scores: MoneyScore[], hole: number) {
   }
 
   return holeScores.reduce((total, score) => total + score, 0) / holeScores.length;
+}
+
+export function calculateHoleDifficultyHighlights(
+  teams: MoneyTeam[],
+  scores: MoneyScore[],
+) {
+  const scoresByTeam = getScoresByTeam(scores);
+  const scoredTeams = teams.filter(
+    (team) => Object.keys(scoresByTeam[team.id] || {}).length > 0,
+  );
+
+  if (scoredTeams.length === 0) {
+    return { hardest: null, easiest: null };
+  }
+
+  const rows = moneyRoundScorecard
+    .flatMap((metadata): HoleDifficultyHighlight[] => {
+      const holeScores = scoredTeams
+        .map((team) => scoresByTeam[team.id]?.[metadata.hole])
+        .filter((score): score is number => typeof score === "number");
+
+      if (holeScores.length < scoredTeams.length) {
+        return [];
+      }
+
+      const averageScore =
+        holeScores.reduce((total, score) => total + score, 0) /
+        holeScores.length;
+
+      return [
+        {
+          hole: metadata.hole,
+          par: metadata.par,
+          handicap: metadata.handicap,
+          averageScore,
+          averageRelativeToPar: averageScore - metadata.par,
+        },
+      ];
+    });
+
+  if (rows.length === 0) {
+    return { hardest: null, easiest: null };
+  }
+
+  const hardest = rows.slice().sort((a, b) => {
+    const relativeDifference =
+      b.averageRelativeToPar - a.averageRelativeToPar;
+
+    if (Math.abs(relativeDifference) > 0.001) {
+      return relativeDifference;
+    }
+
+    return a.handicap - b.handicap;
+  })[0];
+  const easiest = rows.slice().sort((a, b) => {
+    const relativeDifference =
+      a.averageRelativeToPar - b.averageRelativeToPar;
+
+    if (Math.abs(relativeDifference) > 0.001) {
+      return relativeDifference;
+    }
+
+    return b.handicap - a.handicap;
+  })[0];
+
+  return { hardest, easiest };
 }
 
 export function buildHoleInOneHighlights(

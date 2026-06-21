@@ -1,4 +1,5 @@
 import {
+  calculateHoleDifficultyHighlights,
   calculateStandings,
   getScoresByTeam,
   holes,
@@ -6,8 +7,8 @@ import {
   MoneyRound,
   MoneyScore,
   MoneyTeam,
-  moneyRoundScorecard,
   TeamStanding,
+  moneyRoundScorecard,
 } from "@/app/money-rounds/_lib/moneyRoundUtils";
 import { logActivityFeedItem } from "@/lib/activityFeed";
 import { logAuditEvent } from "@/lib/auditLog";
@@ -113,67 +114,13 @@ function mostBirdiesNames(teams: MoneyTeam[], scores: MoneyScore[]) {
   );
 }
 
-function holeDifficultyHighlights(teams: MoneyTeam[], scores: MoneyScore[]) {
-  const scoresByTeam = getScoresByTeam(scores);
-  type HoleDifficultyRow = {
-    hole: number;
-    handicap: number;
-    averageRelativeToPar: number;
-  };
-  const rows: HoleDifficultyRow[] = moneyRoundScorecard
-    .flatMap((hole) => {
-      const scoredTeams = teams
-        .map((team) => scoresByTeam[team.id]?.[hole.hole])
-        .filter((score): score is number => typeof score === "number");
-
-      if (scoredTeams.length === 0 || scoredTeams.length < teams.length) {
-        return [];
-      }
-
-      const averageScore =
-        scoredTeams.reduce((total, score) => total + score, 0) /
-        scoredTeams.length;
-
-      return [{
-        hole: hole.hole,
-        handicap: hole.handicap,
-        averageRelativeToPar: averageScore - hole.par,
-      }];
-    });
-
-  if (rows.length === 0) {
-    return { hardest: null, easiest: null };
-  }
-
-  const hardest = rows.slice().sort((a, b) => {
-    const relativeDifference = b.averageRelativeToPar - a.averageRelativeToPar;
-
-    if (Math.abs(relativeDifference) > 0.001) {
-      return relativeDifference;
-    }
-
-    return b.handicap - a.handicap;
-  })[0];
-  const easiest = rows.slice().sort((a, b) => {
-    const relativeDifference = a.averageRelativeToPar - b.averageRelativeToPar;
-
-    if (Math.abs(relativeDifference) > 0.001) {
-      return relativeDifference;
-    }
-
-    return b.handicap - a.handicap;
-  })[0];
-
-  return { hardest, easiest };
-}
-
 export function buildParimutuelResolutionProposals(
   round: MoneyRound,
   teams: MoneyTeam[],
   scores: MoneyScore[],
 ) {
   const standings = calculateStandings(teams, scores);
-  const { hardest, easiest } = holeDifficultyHighlights(teams, scores);
+  const { hardest, easiest } = calculateHoleDifficultyHighlights(teams, scores);
   const winnerNames = namesForPosition(standings, 1);
   const proposals: ParimutuelResolutionProposal[] = [
     {

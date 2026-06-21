@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import {
   buildHoleInOneHighlights,
+  calculateHoleDifficultyHighlights,
   calculateRoundMoney,
   compareTeamStandingsWorstFirst,
   formatRelativeToPar,
@@ -279,53 +280,10 @@ export default function MoneyRoundResultsPage() {
     [round, scores, teams],
   );
   const { bankRows, hasScores, skins, standings } = calculation;
-  const courseHighlights = useMemo(() => {
-    const holeRows = moneyRoundScorecard
-      .map((metadata) => {
-        const holeScores = scores
-          .filter((score) => score.hole_number === metadata.hole)
-          .map((score) => Number(score.score))
-          .filter((score) => Number.isFinite(score));
-
-        if (holeScores.length === 0) {
-          return null;
-        }
-
-        const averageScore =
-          holeScores.reduce((total, score) => total + score, 0) /
-          holeScores.length;
-
-        return {
-          ...metadata,
-          averageScore,
-          averageRelativeToPar: averageScore - metadata.par,
-        };
-      })
-      .filter((row): row is NonNullable<typeof row> => Boolean(row));
-
-    const hardest = holeRows.slice().sort((a, b) => {
-      const relativeDifference =
-        b.averageRelativeToPar - a.averageRelativeToPar;
-
-      if (Math.abs(relativeDifference) > 0.001) {
-        return relativeDifference;
-      }
-
-      return b.handicap - a.handicap;
-    })[0];
-    const easiest = holeRows.slice().sort((a, b) => {
-      const relativeDifference =
-        a.averageRelativeToPar - b.averageRelativeToPar;
-
-      if (Math.abs(relativeDifference) > 0.001) {
-        return relativeDifference;
-      }
-
-      return b.handicap - a.handicap;
-    })[0];
-
-    return { hardest, easiest };
-  }, [scores]);
+  const courseHighlights = useMemo(
+    () => calculateHoleDifficultyHighlights(teams, scores),
+    [scores, teams],
+  );
   const bankByTeam = useMemo(
     () =>
       bankRows.reduce<
@@ -411,7 +369,7 @@ export default function MoneyRoundResultsPage() {
 
   function renderHoleHighlightSlide(
     label: string,
-    highlight: HoleHighlight | undefined,
+    highlight: HoleHighlight | null | undefined,
   ) {
     return (
       <div className="space-y-8">
