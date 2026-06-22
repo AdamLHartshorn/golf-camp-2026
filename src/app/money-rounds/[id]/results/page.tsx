@@ -16,7 +16,6 @@ import {
   buildHoleInOneHighlights,
   calculateHoleDifficultyHighlights,
   calculateRoundMoney,
-  compareTeamStandingsWorstFirst,
   formatRelativeToPar,
   formatScoreToCompletedPar,
   getTeamScoreStatus,
@@ -303,7 +302,7 @@ export default function MoneyRoundResultsPage() {
   );
   const placementSlides = standings
     .slice()
-    .sort(compareTeamStandingsWorstFirst);
+    .sort((a, b) => b.position - a.position);
   const holeInOneSlides = useMemo(
     () => buildHoleInOneHighlights(teams, scores, players, round),
     [players, round, scores, teams],
@@ -689,6 +688,11 @@ export default function MoneyRoundResultsPage() {
                             {currentPlacement.team.player_names.join(", ") ||
                               "No players"}
                           </p>
+                          {currentPlacement.tiebreakerNote && (
+                            <p className="mt-4 text-2xl font-black uppercase tracking-[0.08em] text-[#86efac]">
+                              {currentPlacement.tiebreakerNote}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="text-sm uppercase tracking-[0.24em] text-[#a3a3a3]">

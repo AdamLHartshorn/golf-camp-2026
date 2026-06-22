@@ -752,7 +752,6 @@ export default function ClosingPresentationPage() {
           <div key={activeSlideId} className="closing-slide w-full">
             {activeSlideId === "opening" && (
               <div className="mx-auto max-w-6xl text-center">
-                <p className="closing-kicker closing-slide-kicker">The Final Chapter</p>
                 <h1 className="closing-title mt-6 text-7xl font-black tracking-[-0.08em] lg:text-9xl">
                   Golf Camp {currentCampYear} Complete
                 </h1>

@@ -44,15 +44,7 @@ function namesForPosition(standings: TeamStanding[], position: number) {
     return [];
   }
 
-  return uniqueNames(
-    standings
-      .filter(
-        (standing) =>
-          standing.completedHoleCount > 0 &&
-          standing.relativeToPar === target.relativeToPar,
-      )
-      .map((standing) => standing.team.name),
-  );
+  return [target.team.name];
 }
 
 function topThreeNames(standings: TeamStanding[]) {
@@ -76,11 +68,7 @@ function secondToLastNames(standings: TeamStanding[]) {
   const worstToBest = scoredStandings.slice().reverse();
   const target = worstToBest[1];
 
-  return uniqueNames(
-    scoredStandings
-      .filter((standing) => standing.relativeToPar === target.relativeToPar)
-      .map((standing) => standing.team.name),
-  );
+  return target ? [target.team.name] : [];
 }
 
 function mostBirdiesNames(teams: MoneyTeam[], scores: MoneyScore[]) {

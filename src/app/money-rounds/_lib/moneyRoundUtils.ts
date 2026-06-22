@@ -102,6 +102,7 @@ export type TeamStanding = {
   total: number;
   position: number;
   isTied: boolean;
+  tiebreakerNote: string | null;
   scoresByHole: Record<number, number>;
   completedHoleCount: number;
   completedPar: number;
@@ -345,6 +346,19 @@ export function compareTeamStandingsBestFirst(
     "completedHoleCount" | "relativeToPar" | "team" | "total"
   >,
 ) {
+  return compareTeamStandingsScoreBestFirst(a, b) || a.team.name.localeCompare(b.team.name);
+}
+
+function compareTeamStandingsScoreBestFirst(
+  a: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+  b: Pick<
+    TeamStanding,
+    "completedHoleCount" | "relativeToPar" | "team" | "total"
+  >,
+) {
   const aHasScores = a.completedHoleCount > 0;
   const bHasScores = b.completedHoleCount > 0;
 
@@ -353,18 +367,69 @@ export function compareTeamStandingsBestFirst(
   }
 
   if (!aHasScores && !bHasScores) {
-    return a.team.name.localeCompare(b.team.name);
+    return 0;
   }
 
   if (a.completedHoleCount === 18 && b.completedHoleCount === 18) {
-    return a.total - b.total || a.team.name.localeCompare(b.team.name);
+    return a.total - b.total;
   }
 
-  return (
-    Number(a.relativeToPar ?? Number.POSITIVE_INFINITY) -
-      Number(b.relativeToPar ?? Number.POSITIVE_INFINITY) ||
-    a.team.name.localeCompare(b.team.name)
-  );
+  return Number(a.relativeToPar ?? Number.POSITIVE_INFINITY) -
+    Number(b.relativeToPar ?? Number.POSITIVE_INFINITY);
+}
+
+const handicapTiebreakHoles = moneyRoundScorecard
+  .slice()
+  .sort((a, b) => a.handicap - b.handicap);
+
+function compareByHoleHandicapTiebreaker(
+  a: Pick<TeamStanding, "scoresByHole" | "team">,
+  b: Pick<TeamStanding, "scoresByHole" | "team">,
+) {
+  for (const hole of handicapTiebreakHoles) {
+    const aScore = a.scoresByHole[hole.hole];
+    const bScore = b.scoresByHole[hole.hole];
+
+    if (typeof aScore !== "number" || typeof bScore !== "number") {
+      continue;
+    }
+
+    if (aScore !== bScore) {
+      return aScore - bScore;
+    }
+  }
+
+  return a.team.name.localeCompare(b.team.name);
+}
+
+function firstTiebreakerHoleForGroup(
+  standings: Pick<TeamStanding, "scoresByHole">[],
+) {
+  for (const hole of handicapTiebreakHoles) {
+    const scores = standings
+      .map((standing) => standing.scoresByHole[hole.hole])
+      .filter((score): score is number => typeof score === "number");
+
+    if (scores.length < standings.length) {
+      continue;
+    }
+
+    if (new Set(scores).size > 1) {
+      return hole;
+    }
+  }
+
+  return null;
+}
+
+function scoreGroupKey(
+  standing: Pick<TeamStanding, "completedHoleCount" | "relativeToPar">,
+) {
+  if (standing.completedHoleCount === 0 || standing.relativeToPar === null) {
+    return "unscored";
+  }
+
+  return `${standing.completedHoleCount}:${standing.relativeToPar}`;
 }
 
 export function compareTeamStandingsWorstFirst(
@@ -389,7 +454,7 @@ export function compareTeamStandingsWorstFirst(
 
 export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {
   const scoresByTeam = getScoresByTeam(scores);
-  const sortedTeams = teams
+  const baseStandings = teams
     .map((team) => {
       const teamScores = scoresByTeam[team.id] || {};
       const total = Object.values(teamScores).reduce(
@@ -408,24 +473,68 @@ export function calculateStandings(teams: MoneyTeam[], scores: MoneyScore[]) {
         completedHoleCount,
         completedPar,
         relativeToPar,
+        position: 0,
+        isTied: false,
+        tiebreakerNote: null,
       };
     })
     .sort(compareTeamStandingsBestFirst);
 
-  return sortedTeams.map((standing, index): TeamStanding => {
-    const previousRelative = sortedTeams[index - 1]?.relativeToPar;
-    const nextRelative = sortedTeams[index + 1]?.relativeToPar;
-    const hasScores = standing.completedHoleCount > 0;
+  const tiedGroupNotes = new Map<string, string>();
+  const standingsByScoreGroup = baseStandings.reduce<Record<string, typeof baseStandings>>(
+    (groups, standing) => {
+      const key = scoreGroupKey(standing);
+      groups[key] = [...(groups[key] || []), standing];
+      return groups;
+    },
+    {},
+  );
 
-    return {
-      ...standing,
-      position: index + 1,
-      isTied:
-        hasScores &&
-        (standing.relativeToPar === previousRelative ||
-          standing.relativeToPar === nextRelative),
-    };
+  Object.entries(standingsByScoreGroup).forEach(([key, group]) => {
+    if (key === "unscored" || group.length < 2) {
+      return;
+    }
+
+    const tiebreakerHole = firstTiebreakerHoleForGroup(group);
+
+    if (!tiebreakerHole) {
+      group.forEach((standing) => {
+        tiedGroupNotes.set(
+          standing.team.id,
+          "Still tied after hole handicap tiebreaker.",
+        );
+      });
+      return;
+    }
+
+    const sortedGroup = group.slice().sort(compareByHoleHandicapTiebreaker);
+
+    sortedGroup.forEach((standing, index) => {
+      tiedGroupNotes.set(
+        standing.team.id,
+        index === 0
+          ? `Won tiebreaker on Hole ${tiebreakerHole.hole} (Hcp ${tiebreakerHole.handicap}).`
+          : `Tiebreaker decided on Hole ${tiebreakerHole.hole} (Hcp ${tiebreakerHole.handicap}).`,
+      );
+    });
   });
+
+  const sortedTeams = baseStandings.sort((a, b) => {
+    const scoreComparison = compareTeamStandingsScoreBestFirst(a, b);
+
+    if (scoreComparison !== 0) {
+      return scoreComparison;
+    }
+
+    return compareByHoleHandicapTiebreaker(a, b);
+  });
+
+  return sortedTeams.map((standing, index): TeamStanding => ({
+    ...standing,
+    position: index + 1,
+    isTied: tiedGroupNotes.has(standing.team.id),
+    tiebreakerNote: tiedGroupNotes.get(standing.team.id) || null,
+  }));
 }
 
 export function calculateSkins(

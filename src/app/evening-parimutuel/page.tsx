@@ -58,6 +58,14 @@ type DraftTeamOption = {
   draft_position: number | null;
 };
 
+type MoneyRoundOption = {
+  id: string;
+  name: string;
+  status: string | null;
+  round_date: string | null;
+  created_at: string | null;
+};
+
 type EveningResult = {
   id: string;
   parimutuel_market_id: string;
@@ -269,11 +277,14 @@ export default function EveningParimutuelPage() {
     null,
   );
   const [draftTeams, setDraftTeams] = useState<DraftTeamOption[]>([]);
+  const [moneyRounds, setMoneyRounds] = useState<MoneyRoundOption[]>([]);
   const [parimutuelMarket, setParimutuelMarket] =
     useState<ParimutuelMarket | null>(null);
   const [isLoadingDraftTeams, setIsLoadingDraftTeams] = useState(true);
+  const [isLoadingMoneyRounds, setIsLoadingMoneyRounds] = useState(true);
   const [draftTeamsError, setDraftTeamsError] = useState("");
   const [teeTimeInput, setTeeTimeInput] = useState("");
+  const [selectedMoneyRoundId, setSelectedMoneyRoundId] = useState("");
   const [selectedNight, setSelectedNight] = useState(nights[0].value);
   const [selectedPlayerId, setSelectedPlayerId] = useState(
     () => getPlayerSession()?.id || "",
@@ -293,6 +304,7 @@ export default function EveningParimutuelPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingResults, setIsSavingResults] = useState(false);
   const [isAutoResolving, setIsAutoResolving] = useState(false);
+  const [isLinkingMoneyRound, setIsLinkingMoneyRound] = useState(false);
   const [isDeletingBets, setIsDeletingBets] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -422,6 +434,7 @@ export default function EveningParimutuelPage() {
         const autoLockResult = await autoLockParimutuelMarketIfNeeded(latestMarket);
         activeMarket = autoLockResult.market || latestMarket;
         setParimutuelMarket(activeMarket);
+        setSelectedMoneyRoundId(activeMarket.money_round_id || "");
         setTeeTimeInput(formatDateTimeLocalInput(activeMarket.tee_time));
 
         if (activeMarket.betting_night) {
@@ -455,6 +468,7 @@ export default function EveningParimutuelPage() {
           if (linkResult.market) {
             activeMarket = linkResult.market;
             setParimutuelMarket(activeMarket);
+            setSelectedMoneyRoundId(activeMarket.money_round_id || "");
           }
         }
       } else {
@@ -521,6 +535,40 @@ export default function EveningParimutuelPage() {
     }
 
     fetchDraftTeams();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function fetchMoneyRounds() {
+      setIsLoadingMoneyRounds(true);
+
+      const { data, error: fetchError } = await supabase
+        .from("money_rounds")
+        .select("id, name, status, round_date, created_at")
+        .order("round_date", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true });
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (fetchError) {
+        setMoneyRounds([]);
+        setError(fetchError.message || "Could not load Money Rounds.");
+        setIsLoadingMoneyRounds(false);
+        return;
+      }
+
+      setMoneyRounds((data as MoneyRoundOption[]) || []);
+      setIsLoadingMoneyRounds(false);
+    }
+
+    fetchMoneyRounds();
 
     return () => {
       isCurrent = false;
@@ -1011,6 +1059,107 @@ export default function EveningParimutuelPage() {
     });
   }
 
+  async function handleManualMoneyRoundLink() {
+    if (!parimutuelMarket || !isAdmin) {
+      return;
+    }
+
+    if (!selectedMoneyRoundId) {
+      setError("Choose a Money Round to link.");
+      showToast({
+        title: "Choose Money Round",
+        message: "Select the Money Round this market should resolve from.",
+        tone: "warning",
+        accent: "#746a91",
+      });
+      return;
+    }
+
+    const selectedRound = moneyRounds.find(
+      (round) => round.id === selectedMoneyRoundId,
+    );
+    const currentRound = moneyRounds.find(
+      (round) => round.id === parimutuelMarket.money_round_id,
+    );
+
+    if (parimutuelMarket.money_round_id === selectedMoneyRoundId) {
+      setMessage("Parimutuel market is already linked to that Money Round.");
+      return;
+    }
+
+    if (parimutuelMarket.money_round_id) {
+      const shouldRelink = window.confirm(
+        `This Parimutuel market is currently linked to ${
+          currentRound?.name || "another Money Round"
+        }. Relink it to ${
+          selectedRound?.name || "the selected Money Round"
+        }? Existing wagers will be preserved, but results will resolve from the newly linked round.`,
+      );
+
+      if (!shouldRelink) {
+        return;
+      }
+    }
+
+    setMessage("");
+    setError("");
+    setIsLinkingMoneyRound(true);
+
+    const { data, error: updateError } = await supabase
+      .from("evening_parimutuel_markets")
+      .update({
+        money_round_id: selectedMoneyRoundId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", parimutuelMarket.id)
+      .select("*")
+      .single();
+
+    setIsLinkingMoneyRound(false);
+
+    if (updateError || !data) {
+      const errorMessage =
+        updateError?.message || "Could not link Parimutuel market.";
+      setError(errorMessage);
+      showToast({
+        title: "Link Failed",
+        message: errorMessage,
+        tone: "error",
+      });
+      return;
+    }
+
+    const nextMarket = data as ParimutuelMarket;
+    setParimutuelMarket(nextMarket);
+    setSelectedMoneyRoundId(nextMarket.money_round_id || "");
+    setMessage(
+      `Parimutuel market linked to ${selectedRound?.name || "Money Round"}.`,
+    );
+    showToast({
+      title: "Money Round Linked",
+      message: selectedRound?.name || "Parimutuel market linkage updated.",
+      accent: "#746a91",
+      durationMs: 4000,
+    });
+
+    await logAuditEvent({
+      actionType: "parimutuel_market_manually_linked",
+      entityType: "evening_parimutuel_market",
+      entityId: parimutuelMarket.id,
+      summary: `Admin manually linked Parimutuel market to ${
+        selectedRound?.name || "Money Round"
+      }.`,
+      oldValue: { money_round_id: parimutuelMarket.money_round_id },
+      newValue: { money_round_id: nextMarket.money_round_id },
+      metadata: {
+        parimutuel_market_id: parimutuelMarket.id,
+        draft_session_id: parimutuelMarket.draft_session_id,
+        previous_money_round_id: parimutuelMarket.money_round_id,
+        money_round_id: nextMarket.money_round_id,
+      },
+    });
+  }
+
   async function handleLockBetting() {
     if (!parimutuelMarket || !isAdmin) {
       return;
@@ -1446,6 +1595,46 @@ export default function EveningParimutuelPage() {
                   Admin Betting Control
                 </p>
                 <div className="mt-3 grid gap-3">
+                  <label className="block">
+                    <span className="mb-2 block text-xs font-semibold text-[#a3a3a3]">
+                      Linked Money Round
+                    </span>
+                    <select
+                      value={selectedMoneyRoundId}
+                      onChange={(event) =>
+                        setSelectedMoneyRoundId(event.target.value)
+                      }
+                      className="gc-input"
+                      disabled={isLoadingMoneyRounds || isLinkingMoneyRound}
+                    >
+                      <option value="">
+                        {isLoadingMoneyRounds
+                          ? "Loading Money Rounds..."
+                          : "Select Money Round"}
+                      </option>
+                      {moneyRounds.map((round) => (
+                        <option key={round.id} value={round.id}>
+                          {round.name} ({round.status || "pending"})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleManualMoneyRoundLink}
+                    disabled={
+                      isLinkingMoneyRound ||
+                      isLoadingMoneyRounds ||
+                      !selectedMoneyRoundId
+                    }
+                    className="rounded-xl border border-[#746a91]/50 px-3 py-3 text-sm font-black text-[#d8d0ea] transition hover:border-[#d8d0ea] disabled:cursor-not-allowed disabled:opacity-45"
+                  >
+                    {isLinkingMoneyRound
+                      ? "Linking..."
+                      : parimutuelMarket.money_round_id
+                        ? "Update Money Round Link"
+                        : "Link Money Round"}
+                  </button>
                   <label className="block">
                     <span className="mb-2 block text-xs font-semibold text-[#a3a3a3]">
                       Tee Time / Lock Time

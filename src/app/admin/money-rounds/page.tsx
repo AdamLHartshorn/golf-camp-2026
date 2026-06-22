@@ -1713,7 +1713,7 @@ export default function AdminMoneyRoundsPage() {
                 </p>
                 <h2 className="mt-2 text-xl font-bold">Calculate Preview</h2>
                 <p className="mt-2 text-sm text-[#a3a3a3]">
-                  Tie breaker by hole handicap coming soon.
+                  Ties are broken by score on handicap holes, starting with Hcp 1.
                 </p>
                 {payoutNotice && (
                   <p className="mt-3 rounded-xl border border-[#242424] bg-black p-3 text-sm text-[#a3a3a3]">
@@ -1725,7 +1725,11 @@ export default function AdminMoneyRoundsPage() {
                     <div key={standing.team.id} className="flex justify-between">
                       <span>
                         {standing.position}. {standing.team.name}
-                        {standing.isTied ? " (Tied)" : ""}
+                        {standing.tiebreakerNote && (
+                          <span className="block text-xs font-semibold text-[#86efac]">
+                            {standing.tiebreakerNote}
+                          </span>
+                        )}
                       </span>
                       <span className="text-[#16a34a]">
                         {formatScoreToCompletedPar(

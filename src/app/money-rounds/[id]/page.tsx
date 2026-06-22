@@ -202,8 +202,8 @@ export default function MoneyRoundDetailPage() {
               <p className="gc-card-kicker">Leaderboard</p>
               <h2 className="gc-card-title">Standings</h2>
               <p className="gc-card-copy">
-                Live standings are unofficial until verified. Tie breaker by
-                hole handicap coming soon.
+                Live standings are unofficial until verified. Ties are broken
+                by score on handicap holes, starting with Hcp 1.
               </p>
               <div className="mt-4 space-y-3">
                 {!hasScores && (
@@ -226,8 +226,12 @@ export default function MoneyRoundDetailPage() {
                       <span className="space-y-1">
                         <span className="block">
                           {standing.position}. {standing.team.name}
-                          {standing.isTied ? " (Tied)" : ""}
                         </span>
+                        {standing.tiebreakerNote && (
+                          <span className="block text-xs font-semibold text-[#86efac]">
+                            {standing.tiebreakerNote}
+                          </span>
+                        )}
                         <span
                           className={`inline-flex rounded-full border px-2 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${scoreStatusClasses(
                             getTeamScoreStatus(standing.team),
