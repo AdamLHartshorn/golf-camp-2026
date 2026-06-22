@@ -365,77 +365,83 @@ export default function DraftLivePage() {
 
   if (shouldShowCompletePresentation) {
     return (
-      <main className="draft-tv-shell draft-complete-shell h-screen overflow-hidden bg-[#02040a] p-4 text-[#f5f5f5]">
-        <div className="grid h-full grid-rows-[auto_minmax(0,1fr)] gap-4">
-          <section className="draft-complete-hero draft-board-panel rounded-[0.6rem] border border-[#1e40af]/45 bg-[#050915] px-6 py-5">
-            <div className="grid grid-cols-[1fr_auto] items-end gap-6">
+      <main className="draft-tv-shell draft-whiteboard-mode draft-complete-shell h-screen overflow-hidden bg-[#e8ecdf] p-2 text-[#182112]">
+        <div className="grid h-full grid-rows-[clamp(6.8rem,14vh,8.4rem)_minmax(0,1fr)] gap-2">
+          <section className="draft-complete-hero draft-whiteboard-panel rounded-[0.42rem] border-[3px] border-[#1d2518] bg-[#f2f0df] px-5 py-3">
+            <div className="grid h-full grid-cols-[1fr_auto] items-center gap-5">
               <div className="min-w-0">
-                <p className="draft-electric-label text-[clamp(0.9rem,1.2vw,1.2rem)] font-black uppercase tracking-[0.28em] text-[#7dd3fc]">
+                <p className="draft-marker-label text-[clamp(0.74rem,0.95vw,1rem)] font-black uppercase tracking-[0.2em] text-[#1f5136]">
                   Golf Camp 2026
                 </p>
-                <h1 className="draft-complete-headline mt-2 text-[clamp(4.5rem,8vw,8.5rem)] font-black uppercase leading-[0.78] tracking-[-0.075em]">
+                <h1 className="draft-complete-headline mt-1 text-[clamp(4rem,7vw,7.4rem)] font-black uppercase leading-[0.78] tracking-[-0.075em]">
                   Draft Complete
                 </h1>
               </div>
 
-              <div className="draft-complete-callout rounded-[0.5rem] border border-[#746a91]/55 bg-[#14111f] px-5 py-4 text-right">
-                <p className="text-[clamp(1.3rem,2vw,2.25rem)] font-black uppercase leading-none tracking-[-0.04em] text-[#f8fbff]">
+              <div className="draft-complete-callout rounded-[0.36rem] border-[3px] border-[#5c5470] bg-[#efe9f7] px-5 py-3 text-right">
+                <p className="text-[clamp(1.25rem,1.85vw,2.05rem)] font-black uppercase leading-none tracking-[-0.04em] text-[#3f3850]">
                   Parimutuel Betting Now Open
                 </p>
-                <p className="mt-2 text-[clamp(0.82rem,1vw,1rem)] font-bold uppercase tracking-[0.16em] text-[#d8d0ea]">
+                <p className="mt-2 text-[clamp(0.78rem,0.95vw,0.96rem)] font-black uppercase tracking-[0.14em] text-[#746a91]">
                   Betting closes at tee-off.
                 </p>
               </div>
             </div>
           </section>
 
-          <section className="draft-board-panel min-h-0 overflow-hidden rounded-[0.6rem] border border-[#1e40af]/45 bg-[#050915] p-4">
-            <div className="flex items-center justify-between border-b border-[#1e40af]/35 pb-3">
+          <section className="draft-whiteboard-panel min-h-0 overflow-hidden rounded-[0.42rem] border-[3px] border-[#1d2518] bg-[#f2f0df] p-3">
+            <div className="flex items-center justify-between border-b-[3px] border-[#1d2518] pb-2">
               <div>
-                <p className="draft-electric-label text-[clamp(0.82rem,1vw,1.05rem)] font-semibold uppercase tracking-[0.24em] text-[#93c5fd]">
+                <p className="draft-marker-label text-[clamp(1rem,1.28vw,1.36rem)] font-black uppercase tracking-[0.14em] text-[#1d2518]">
                   Final Teams
                 </p>
-                <p className="mt-1 text-[clamp(0.68rem,0.85vw,0.82rem)] font-semibold uppercase tracking-[0.16em] text-[#516985]">
-                  Draft board locked · Parimutuel markets next
+                <p className="mt-0.5 text-[clamp(0.68rem,0.84vw,0.82rem)] font-black uppercase tracking-[0.12em] text-[#4d5c42]">
+                  Official draft board · Parimutuel markets open
                 </p>
               </div>
-              <span className="draft-pick-pill rounded-full border border-[#1e40af]/70 bg-[#071123] px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#bfdbfe]">
+              <span className="draft-whiteboard-chip rounded-[0.28rem] border-2 border-[#1d2518] bg-[#e8ecdf] px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#1d2518]">
                 {orderedTeams.length} Teams
               </span>
             </div>
 
-            <div className="mt-4 grid h-[calc(100%-4.7rem)] grid-cols-5 grid-rows-2 gap-3 overflow-hidden">
+            <div className="mt-2 grid h-[calc(100%-4.05rem)] grid-cols-5 grid-rows-2 gap-2 overflow-hidden">
               {orderedTeams.map((team) => {
                 const captain = team.captain_player_id
                   ? playersById.get(team.captain_player_id)
                   : null;
+                const teamPicks = picksByTeam[team.id] || [];
 
                 return (
                   <div
                     key={team.id}
-                    className="draft-team-card draft-complete-team-card min-h-0 overflow-hidden rounded-[0.42rem] border border-[#1e40af]/30 bg-[#080e1f] p-3"
+                    className="draft-complete-team-card min-h-0 overflow-hidden rounded-[0.28rem] border-[3px] border-[#1d2518] bg-[#fbf9e8] p-2.5"
                   >
-                    <h2 className="truncate text-[clamp(1rem,1.22vw,1.28rem)] font-black uppercase tracking-[-0.04em] text-[#f8fbff]">
+                    <h2 className="truncate border-b-2 border-[#1d2518]/80 pb-1 text-[clamp(1.18rem,1.45vw,1.62rem)] font-black uppercase leading-none tracking-[-0.045em] text-[#152010]">
                       {team.name}
                     </h2>
-                    <p className="mt-1 truncate text-[clamp(0.66rem,0.78vw,0.8rem)] font-bold uppercase tracking-[0.1em] text-[#7dd3fc]">
-                      Captain · {captain?.display_name || "TBD"}{" "}
-                      {getPublicDisplayRank(captain?.display_rank, captain?.rank)}
-                    </p>
 
-                    <div className="mt-3 space-y-1">
-                      {(picksByTeam[team.id] || []).map((pick) => {
+                    <div className="mt-2 grid gap-1">
+                      <p className="draft-complete-roster-row draft-complete-captain-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-[0.22rem] border-2 border-[#1f5136]/80 bg-[#dfe9d7] px-2 py-1 text-[clamp(0.9rem,1.05vw,1.16rem)] font-black leading-tight text-[#152010]">
+                        <span className="truncate">
+                          {captain?.display_name || "Captain"}
+                        </span>
+                        <span className="text-[clamp(0.82rem,0.96vw,1.02rem)] font-black text-[#1f5136]">
+                          {getPublicDisplayRank(captain?.display_rank, captain?.rank)}
+                        </span>
+                      </p>
+
+                      {teamPicks.map((pick) => {
                         const player = playersById.get(pick.player_id);
 
                         return (
                           <p
                             key={pick.id}
-                            className="draft-pick-row flex items-center justify-between gap-2 truncate rounded-[0.28rem] border border-[#38bdf8]/15 bg-[#030712] px-2 py-1 text-[clamp(0.64rem,0.82vw,0.86rem)] font-semibold leading-tight text-[#edf8ff]"
+                            className="draft-complete-roster-row grid grid-cols-[1fr_auto] items-center gap-2 rounded-[0.22rem] border-2 border-[#1d2518]/35 bg-[#f2f0df] px-2 py-1 text-[clamp(0.88rem,1.02vw,1.12rem)] font-black leading-tight text-[#152010]"
                           >
                             <span className="truncate">
                               {player?.display_name || "Unknown"}
                             </span>
-                            <span className="shrink-0 text-[0.66rem] font-black text-[#7dd3fc]">
+                            <span className="shrink-0 text-[clamp(0.82rem,0.95vw,1rem)] font-black text-[#1f5136]">
                               {getPublicDisplayRank(
                                 player?.display_rank,
                                 player?.rank,
@@ -838,34 +844,49 @@ const draftTvStyles = `
           animation: draftCompleteReveal 900ms ease both;
         }
 
+        .draft-complete-shell::before {
+          background:
+            radial-gradient(circle at 18% 12%, rgba(31, 81, 54, 0.18), transparent 24rem),
+            radial-gradient(circle at 82% 78%, rgba(235, 156, 92, 0.1), transparent 27rem),
+            linear-gradient(135deg, rgba(232, 236, 223, 0.96), rgba(242, 240, 223, 0.9));
+          animation: none;
+        }
+
+        .draft-complete-shell::after {
+          background:
+            linear-gradient(90deg, rgba(29, 37, 24, 0.035) 0 1px, transparent 1px 3.2rem),
+            linear-gradient(180deg, rgba(29, 37, 24, 0.035) 0 1px, transparent 1px 3.2rem),
+            radial-gradient(circle at center, transparent 56%, rgba(29, 37, 24, 0.15) 100%);
+          opacity: 1;
+        }
+
         .draft-complete-headline {
-          color: #f8fbff;
+          color: #11180d;
           text-shadow:
-            0 0 28px rgba(56, 189, 248, 0.32),
-            0 0 82px rgba(37, 99, 235, 0.24);
+            0 2px 0 rgba(255, 255, 255, 0.52),
+            0 0 22px rgba(31, 81, 54, 0.12);
         }
 
         .draft-complete-hero {
           box-shadow:
-            inset 0 0 0 1px rgba(125, 211, 252, 0.12),
-            inset 0 0 28px rgba(56, 189, 248, 0.07),
-            0 30px 100px rgba(0, 0, 0, 0.62),
-            0 0 70px rgba(56, 189, 248, 0.22);
+            inset 0 0 0 1px rgba(255, 255, 255, 0.34),
+            inset 0 0 18px rgba(31, 81, 54, 0.06),
+            0 12px 24px rgba(29, 37, 24, 0.16);
         }
 
         .draft-complete-callout {
           background:
-            radial-gradient(circle at 0% 50%, rgba(116, 106, 145, 0.22), transparent 62%),
-            #14111f;
-          border-color: rgba(116, 106, 145, 0.62);
+            radial-gradient(circle at 0% 50%, rgba(116, 106, 145, 0.18), transparent 64%),
+            #efe9f7;
+          border-color: #5c5470;
           position: relative;
           overflow: hidden;
           animation: parimutuelCalloutPulse 2.8s ease-in-out infinite alternate;
           box-shadow:
-            inset 0 0 0 1px rgba(216, 208, 234, 0.12),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.36),
             inset 0 0 22px rgba(116, 106, 145, 0.12),
-            0 0 36px rgba(116, 106, 145, 0.28),
-            0 0 72px rgba(116, 106, 145, 0.12);
+            0 0 0 1px rgba(92, 84, 112, 0.08),
+            0 10px 26px rgba(92, 84, 112, 0.18);
         }
 
         .draft-complete-callout::before {
@@ -879,8 +900,8 @@ const draftTvStyles = `
               115deg,
               transparent 0%,
               transparent 31%,
-              rgba(216, 208, 234, 0.28) 45%,
-              rgba(116, 106, 145, 0.34) 52%,
+              rgba(255, 255, 255, 0.38) 45%,
+              rgba(116, 106, 145, 0.24) 52%,
               transparent 68%,
               transparent 100%
             );
@@ -896,16 +917,16 @@ const draftTvStyles = `
           pointer-events: none;
           border-radius: inherit;
           box-shadow:
-            inset 0 1px 0 rgba(245, 245, 245, 0.16),
-            inset 0 -1px 0 rgba(116, 106, 145, 0.28);
+            inset 0 1px 0 rgba(255, 255, 255, 0.5),
+            inset 0 -1px 0 rgba(116, 106, 145, 0.22);
         }
 
         .draft-complete-callout p:first-child {
           position: relative;
           z-index: 1;
           text-shadow:
-            0 0 18px rgba(216, 208, 234, 0.18),
-            0 0 42px rgba(116, 106, 145, 0.18);
+            0 1px 0 rgba(255, 255, 255, 0.45),
+            0 0 24px rgba(116, 106, 145, 0.14);
         }
 
         .draft-complete-callout p:last-child {
@@ -914,10 +935,41 @@ const draftTvStyles = `
         }
 
         .draft-complete-team-card {
+          position: relative;
           box-shadow:
-            inset 0 0 0 1px rgba(125, 211, 252, 0.08),
-            inset 0 0 20px rgba(56, 189, 248, 0.05),
-            0 0 22px rgba(56, 189, 248, 0.12);
+            inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+            inset 0 0 18px rgba(31, 81, 54, 0.045),
+            0 10px 18px rgba(29, 37, 24, 0.14);
+        }
+
+        .draft-complete-team-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          border-radius: inherit;
+          background:
+            linear-gradient(90deg, rgba(29, 37, 24, 0.05) 0 1px, transparent 1px 100%),
+            linear-gradient(180deg, rgba(29, 37, 24, 0.04) 0 1px, transparent 1px 100%);
+          background-size: 2rem 2rem;
+          opacity: 0.36;
+        }
+
+        .draft-complete-team-card > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .draft-complete-roster-row {
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.45),
+            0 1px 0 rgba(29, 37, 24, 0.08);
+        }
+
+        .draft-complete-captain-row {
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.52),
+            0 0 18px rgba(31, 81, 54, 0.08);
         }
 
         .draft-brand-panel,
