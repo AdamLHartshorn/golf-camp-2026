@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
@@ -114,6 +114,7 @@ type ParimutuelMarketRow = {
 
 export default function MoneyRoundResultsPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [round, setRound] = useState<MoneyRound | null>(null);
   const [teams, setTeams] = useState<MoneyTeam[]>([]);
   const [scores, setScores] = useState<MoneyScore[]>([]);
@@ -469,6 +470,21 @@ export default function MoneyRoundResultsPage() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        router.push(`/money-rounds/${params.id}`);
+        return;
+      }
+
+      if (event.key.toLowerCase() === "f") {
+        enterTvMode();
+        return;
+      }
+
+      if (event.key.toLowerCase() === "d") {
+        router.push("/draft/live");
+        return;
+      }
+
       if (event.key === "ArrowRight") {
         advanceLocal(1);
       }
@@ -989,6 +1005,16 @@ export default function MoneyRoundResultsPage() {
                   </h1>
                   <p className="mt-5 text-4xl font-black tracking-[-0.04em] text-[#86efac]">
                     Draft begins shortly.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/draft/live")}
+                    className="mt-7 rounded-full border border-[#24364f]/80 bg-black/35 px-7 py-3 text-sm font-black uppercase tracking-[0.18em] text-[#9fb8d8] shadow-[0_0_32px_rgba(45,68,97,0.16)] transition hover:border-[#9fb8d8] hover:text-[#f5f5f5]"
+                  >
+                    Open Live Draft
+                  </button>
+                  <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-[#737373]">
+                    Press D to jump to draft
                   </p>
 
                   <div className="mt-12 grid gap-4 text-left lg:grid-cols-5">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import {
@@ -242,6 +243,7 @@ function EmptyState({ children }: { children: string }) {
 }
 
 export default function ClosingPresentationPage() {
+  const router = useRouter();
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [campYear, setCampYear] = useState<CampYear | null>(null);
   const [rounds, setRounds] = useState<MoneyRound[]>([]);
@@ -644,6 +646,16 @@ export default function ClosingPresentationPage() {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        router.push("/home");
+        return;
+      }
+
+      if (event.key.toLowerCase() === "f") {
+        enterTvMode();
+        return;
+      }
+
       if (event.key === "ArrowRight") {
         advance(1);
       }

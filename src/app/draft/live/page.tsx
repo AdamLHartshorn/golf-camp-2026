@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PlayerSilhouette } from "@/components/PlayerSilhouette";
 import { supabase } from "@/lib/supabase";
@@ -29,6 +30,7 @@ type PickReveal = {
 };
 
 export default function DraftLivePage() {
+  const router = useRouter();
   const [session, setSession] = useState<DraftSession | null>(null);
   const [players, setPlayers] = useState<DraftPlayer[]>([]);
   const [teams, setTeams] = useState<DraftTeam[]>([]);
@@ -57,6 +59,22 @@ export default function DraftLivePage() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        router.push("/draft");
+        return;
+      }
+
+      if (event.key.toLowerCase() === "f") {
+        document.documentElement.requestFullscreen?.();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [router]);
 
   async function fetchLiveDraft() {
     const { data: activeSessionData, error: activeSessionError } = await supabase
