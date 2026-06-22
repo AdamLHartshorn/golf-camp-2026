@@ -242,10 +242,6 @@ export default function DraftLivePage() {
     [boardPlayers],
   );
   const recentPick = picks[picks.length - 1] || null;
-  const recentPickPlayer = recentPick ? playersById.get(recentPick.player_id) : null;
-  const recentPickTeam = recentPick
-    ? teamsById.get(recentPick.draft_team_id)
-    : null;
   const pickRevealPlayer = activePickReveal
     ? playersById.get(activePickReveal.playerId)
     : null;
@@ -543,38 +539,18 @@ export default function DraftLivePage() {
             </div>
           </div>
 
-          <div className="grid min-h-0 grid-rows-2 gap-2">
-            <div className="draft-side-panel flex h-full items-center rounded-[0.55rem] border border-[#324d70]/55 bg-[#050915] px-3 py-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.34)]">
-              <div className="grid grid-cols-[auto_1fr] items-center gap-2">
-                <p className="draft-electric-label font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#9aacbf]">
+          <div className="min-h-0">
+            <div className="draft-side-panel flex h-full items-center rounded-[0.55rem] border border-[#324d70]/55 bg-[#050915] px-4 py-2 shadow-[0_18px_60px_rgba(0,0,0,0.34)]">
+              <div className="min-w-0">
+                <p className="draft-electric-label font-mono text-[clamp(0.68rem,0.86vw,0.9rem)] font-black uppercase tracking-[0.2em] text-[#9aacbf]">
                   On Deck
                 </p>
-                <p className="truncate text-[clamp(0.9rem,1.35vw,1.42rem)] font-black leading-none tracking-[-0.045em] text-[#dbeafe]">
+                <p className="mt-1 truncate text-[clamp(1.65rem,2.3vw,2.55rem)] font-black uppercase leading-[0.9] tracking-[-0.055em] text-[#dbeafe]">
                   {isCompleteDraft
                     ? "Draft Complete"
                     : onDeckTeam?.name || "Final Pick"}
                 </p>
               </div>
-            </div>
-
-            <div
-              key={recentPick?.id || "last-pick-empty"}
-              className="recent-pick-strip draft-side-panel flex h-full items-center rounded-[0.55rem] border border-[#324d70]/60 bg-[#050915] px-3 py-1.5 shadow-[0_18px_60px_rgba(0,0,0,0.38),0_0_28px_rgba(50,77,112,0.1)]"
-            >
-              <div className="grid w-full grid-cols-[auto_1fr] items-center gap-2">
-                <p className="draft-electric-label font-mono text-[8px] font-black uppercase tracking-[0.2em] text-[#9aacbf]">
-                  Last Pick
-                </p>
-                <div className="min-w-0">
-                  <p className="truncate text-[clamp(0.58rem,0.74vw,0.76rem)] font-semibold text-[#dbeafe]">
-                    {recentPickTeam ? `${recentPickTeam.name} selected` : "Awaiting first pick"}
-                  </p>
-                  <p className="truncate text-[clamp(0.9rem,1.35vw,1.42rem)] font-black leading-none tracking-[-0.04em]">
-                    {recentPickPlayer?.display_name || "Draft ready"}
-                  </p>
-                </div>
-              </div>
-              {error && <p className="mt-1 text-xs text-[#ff8a8a]">{error}</p>}
             </div>
           </div>
         </section>
@@ -639,17 +615,8 @@ export default function DraftLivePage() {
         </section>
 
         <section className="draft-team-rail draft-board-panel min-h-0 overflow-hidden rounded-[0.6rem] border border-[#1e40af]/45 bg-[#050915] p-3 shadow-[0_24px_80px_rgba(0,0,0,0.42)]">
-          <div className="flex h-full min-h-0 gap-2">
-            <div className="flex w-[clamp(6.5rem,8vw,8.5rem)] shrink-0 flex-col justify-between border-r border-[#1e40af]/35 pr-3">
-              <p className="draft-electric-label text-[10px] font-semibold uppercase tracking-[0.24em] text-[#93c5fd]">
-                Teams
-              </p>
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#516985]">
-                Reference Rail
-              </p>
-            </div>
-
-            <div className="draft-team-marquee-window min-h-0 flex-1 overflow-hidden">
+          <div className="h-full min-h-0">
+            <div className="draft-team-marquee-window h-full min-h-0 overflow-hidden">
               <div
                 className="draft-team-marquee flex h-full min-w-max gap-2"
                 style={{
